@@ -32,6 +32,8 @@ On the first capture, macOS may request Screen Recording access. Grant it in **S
 5. The preview shows the captured image, numbered zones, their calculated colors, and a strip in serial output order.
 6. ORSSerialPort writes the newest available frame on a dedicated queue. Older unsent frames are replaced instead of growing a backlog.
 
+The device menu only lists USB-backed serial callout ports. Virtual Bluetooth and system ports are hidden, and a selected port is checked again before opening. This is a guard against accidental connection, not proof that an arbitrary USB serial adapter is a microcontroller. No port is opened automatically.
+
 Settings are saved in `~/Library/Application Support/AmbientLightingV3/settings.json`.
 
 ## LED controller
@@ -39,6 +41,8 @@ Settings are saved in `~/Library/Application Support/AmbientLightingV3/settings.
 `Firmware/SerialLEDcontroller/SerialLEDcontroller.ino` is the original FastLED sketch, preserved for compatibility. Its defaults are **70 WS2812B LEDs**, **pin 2**, **GRB**, and **230400 baud**. Configure the number of physical LEDs and the matching baud rate in the app. Each frame uses the existing `led` + one-byte index + RGB bytes per LED, ending with `les` to display the frame. Changing these firmware defaults requires matching changes in the app's device settings.
 
 The serial library is ORSSerialPort **2.1.0**, the latest upstream release checked for this rebuild. It is vendored at `Vendor/ORSSerialPort` so builds do not depend on GitHub access. Its MIT license is in that directory. The app's own license is GPL-3.0, as in the original repository.
+
+The proposed ESP32/ESP8266 firmware, controller-stored profiles, and guarded in-app flashing workflow are specified in [Controller-Onboarding.md](docs/Controller-Onboarding.md). The current legacy firmware does not yet identify itself or store settings, and the app does not flash devices.
 
 ## Code map
 
@@ -48,6 +52,7 @@ The serial library is ORSSerialPort **2.1.0**, the latest upstream release check
 - `Sources/AmbientLightingV3/LightingModel.swift`: app state, settings, frame processing, and output coordination.
 - `Sources/AmbientLightingV3/AmbientLightingApp.swift`: native sidebar and preview UI.
 - `Sources/AmbientLightingV3/SerialDevice.swift`: ORSSerialPort adapter.
+- `Sources/AmbientLightingV3/USBSerialPortDiscovery.swift`: read-only USB serial discovery.
 
 The previous history remains in Git. The complete older implementation is on `origin/main`; the later architecture experiments are available as `legacy/v2`, `origin/2.1`, `legacy/serial-fix`, and `legacy/2.2-pipeline` in this checkout. Version 3 is a fresh implementation rather than a continuation of the incomplete pipeline rebuild.
 

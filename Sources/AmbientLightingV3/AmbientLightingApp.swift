@@ -251,7 +251,7 @@ private struct MainWindow: View {
                 Picker("Anschluss", selection: configBinding(\.portPath)) {
                     Text("Anschluss wählen").tag(Optional<String>.none)
                     ForEach(model.serial.ports) { port in
-                        Text("\(port.name) · \(port.id)").tag(Optional(port.id))
+                        Text("\(port.name) · \(port.detail) · \(port.id)").tag(Optional(port.id))
                     }
                 }
                 HStack {
@@ -269,6 +269,8 @@ private struct MainWindow: View {
                 Label(model.serial.status,
                       systemImage: model.serial.isConnected ? "checkmark.circle.fill" : "circle.dashed")
                     .foregroundStyle(model.serial.isConnected ? .green : .secondary)
+                Text("Es erscheinen nur USB-Seriell-Anschlüsse. Bluetooth- und Systemports werden ausgeblendet. Die USB-Kennung bestätigt noch kein bestimmtes Board; Verbinden erfolgt nur nach deiner Auswahl.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             SurfaceCard {
                 Label("Controller-Einstellungen", systemImage: "cpu")

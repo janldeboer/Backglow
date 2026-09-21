@@ -5,12 +5,19 @@ import ORSSerial
 struct SerialPortChoice: Identifiable, Hashable {
     let id: String
     let name: String
+    let vendorID: Int
+    let productID: Int
+    let serialNumber: String?
+
+    var detail: String {
+        String(format: "%04X:%04X", vendorID, productID)
+    }
 }
 
 final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
     @Published private(set) var ports: [SerialPortChoice] = []
     @Published private(set) var isConnected = false
-    @Published private(set) var status = "No device connected"
+    @Published private(set) var status = "Kein Gerät verbunden"
 
     private let queue = DispatchQueue(label: "lighting.serial.output", qos: .userInitiated)
     private let pendingLock = NSLock()
@@ -24,19 +31,27 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
     }
 
     func refreshPorts() {
-        ports = ORSSerialPortManager.shared().availablePorts.map {
-            SerialPortChoice(id: $0.path, name: $0.name)
-        }
+        ports = USBSerialPortDiscovery.available()
     }
 
     func connect(path: String?, baudRate: Int) {
-        guard let path,
-              let selected = ORSSerialPortManager.shared().availablePorts.first(where: { $0.path == path }) else {
-            status = "Select a serial port first"
+        guard let path, let listed = ports.first(where: { $0.id == path }) else {
+            status = "USB-Controller auswählen oder Anschlüsse aktualisieren"
             return
         }
-        status = "Connecting…"
+        status = "Verbinde…"
         queue.async {
+            guard USBSerialPortDiscovery.available().contains(where: {
+                $0.id == listed.id && $0.vendorID == listed.vendorID &&
+                $0.productID == listed.productID && $0.serialNumber == listed.serialNumber
+            }), let selected = ORSSerialPortManager.shared().availablePorts.first(where: {
+                $0.path == path
+            }) else {
+                DispatchQueue.main.async {
+                    self.status = "Anschluss verändert – bitte erneut auswählen"
+                }
+                return
+            }
             self.port?.close()
             self.port?.delegate = nil
             self.port = selected
@@ -53,7 +68,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             self.port = nil
             DispatchQueue.main.async {
                 self.isConnected = false
-                self.status = "No device connected"
+                self.status = "Kein Gerät verbunden"
             }
         }
     }
@@ -78,7 +93,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             guard let frame else { return }
             guard let port, port.isOpen else { continue }
             if !port.send(frame) {
-                DispatchQueue.main.async { self.status = "Serial write failed" }
+                DispatchQueue.main.async { self.status = "Serielles Schreiben fehlgeschlagen" }
             }
         }
     }
@@ -90,7 +105,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             }
             DispatchQueue.main.async {
                 self.isConnected = false
-                self.status = "Device disconnected"
+                self.status = "Gerät getrennt"
                 self.refreshPorts()
             }
         }
@@ -98,12 +113,12 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
 
     func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         isConnected = true
-        status = "Connected to \(serialPort.name)"
+        status = "Verbunden mit \(serialPort.name)"
     }
 
     func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         isConnected = false
-        status = "Port closed"
+        status = "Anschluss geschlossen"
     }
 
     func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: Error) {
