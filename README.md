@@ -1,19 +1,56 @@
+# Ambient Lighting 3 for macOS
 
-# macOS Ambient Lighting
- 
-This project lets you create your own Ambient Lighting (just like Ambilight) for your Mac, using an Arduino microcontroller (e.g. Arduino, ESP8266) and LED-Strips supported by FastLED (e.g. WS2812B)
+Version 3 is a native SwiftUI redesign of the earlier Ambilight for Mac experiments. It uses a sidebar and macOS Liquid Glass surfaces, while keeping the working LED controller protocol and perimeter layout from the older builds. The app is named **Ambient Lighting** to avoid using *Ambilight* as a product name.
 
-I have searched a lot for solutions like this, but I couldn't find any for macOS that weren't outdated. I think there are plenty of alternatives for Windows.
+## Requirements
 
-# Setup
+- macOS 26 or later, Xcode 26 or later, and an Apple Metal-capable Mac.
+- Screen Recording permission for live capture.
+- Optional serial LED controller running the included FastLED sketch.
 
-The setup can be done using the GUI:
-1. Setup the Image Source: So far only ScreenCapture is supported, you can select witch display should be used. HDMI Grabber Support to be added soon).
-<img src="https://user-images.githubusercontent.com/44832123/132138923-82100a41-2b08-441d-83d1-391c2ec36093.png" alt="drawing" width="300"/>
-2. Setup the Splitter: So far only Grid Splitter is supported. More customizble variations to be added soon.
-<img src="https://user-images.githubusercontent.com/44832123/132138924-b7a62fb6-6a5c-47f7-9fd5-aa2bc2ffa6bf.png" alt="drawing" width="300"/>
-3. Setup Color Correction:
-<img src="https://user-images.githubusercontent.com/44832123/132138806-f5b8beca-3f5b-409c-b571-03a0999c7f26.png" alt="drawing" width="300"/>
-Linear Correction and Saturation can freely be combined.
-4. Setup the Light Output: So far only Serial Output is supoorted. Port and Baud Rate can be selected an the port needs to be opened in order to start the communication. Controlling devices via URL-Request to be added soon.
-<img src="https://user-images.githubusercontent.com/44832123/132138800-97830f5e-4078-4697-b3c4-60ade24d16be.png" alt="drawing" width="300"/>
+## Build and run
+
+```sh
+./scripts/build-app.sh
+open dist/AmbientLightingV3.app
+```
+
+The script creates an ad hoc signed native app in `dist/`. Open `Package.swift` in Xcode to work on the source. To run the pure core tests:
+
+```sh
+swift test --disable-sandbox
+```
+
+On the first capture, macOS may request Screen Recording access. Grant it in **System Settings → Privacy & Security → Screen Recording**, then restart the app if prompted.
+
+## How it works
+
+1. ScreenCaptureKit captures one display, excluding this app's windows. The capture resolution and target frame rate are adjustable.
+2. The perimeter mapper selects LED zones using rows, columns, start offset, LED count, and direction. Optional black-bar detection adjusts the content bounds.
+3. A Metal compute shader averages the pixels in each zone on the GPU. If Metal setup or a dispatch fails, a full-pixel CPU reference path is used. Only one frame is in flight at a time.
+4. Saturation, gamma, channel gains, brightness, and smoothing are applied to the small LED-color array.
+5. The preview shows the captured image, numbered zones, their calculated colors, and a strip in serial output order.
+6. ORSSerialPort writes the newest available frame on a dedicated queue. Older unsent frames are replaced instead of growing a backlog.
+
+Settings are saved in `~/Library/Application Support/AmbientLightingV3/settings.json`.
+
+## LED controller
+
+`Firmware/SerialLEDcontroller/SerialLEDcontroller.ino` is the original FastLED sketch, preserved for compatibility. Its defaults are **70 WS2812B LEDs**, **pin 2**, **GRB**, and **230400 baud**. Configure the number of physical LEDs and the matching baud rate in the app. Each frame uses the existing `led` + one-byte index + RGB bytes per LED, ending with `les` to display the frame. Changing these firmware defaults requires matching changes in the app's device settings.
+
+The serial library is ORSSerialPort **2.1.0**, the latest upstream release checked for this rebuild. It is vendored at `Vendor/ORSSerialPort` so builds do not depend on GitHub access. Its MIT license is in that directory. The app's own license is GPL-3.0, as in the original repository.
+
+## Code map
+
+- `Sources/AmbientLightingCore`: device-independent configuration, perimeter mapping, pixel analysis, color correction, and serial packet encoding.
+- `Sources/AmbientLightingV3/ScreenCaptureEngine.swift`: ScreenCaptureKit lifecycle and frame delivery.
+- `Sources/AmbientLightingV3/GPUZoneReducer.swift` and `Shaders/ZoneAverage.metal`: GPU zone averaging.
+- `Sources/AmbientLightingV3/LightingModel.swift`: app state, settings, frame processing, and output coordination.
+- `Sources/AmbientLightingV3/AmbientLightingApp.swift`: native sidebar and preview UI.
+- `Sources/AmbientLightingV3/SerialDevice.swift`: ORSSerialPort adapter.
+
+The previous history remains in Git. The complete older implementation is on `origin/main`; the later architecture experiments are available as `legacy/v2`, `origin/2.1`, `legacy/serial-fix`, and `legacy/2.2-pipeline` in this checkout. Version 3 is a fresh implementation rather than a continuation of the incomplete pipeline rebuild.
+
+## Verification scope
+
+The core tests cover LED order and offset, BGRA pixel averaging, color calibration, black-bar fallback, and the original controller packet. `swift scripts/check-metal.swift Sources/AmbientLightingV3/Shaders/ZoneAverage.metal` runs a real Metal dispatch with a known 2×2 test image. A successful build verifies the SwiftUI, ScreenCaptureKit, Metal, and ORSSerialPort integrations at compile time. Live capture permissions and a physical controller require testing with the appropriate hardware and permissions.
