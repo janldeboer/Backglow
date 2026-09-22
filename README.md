@@ -6,7 +6,7 @@ Version 3 is a native SwiftUI redesign of the earlier Ambilight for Mac experime
 
 - macOS 26 or later, Xcode 26 or later, and an Apple Metal-capable Mac.
 - Screen Recording permission for live capture.
-- Optional serial LED controller running the included FastLED sketch.
+- Optional serial LED controller running the included legacy sketch or ESP32/ESP8266 v3 firmware.
 
 ## Build and run
 
@@ -35,6 +35,10 @@ On the first capture, macOS may request Screen Recording access. Grant it in **S
 The device menu only lists USB-backed serial callout ports. Virtual Bluetooth and system ports are hidden, and a selected port is checked again before opening. This is a guard against accidental connection, not proof that an arbitrary USB serial adapter is a microcontroller. No port is opened automatically.
 
 Settings are saved in `~/Library/Application Support/AmbientLightingV3/settings.json`.
+With v3 firmware, the app loads the controller's LED layout and color calibration
+after an explicit connection. Edits stay local until **Aktuelle Einrichtung
+speichern** writes and reads back the profile. Mac display selection and capture
+settings remain local.
 
 ## LED controller
 
@@ -42,11 +46,16 @@ Settings are saved in `~/Library/Application Support/AmbientLightingV3/settings.
 
 The serial library is ORSSerialPort **2.1.0**, the latest upstream release checked for this rebuild. It is vendored at `Vendor/ORSSerialPort` so builds do not depend on GitHub access. Its MIT license is in that directory. The app's own license is GPL-3.0, as in the original repository.
 
-The proposed ESP32/ESP8266 firmware, controller-stored profiles, and guarded in-app flashing workflow are specified in [Controller-Onboarding.md](docs/Controller-Onboarding.md). The current legacy firmware does not yet identify itself or store settings, and the app does not flash devices.
+The new ESP32/ESP8266 firmware is in [Firmware/AmbientController](Firmware/AmbientController/README.md).
+It stores a versioned profile in ESP32 NVS or ESP8266 LittleFS and continues to
+accept the `led`/`les` color stream. The legacy sketch does not store profiles.
+Build and board setup are described in the firmware README. Guarded in-app
+flashing and automatic monitor-to-controller pairing remain planned in
+[Controller-Onboarding.md](docs/Controller-Onboarding.md); the app does not flash devices.
 
 ## Code map
 
-- `Sources/AmbientLightingCore`: device-independent configuration, perimeter mapping, pixel analysis, color correction, and serial packet encoding.
+- `Sources/AmbientLightingCore`: device-independent configuration, perimeter mapping, pixel analysis, color correction, and serial packet/profile encoding.
 - `Sources/AmbientLightingV3/ScreenCaptureEngine.swift`: ScreenCaptureKit lifecycle and frame delivery.
 - `Sources/AmbientLightingV3/GPUZoneReducer.swift` and `Shaders/ZoneAverage.metal`: GPU zone averaging.
 - `Sources/AmbientLightingV3/LightingModel.swift`: app state, settings, frame processing, and output coordination.
@@ -58,4 +67,9 @@ The previous history remains in Git. The complete older implementation is on `or
 
 ## Verification scope
 
-The core tests cover LED order and offset, BGRA pixel averaging, color calibration, black-bar fallback, and the original controller packet. `swift scripts/check-metal.swift Sources/AmbientLightingV3/Shaders/ZoneAverage.metal` runs a real Metal dispatch with a known 2×2 test image. A successful build verifies the SwiftUI, ScreenCaptureKit, Metal, and ORSSerialPort integrations at compile time. Live capture permissions and a physical controller require testing with the appropriate hardware and permissions.
+The core tests cover LED order and offset, BGRA pixel averaging, color calibration,
+black-bar fallback, the legacy packet, and the new profile protocol. A native
+C++ harness checks the firmware's protocol and persistence logic. Both PlatformIO
+firmware environments build. `swift scripts/check-metal.swift Sources/AmbientLightingV3/Shaders/ZoneAverage.metal`
+runs a real Metal dispatch with a known 2×2 test image. Live capture permissions,
+serial transfer and persistent storage still require testing with real hardware.

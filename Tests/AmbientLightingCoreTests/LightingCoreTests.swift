@@ -80,4 +80,62 @@ final class LightingCoreTests: XCTestCase {
         }
         XCTAssertEqual(rect, PixelRect(x: 0, y: 0, width: 100, height: 80))
     }
+
+    func testControllerProfileRoundTripKeepsComputerSettingsLocal() {
+        var local = LightingConfiguration()
+        local.displayID = 1234
+        local.portPath = "/dev/cu.usbserial-test"
+        local.framesPerSecond = 45
+        local.captureScale = 0.75
+        local.calibration.redGain = 1.42
+        let profile = ControllerProfile(configuration: local)
+        let bytes = try! XCTUnwrap(profile.encoded())
+        XCTAssertEqual(bytes.count, 24)
+        XCTAssertEqual(Array(bytes.prefix(10)), [1, 70, 0, 59, 0, 12, 21, 43, 0, 1])
+        let decoded = try! XCTUnwrap(ControllerProfile.decode(bytes))
+        var otherComputer = LightingConfiguration()
+        otherComputer.displayID = 5678
+        otherComputer.portPath = "/dev/cu.usbmodem-other"
+        otherComputer.framesPerSecond = 20
+        let applied = decoded.applying(to: otherComputer)
+        XCTAssertEqual(applied.displayID, 5678)
+        XCTAssertEqual(applied.portPath, "/dev/cu.usbmodem-other")
+        XCTAssertEqual(applied.framesPerSecond, 20)
+        XCTAssertEqual(applied.calibration.redGain, 1.42)
+        XCTAssertEqual(applied.rows, 12)
+    }
+
+    func testControllerFrameFragmentationAndCorruptionRecovery() {
+        XCTAssertEqual(Array(ControllerFrame(.hello).encoded() ?? Data()),
+                       [65, 76, 51, 33, 1, 0, 62, 46])
+        let profile = ControllerProfile(configuration: LightingConfiguration())
+        let payload = try! XCTUnwrap(ControllerFrame.profilePayload(revision: 42, profile: profile))
+        let frame = try! XCTUnwrap(ControllerFrame(.profile, payload: payload).encoded())
+        var parser = ControllerFrameParser()
+        XCTAssertTrue(parser.append(Data([0x99, 0x41, 0x4c])).isEmpty)
+        XCTAssertTrue(parser.append(frame.prefix(3)).isEmpty)
+        XCTAssertTrue(parser.append(frame.dropFirst(3).prefix(7)).isEmpty)
+        let received = parser.append(frame.dropFirst(10))
+        XCTAssertEqual(received.count, 1)
+        let parsed = try! XCTUnwrap(ControllerFrame.parseProfilePayload(received[0].payload))
+        XCTAssertEqual(parsed.0, 42)
+        XCTAssertEqual(parsed.1, profile)
+
+        var damaged = Array(frame)
+        damaged[10] ^= 0x80
+        XCTAssertEqual(parser.append(Data(damaged) + frame), [ControllerFrame(.profile, payload: payload)])
+    }
+
+    func testControllerRejectsInvalidProfiles() {
+        var bytes = try! XCTUnwrap(ControllerProfile(configuration: LightingConfiguration()).encoded())
+        bytes[0] = 2
+        XCTAssertNil(ControllerProfile.decode(bytes))
+        bytes[0] = 1
+        bytes[1] = 0
+        bytes[2] = 0
+        XCTAssertNil(ControllerProfile.decode(bytes))
+        bytes[1] = 70
+        bytes[9] = 4
+        XCTAssertNil(ControllerProfile.decode(bytes))
+    }
 }

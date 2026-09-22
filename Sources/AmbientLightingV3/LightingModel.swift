@@ -46,7 +46,19 @@ final class LightingModel: ObservableObject {
                 self?.captureStatus = message
             }
         }
+        serial.onProfileLoaded = { [weak self] profile in
+            self?.change { $0 = profile.applying(to: $0) }
+        }
         Task { await refreshDisplays() }
+    }
+
+    var profileHasLocalChanges: Bool {
+        guard let stored = serial.storedProfile else { return true }
+        return stored.encoded() != ControllerProfile(configuration: configuration).encoded()
+    }
+
+    func saveControllerProfile() {
+        serial.saveProfile(ControllerProfile(configuration: configuration))
     }
 
     func refreshDisplays() async {

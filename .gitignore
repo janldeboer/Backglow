@@ -1,5 +1,6 @@
 .build/
 .swiftpm/
 dist/
+Firmware/AmbientController/.pio/
 .DS_Store
 *.xcuserstate

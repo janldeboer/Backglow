@@ -7,7 +7,7 @@ struct AmbientLightingV3App: App {
 
     var body: some Scene {
         WindowGroup {
-            MainWindow(model: model)
+            MainWindow(model: model, serial: model.serial)
                 .frame(minWidth: 980, minHeight: 650)
         }
         .defaultSize(width: 1160, height: 760)
@@ -40,7 +40,9 @@ private enum Page: String, CaseIterable, Identifiable {
 
 private struct MainWindow: View {
     @ObservedObject var model: LightingModel
+    @ObservedObject var serial: SerialDevice
     @State private var selection: Page? = .dashboard
+    @State private var showsStorageInitializationConfirmation = false
 
     var body: some View {
         NavigationSplitView {
@@ -250,25 +252,25 @@ private struct MainWindow: View {
                     .font(.headline)
                 Picker("Anschluss", selection: configBinding(\.portPath)) {
                     Text("Anschluss wählen").tag(Optional<String>.none)
-                    ForEach(model.serial.ports) { port in
+                    ForEach(serial.ports) { port in
                         Text("\(port.name) · \(port.detail) · \(port.id)").tag(Optional(port.id))
                     }
                 }
                 HStack {
-                    Button("Anschlüsse aktualisieren") { model.serial.refreshPorts() }
-                    Button(model.serial.isConnected ? "Trennen" : "Verbinden") {
-                        if model.serial.isConnected { model.serial.disconnect() }
+                    Button("Anschlüsse aktualisieren") { serial.refreshPorts() }
+                    Button(serial.isConnected ? "Trennen" : "Verbinden") {
+                        if serial.isConnected { serial.disconnect() }
                         else {
-                            model.serial.connect(path: model.configuration.portPath,
+                            serial.connect(path: model.configuration.portPath,
                                                  baudRate: model.configuration.baudRate)
                         }
                     }
                     .buttonStyle(.borderedProminent)
                     Spacer()
                 }
-                Label(model.serial.status,
-                      systemImage: model.serial.isConnected ? "checkmark.circle.fill" : "circle.dashed")
-                    .foregroundStyle(model.serial.isConnected ? .green : .secondary)
+                Label(serial.status,
+                      systemImage: serial.isConnected ? "checkmark.circle.fill" : "circle.dashed")
+                    .foregroundStyle(serial.isConnected ? .green : .secondary)
                 Text("Es erscheinen nur USB-Seriell-Anschlüsse. Bluetooth- und Systemports werden ausgeblendet. Die USB-Kennung bestätigt noch kein bestimmtes Board; Verbinden erfolgt nur nach deiner Auswahl.")
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -287,6 +289,43 @@ private struct MainWindow: View {
                 Text("Kompatibel mit dem vorhandenen led/les-Protokoll. Beim Stoppen werden die LEDs ausgeschaltet.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            SurfaceCard {
+                Label("Profil auf dem Controller", systemImage: "externaldrive")
+                    .font(.headline)
+                if let id = serial.controllerID {
+                    LabeledContent("Gerätekennung", value: id)
+                }
+                Text(serial.profileStatus)
+                    .foregroundStyle(.secondary)
+                HStack {
+                    Button("Profil erneut laden") { serial.reloadProfile() }
+                        .disabled(!serial.supportsProfiles || serial.isSavingProfile)
+                    Button("Aktuelle Einrichtung speichern") { model.saveControllerProfile() }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!serial.supportsProfiles || !serial.profileReady ||
+                                  serial.isSavingProfile ||
+                                  !model.profileHasLocalChanges)
+                }
+                if serial.canInitializeStorage {
+                    Button("Controller-Speicher einrichten") {
+                        showsStorageInitializationConfirmation = true
+                    }
+                    .confirmationDialog("Controller-Speicher einrichten?",
+                                        isPresented: $showsStorageInitializationConfirmation,
+                                        titleVisibility: .visible) {
+                        Button("Dateisystem formatieren", role: .destructive) {
+                            serial.initializeStorage()
+                        }
+                        Button("Abbrechen", role: .cancel) {}
+                    } message: {
+                        Text("Der Dateisystembereich des verbundenen ESP8266 wird formatiert. Vorhandene Dateien gehen verloren.")
+                    }
+                    Text("Das Einrichten formatiert den Dateisystembereich des ausdrücklich verbundenen ESP8266. Dort vorhandene Dateien werden gelöscht.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                Text("Beim Verbinden werden gespeicherte LED-Anordnung und Farbwerte automatisch geladen. Änderungen bleiben zunächst lokal. Speichern schreibt sie ausdrücklich auf den Controller und prüft sie durch erneutes Lesen. Bildschirmwahl, Bildrate und serieller Anschluss bleiben auf diesem Mac.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -300,7 +339,7 @@ private struct MainWindow: View {
                 LabeledContent("Analyse pro Bild", value: String(format: "%.2f ms", model.processingMilliseconds))
                 LabeledContent("Berechnung", value: model.usesGPU ? "Metal" : "CPU-Fallback")
                 LabeledContent("Zonen", value: "\(model.zones.count)")
-                LabeledContent("Serielle Verbindung", value: model.serial.status)
+                LabeledContent("Serielle Verbindung", value: serial.status)
             }
             SurfaceCard {
                 Text("Berechtigung für Bildschirmaufnahme")
