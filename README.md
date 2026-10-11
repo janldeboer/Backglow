@@ -25,12 +25,15 @@ On the first capture, macOS may request Screen Recording access. Grant it in **S
 
 ## How it works
 
-1. ScreenCaptureKit captures one display, excluding this app's windows. The capture resolution and target frame rate are adjustable.
-2. The perimeter mapper selects LED zones using rows, columns, start offset, LED count, and direction. Optional black-bar detection adjusts the content bounds.
-3. A Metal compute shader averages the pixels in each zone on the GPU. If Metal setup or a dispatch fails, a full-pixel CPU reference path is used. Only one frame is in flight at a time.
-4. Saturation, gamma, channel gains, brightness, and smoothing are applied to the small LED-color array.
-5. The preview shows the captured image, numbered zones, their calculated colors, and a strip in serial output order.
-6. ORSSerialPort writes the newest available frame on a dedicated queue. Older unsent frames are replaced instead of growing a backlog.
+1. ScreenCaptureKit captures one display in sRGB, excluding this app's windows. The capture resolution and target frame rate are adjustable.
+2. The perimeter mapper selects LED zones using rows, columns, start offset, LED count, and direction. Optional black-bar detection adjusts the content bounds; a stabilizer ignores glitches under 0.25 s, applies a new border after 1 s and keeps it through dark scenes for 10 s.
+3. A Metal compute shader averages the pixels in each zone on the GPU in linear light, through an sRGB texture view. If Metal setup or a dispatch fails, a full-pixel CPU reference path with the same result is used. Only one frame is in flight at a time.
+4. The averages are encoded back to sRGB, then saturation, gamma, channel gains, and brightness are applied to the small LED-color array.
+5. A damped spring in BT.709 YUV smooths the colors on its own output clock, sized to the serial bandwidth and capped at 60 Hz. Its speed does not depend on the capture rate, and a luma rate limit softens hard cuts. An anti-flicker filter then holds 8-bit values against sub-step noise.
+6. The preview shows the captured image, numbered zones, their calculated colors, and a strip in serial output order.
+7. ORSSerialPort writes the newest available frame on a dedicated queue. Older unsent frames are replaced instead of growing a backlog.
+
+Linear-light averaging, the spring smoother, the anti-flicker filter and the temporal black-border logic follow [HyperHDR](https://github.com/awawa-dev/HyperHDR) (MIT, awawa-dev). They are reimplemented in Swift here.
 
 The device menu only lists USB-backed serial callout ports. Virtual Bluetooth and system ports are hidden, and a selected port is checked again before opening. This is a guard against accidental connection, not proof that an arbitrary USB serial adapter is a microcontroller. No port is opened automatically.
 
@@ -67,9 +70,10 @@ The previous history remains in Git. The complete older implementation is on `or
 
 ## Verification scope
 
-The core tests cover LED order and offset, BGRA pixel averaging, color calibration,
-black-bar fallback, the legacy packet, and the new profile protocol. A native
+The core tests cover LED order and offset, linear-light BGRA averaging, color calibration,
+spring smoothing, anti-flicker, black-bar detection and stabilization, output rate,
+the legacy packet, and the new profile protocol. A native
 C++ harness checks the firmware's protocol and persistence logic. Both PlatformIO
 firmware environments build. `swift scripts/check-metal.swift Sources/AmbientLightingV3/Shaders/ZoneAverage.metal`
-runs a real Metal dispatch with a known 2×2 test image. Live capture permissions,
+runs a real Metal dispatch with a known 2×2 test image and checks the sRGB-to-linear averaging. Live capture permissions,
 serial transfer and persistent storage still require testing with real hardware.
