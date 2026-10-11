@@ -40,10 +40,23 @@ public enum PixelAnalysis {
         width: Int,
         height: Int
     ) -> PixelRect {
+        detectContent(bytes: bytes, bytesPerRow: bytesPerRow, width: width, height: height)
+            ?? PixelRect(x: 0, y: 0, width: width, height: height)
+    }
+
+    /// Letterbox detection for one frame. Returns nil when the frame gives no reliable
+    /// answer, such as a dark scene or an implausibly small content area, so that
+    /// `BlackBorderStabilizer` can keep the previous border instead of jumping.
+    public static func detectContent(
+        bytes: UnsafeRawBufferPointer,
+        bytesPerRow: Int,
+        width: Int,
+        height: Int
+    ) -> PixelRect? {
         guard let base = bytes.baseAddress?.assumingMemoryBound(to: UInt8.self),
               width > 20, height > 20, bytes.count >= bytesPerRow * height,
               bytesPerRow >= width * 4 else {
-            return PixelRect(x: 0, y: 0, width: width, height: height)
+            return nil
         }
         func isBright(_ x: Int, _ y: Int) -> Bool {
             let offset = y * bytesPerRow + x * 4
@@ -55,9 +68,7 @@ public enum PixelAnalysis {
         func columnHasContent(_ x: Int) -> Bool {
             (1...9).contains { isBright(x, $0 * height / 10) }
         }
-        guard rowHasContent(height / 2) || columnHasContent(width / 2) else {
-            return PixelRect(x: 0, y: 0, width: width, height: height)
-        }
+        guard rowHasContent(height / 2) || columnHasContent(width / 2) else { return nil }
         let rowStep = max(1, height / 200)
         let columnStep = max(1, width / 200)
         let maxTop = height / 5
@@ -69,9 +80,7 @@ public enum PixelAnalysis {
             .first(where: columnHasContent) ?? 0
         let right = stride(from: width - 1, through: width - 1 - maxSide, by: -columnStep)
             .first(where: columnHasContent) ?? (width - 1)
-        guard bottom - top >= height * 3 / 5, right - left >= width * 3 / 5 else {
-            return PixelRect(x: 0, y: 0, width: width, height: height)
-        }
+        guard bottom - top >= height * 3 / 5, right - left >= width * 3 / 5 else { return nil }
         return PixelRect(x: left, y: top, width: right - left + 1, height: bottom - top + 1)
     }
 }

@@ -133,6 +133,48 @@ final class LightingCoreTests: XCTestCase {
         XCTAssertEqual(rect, PixelRect(x: 0, y: 0, width: 100, height: 80))
     }
 
+    func testBlackBarDetectorFindsLetterboxAndReportsDarkFramesAsUnknown() {
+        var bytes = [UInt8](repeating: 0, count: 100 * 80 * 4)
+        for y in 10..<70 {
+            for x in 0..<100 { bytes[(y * 100 + x) * 4] = 200 }
+        }
+        let detected = bytes.withUnsafeBytes {
+            PixelAnalysis.detectContent(bytes: $0, bytesPerRow: 400, width: 100, height: 80)
+        }
+        XCTAssertEqual(detected, PixelRect(x: 0, y: 10, width: 100, height: 60))
+        let dark = [UInt8](repeating: 0, count: 100 * 80 * 4)
+        XCTAssertNil(dark.withUnsafeBytes {
+            PixelAnalysis.detectContent(bytes: $0, bytesPerRow: 400, width: 100, height: 80)
+        })
+    }
+
+    func testBlackBorderStabilizerIgnoresGlitchesAndHoldsThroughDarkScenes() {
+        let letterbox = PixelRect(x: 0, y: 100, width: 1000, height: 400)
+        let subtitle = PixelRect(x: 0, y: 100, width: 1000, height: 460)
+        var stabilizer = BlackBorderStabilizer()
+        XCTAssertEqual(stabilizer.update(letterbox, at: 0), letterbox)
+        // A brief subtitle in the bar is ignored.
+        XCTAssertEqual(stabilizer.update(subtitle, at: 0.1), letterbox)
+        XCTAssertEqual(stabilizer.update(letterbox, at: 0.2), letterbox)
+        // A steady new border needs the confirmation time after the glitch window.
+        var time = 0.3
+        while time < 1.4 {
+            XCTAssertEqual(stabilizer.update(subtitle, at: time), letterbox)
+            time += 0.1
+        }
+        XCTAssertEqual(stabilizer.update(subtitle, at: 1.6), subtitle)
+        // Dark frames keep the border until they last for the unknown duration.
+        time = 2
+        while time < 12 {
+            XCTAssertEqual(stabilizer.update(nil, at: time), subtitle)
+            time += 0.1
+        }
+        XCTAssertNil(stabilizer.update(nil, at: 12.4))
+        // From the full image, a detected border applies once it outlasts a glitch.
+        XCTAssertNil(stabilizer.update(letterbox, at: 12.5))
+        XCTAssertEqual(stabilizer.update(letterbox, at: 12.8), letterbox)
+    }
+
     func testControllerProfileRoundTripKeepsComputerSettingsLocal() {
         var local = LightingConfiguration()
         local.displayID = 1234

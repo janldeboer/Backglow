@@ -38,6 +38,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private var frameNumber = 0
     private var lastPreviewTime = 0.0
     private var contentBounds: PixelRect?
+    private var borderStabilizer = BlackBorderStabilizer()
 
     static func availableDisplays() async throws -> [DisplayChoice] {
         let content = try await SCShareableContent.current
@@ -55,6 +56,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         sampleQueue.async {
             self.configuration = settings
             self.contentBounds = nil
+            self.borderStabilizer.reset()
         }
     }
 
@@ -88,6 +90,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         sampleQueue.sync {
             configuration = settings
             contentBounds = nil
+            borderStabilizer.reset()
             frameNumber = 0
             inFlight = false
             isActive = true
@@ -127,13 +130,18 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
         let settings = configuration
-        if settings.ignoreBlackBars && (frameNumber == 1 || frameNumber % 15 == 0) {
+        // Detect about ten times per second; the stabilizer decides when a border applies.
+        let detectionInterval = max(1, settings.framesPerSecond / 10)
+        if settings.ignoreBlackBars && (frameNumber == 1 || frameNumber % detectionInterval == 0) {
             CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
             if let base = CVPixelBufferGetBaseAddress(pixelBuffer) {
                 let stride = CVPixelBufferGetBytesPerRow(pixelBuffer)
-                contentBounds = PixelAnalysis.contentBounds(
+                let detected = PixelAnalysis.detectContent(
                     bytes: UnsafeRawBufferPointer(start: base, count: stride * height),
                     bytesPerRow: stride, width: width, height: height
+                )
+                contentBounds = borderStabilizer.update(
+                    detected, at: ProcessInfo.processInfo.systemUptime
                 )
             }
             CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
