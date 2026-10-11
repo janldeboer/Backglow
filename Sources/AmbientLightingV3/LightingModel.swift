@@ -146,7 +146,7 @@ final class LightingModel: ObservableObject {
     private func receive(_ frame: ProcessedFrame) {
         guard desiredCapture else { return }
         let corrected = frame.colors.map {
-            ColorProcessing.corrected($0, with: configuration.calibration)
+            ColorProcessing.corrected($0.srgbEncoded, with: configuration.calibration)
         }
         colors = smoother.apply(corrected, amount: configuration.calibration.smoothing)
         zones = frame.zones

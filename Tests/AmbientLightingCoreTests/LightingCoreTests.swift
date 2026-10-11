@@ -51,6 +51,19 @@ final class LightingCoreTests: XCTestCase {
         XCTAssertEqual(result.blue, 0.5, accuracy: 0.001)
     }
 
+    func testAverageMixesLightNotCodeValues() {
+        let bytes: [UInt8] = [0, 0, 0, 255, 255, 255, 255, 255]
+        let result = bytes.withUnsafeBytes {
+            PixelAnalysis.average(
+                bytes: $0, bytesPerRow: 8, imageWidth: 2, imageHeight: 1,
+                rect: PixelRect(x: 0, y: 0, width: 2, height: 1)
+            )
+        }
+        XCTAssertEqual(result.red, 0.5, accuracy: 0.001)
+        XCTAssertEqual(result.srgbEncoded.red, 0.735, accuracy: 0.001)
+        XCTAssertEqual(SRGB.toNonlinear(SRGB.toLinear(0.3)), 0.3, accuracy: 0.0001)
+    }
+
     func testCalibrationAndSmoothing() {
         var calibration = ColorCalibration()
         calibration.saturation = 0

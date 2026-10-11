@@ -16,6 +16,7 @@ struct DisplayChoice: Identifiable, Hashable {
 struct ProcessedFrame {
     let image: CGImage?
     let zones: [LightingZone]
+    /// Zone averages in linear light.
     let colors: [LightingRGB]
     let imageWidth: Int
     let imageHeight: Int
@@ -76,6 +77,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         streamSettings.width = max(64, Int(Double(display.width) * settings.captureScale))
         streamSettings.height = max(64, Int(Double(display.height) * settings.captureScale))
         streamSettings.pixelFormat = kCVPixelFormatType_32BGRA
+        streamSettings.colorSpaceName = CGColorSpace.sRGB
         streamSettings.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(settings.framesPerSecond))
         streamSettings.queueDepth = 3
         streamSettings.showsCursor = false

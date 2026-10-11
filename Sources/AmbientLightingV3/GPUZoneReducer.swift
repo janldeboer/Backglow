@@ -33,10 +33,11 @@ final class GPUZoneReducer {
         guard !zones.isEmpty, let textureCache else { return false }
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
+        // The sRGB view makes the GPU linearize every sample, so zones average light, not code values.
         var textureReference: CVMetalTexture?
         let status = CVMetalTextureCacheCreateTextureFromImage(
             kCFAllocatorDefault, textureCache, pixelBuffer, nil,
-            .bgra8Unorm, width, height, 0, &textureReference
+            .bgra8Unorm_srgb, width, height, 0, &textureReference
         )
         guard status == kCVReturnSuccess,
               let textureReference,

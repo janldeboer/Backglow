@@ -10,13 +10,15 @@ let source = try String(contentsOf: shaderURL, encoding: .utf8)
 let library = try device.makeLibrary(source: source, options: nil)
 let pipeline = try device.makeComputePipelineState(function: library.makeFunction(name: "zoneAverage")!)
 let textureDescription = MTLTextureDescriptor.texture2DDescriptor(
-    pixelFormat: .bgra8Unorm, width: 2, height: 2, mipmapped: false
+    pixelFormat: .bgra8Unorm_srgb, width: 2, height: 2, mipmapped: false
 )
 textureDescription.usage = .shaderRead
 let texture = device.makeTexture(descriptor: textureDescription)!
+// Red, black and two sRGB mid-grays. Linear averaging gives red 0.358 and green 0.108;
+// averaging the 8-bit codes would give 0.5 and 0.25 instead.
 let pixels: [UInt8] = [
-    0, 0, 255, 255, 0, 0, 255, 255,
-    0, 255, 0, 255, 0, 255, 0, 255
+    0, 0, 255, 255, 0, 0, 0, 255,
+    128, 128, 128, 255, 128, 128, 128, 255
 ]
 pixels.withUnsafeBytes {
     texture.replace(region: MTLRegionMake2D(0, 0, 2, 2), mipmapLevel: 0,
@@ -38,7 +40,7 @@ command.commit()
 command.waitUntilCompleted()
 guard command.status == .completed else { fatalError("Metal dispatch failed: \(String(describing: command.error))") }
 let color = output.contents().load(as: SIMD4<Float>.self)
-guard abs(color.x - 0.5) < 0.01, abs(color.y - 0.5) < 0.01, color.z < 0.01 else {
+guard abs(color.x - 0.358) < 0.01, abs(color.y - 0.108) < 0.01, abs(color.z - 0.108) < 0.01 else {
     fatalError("Unexpected zone average: \(color)")
 }
 print("Metal zone average passed: \(color)")

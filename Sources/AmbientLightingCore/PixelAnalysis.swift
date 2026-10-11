@@ -1,7 +1,8 @@
 import Foundation
 
 public enum PixelAnalysis {
-    /// BGRA8 pixels in top-left origin. Uses every pixel for the CPU reference path.
+    /// BGRA8 sRGB pixels in top-left origin. Uses every pixel for the CPU reference path
+    /// and returns the average in linear light, matching the GPU's sRGB texture reads.
     public static func average(
         bytes: UnsafeRawBufferPointer,
         bytesPerRow: Int,
@@ -15,24 +16,21 @@ public enum PixelAnalysis {
               rect.x + rect.width <= imageWidth,
               rect.y + rect.height <= imageHeight,
               bytes.count >= bytesPerRow * imageHeight else { return .black }
-        var red: UInt64 = 0
-        var green: UInt64 = 0
-        var blue: UInt64 = 0
+        let linear = SRGB.linearTable
+        var red = 0.0
+        var green = 0.0
+        var blue = 0.0
         for y in rect.y..<(rect.y + rect.height) {
             let row = base.advanced(by: y * bytesPerRow)
             for x in rect.x..<(rect.x + rect.width) {
                 let pixel = row.advanced(by: x * 4)
-                blue += UInt64(pixel[0])
-                green += UInt64(pixel[1])
-                red += UInt64(pixel[2])
+                blue += linear[Int(pixel[0])]
+                green += linear[Int(pixel[1])]
+                red += linear[Int(pixel[2])]
             }
         }
-        let denominator = Double(rect.width * rect.height) * 255
-        return LightingRGB(
-            red: Double(red) / denominator,
-            green: Double(green) / denominator,
-            blue: Double(blue) / denominator
-        )
+        let count = Double(rect.width * rect.height)
+        return LightingRGB(red: red / count, green: green / count, blue: blue / count)
     }
 
     /// Conservative letterbox estimate. It keeps the full image for very dark scenes.
