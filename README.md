@@ -28,18 +28,20 @@ On the first capture, macOS may request Screen Recording access. Grant it in **S
 1. ScreenCaptureKit captures one display in sRGB, excluding this app's windows. The capture resolution and target frame rate are adjustable.
 2. The perimeter mapper selects LED zones using rows, columns, start offset, LED count, and direction. Optional black-bar detection adjusts the content bounds; a stabilizer ignores glitches under 0.25 s, applies a new border after 1 s and keeps it through dark scenes for 10 s.
 3. A Metal compute shader averages the pixels in each zone on the GPU in linear light, through an sRGB texture view. If Metal setup or a dispatch fails, a full-pixel CPU reference path with the same result is used. Only one frame is in flight at a time.
-4. The averages are encoded back to sRGB, then saturation, gamma, channel gains, and brightness are applied to the small LED-color array.
-5. A damped spring in BT.709 YUV smooths the colors on its own output clock, sized to the serial bandwidth and capped at 60 Hz. Its speed does not depend on the capture rate, and a luma rate limit softens hard cuts. An anti-flicker filter then holds 8-bit values against sub-step noise.
+4. Color temperature and the optional eight-corner LED calibration are applied in linear light. The colors are then encoded back to sRGB, and saturation, gamma, channel gains, brightness and the minimum backlight are applied to the small LED-color array.
+5. A damped spring in BT.709 YUV smooths the colors on its own output clock, sized to the serial bandwidth and capped at 60 Hz. Its speed does not depend on the capture rate, and a luma rate limit softens hard cuts. An optional power limit scales bright frames down evenly, then an anti-flicker filter holds 8-bit values against sub-step noise.
 6. The preview shows the captured image, numbered zones, their calculated colors, and a strip in serial output order.
 7. ORSSerialPort writes the newest available frame on a dedicated queue. Older unsent frames are replaced instead of growing a backlog.
 
-Linear-light averaging, the spring smoother, the anti-flicker filter and the temporal black-border logic follow [HyperHDR](https://github.com/awawa-dev/HyperHDR) (MIT, awawa-dev). They are reimplemented in Swift here.
+Linear-light averaging, the LED calibration, minimum backlight and power limit, the spring smoother, the anti-flicker filter and the temporal black-border logic follow [HyperHDR](https://github.com/awawa-dev/HyperHDR) (MIT, awawa-dev). They are reimplemented in Swift here.
 
 The device menu only lists USB-backed serial callout ports. Virtual Bluetooth and system ports are hidden, and a selected port is checked again before opening. This is a guard against accidental connection, not proof that an arbitrary USB serial adapter is a microcontroller. No port is opened automatically.
 
 Settings are saved in `~/Library/Application Support/AmbientLightingV3/settings.json`.
 With v3 firmware, the app loads the controller's LED layout and color calibration
-after an explicit connection. Edits stay local until **Aktuelle Einrichtung
+after an explicit connection. Temperature, the eight-corner LED calibration, minimum
+backlight and power limit are stored only in the local settings for now, because the
+v1 controller profile has a fixed layout. Edits stay local until **Aktuelle Einrichtung
 speichern** writes and reads back the profile. Mac display selection and capture
 settings remain local.
 
@@ -71,6 +73,7 @@ The previous history remains in Git. The complete older implementation is on `or
 ## Verification scope
 
 The core tests cover LED order and offset, linear-light BGRA averaging, color calibration,
+LED calibration, minimum backlight, power limit, loading older settings,
 spring smoothing, anti-flicker, black-bar detection and stabilization, output rate,
 the legacy packet, and the new profile protocol. A native
 C++ harness checks the firmware's protocol and persistence logic. Both PlatformIO
