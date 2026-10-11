@@ -60,28 +60,3 @@ public enum ColorProcessing {
         ).clamped()
     }
 }
-
-public struct ColorSmoother {
-    private var previous: [LightingRGB] = []
-
-    public init() {}
-
-    public mutating func reset() { previous = [] }
-
-    public mutating func apply(_ colors: [LightingRGB], amount: Double) -> [LightingRGB] {
-        let retention = min(max(amount, 0), 0.95)
-        guard previous.count == colors.count else {
-            previous = colors
-            return colors
-        }
-        let smoothed = zip(previous, colors).map { old, new in
-            LightingRGB(
-                red: old.red * retention + new.red * (1 - retention),
-                green: old.green * retention + new.green * (1 - retention),
-                blue: old.blue * retention + new.blue * (1 - retention)
-            )
-        }
-        previous = smoothed
-        return smoothed
-    }
-}

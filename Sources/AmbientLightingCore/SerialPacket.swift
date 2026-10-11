@@ -16,4 +16,12 @@ public enum SerialPacket {
         data.append(contentsOf: [108, 101, 115])
         return data
     }
+
+    /// LED update rate the `led`/`les` stream can sustain on a serial link, capped at 60 Hz.
+    /// Assumes 10 bits per byte on the wire and leaves 10 % headroom.
+    public static func outputFrequency(ledCount: Int, baudRate: Int) -> Double {
+        let frameBytes = Double(min(max(ledCount, 0), 256) * 7 + 3)
+        let sustainable = Double(baudRate) / 10 * 0.9 / frameBytes
+        return min(max(sustainable, 15), 60)
+    }
 }

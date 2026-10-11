@@ -74,11 +74,50 @@ final class LightingCoreTests: XCTestCase {
         calibration.redGain = 0.5
         let red = ColorProcessing.corrected(LightingRGB(red: 1, green: 0, blue: 0), with: calibration)
         XCTAssertEqual(red.red, 0.5, accuracy: 0.001)
+    }
 
-        var smoother = ColorSmoother()
-        _ = smoother.apply([.black], amount: 0.5)
-        let middle = smoother.apply([LightingRGB(red: 1, green: 1, blue: 1)], amount: 0.5)
-        XCTAssertEqual(middle[0].red, 0.5, accuracy: 0.001)
+    func testSpringSmoothingIsTimeBasedAndLimitsLumaRate() {
+        var smoother = SpringColorSmoother()
+        smoother.configure(smoothing: 0.25)
+        smoother.setTarget([.black])
+        smoother.setTarget([LightingRGB(red: 1, green: 1, blue: 1)])
+        // Same elapsed time at two tick rates must give nearly the same color.
+        var fast = smoother
+        var slow = smoother
+        var fastColor = LightingRGB.black
+        var slowColor = LightingRGB.black
+        for _ in 0..<12 { fastColor = fast.advance(by: 1.0 / 60)[0] }
+        for _ in 0..<6 { slowColor = slow.advance(by: 1.0 / 30)[0] }
+        XCTAssertEqual(fastColor.red, slowColor.red, accuracy: 0.05)
+        // 0.2 s at 1.5 luma per second allows at most 0.3.
+        XCTAssertLessThanOrEqual(fastColor.green, 0.3 + 0.001)
+        XCTAssertGreaterThan(fastColor.green, 0.1)
+        var settled = LightingRGB.black
+        for _ in 0..<240 { settled = fast.advance(by: 1.0 / 60)[0] }
+        XCTAssertTrue(fast.isSettled)
+        XCTAssertEqual(settled, LightingRGB(red: 1, green: 1, blue: 1))
+
+        var off = SpringColorSmoother()
+        off.configure(smoothing: 0)
+        off.setTarget([.black])
+        off.setTarget([LightingRGB(red: 1, green: 0, blue: 0)])
+        XCTAssertEqual(off.advance(by: 0.016)[0].red, 1)
+    }
+
+    func testAntiFlickerHoldsSubStepNoise() {
+        var filter = AntiFlickerFilter()
+        let base = LightingRGB(red: 0.1, green: 0.1, blue: 0.1)
+        _ = filter.apply([base])
+        let noisy = LightingRGB(red: 0.1 + 0.4 / 255, green: 0.1, blue: 0.1)
+        XCTAssertEqual(filter.apply([noisy]), [base])
+        let moved = LightingRGB(red: 0.1 + 0.6 / 255, green: 0.1, blue: 0.1)
+        XCTAssertEqual(filter.apply([moved]), [moved])
+    }
+
+    func testOutputFrequencyFollowsSerialBandwidth() {
+        XCTAssertEqual(SerialPacket.outputFrequency(ledCount: 70, baudRate: 230_400), 42.06, accuracy: 0.01)
+        XCTAssertEqual(SerialPacket.outputFrequency(ledCount: 20, baudRate: 2_000_000), 60)
+        XCTAssertEqual(SerialPacket.outputFrequency(ledCount: 255, baudRate: 9_600), 15)
     }
 
     func testPacketMatchesExistingFirmware() {

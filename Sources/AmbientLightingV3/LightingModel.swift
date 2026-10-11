@@ -19,7 +19,11 @@ final class LightingModel: ObservableObject {
 
     let serial = SerialDevice()
     private let capture = ScreenCaptureEngine()
-    private var smoother = ColorSmoother()
+    private var smoother = SpringColorSmoother()
+    private var antiFlicker = AntiFlickerFilter()
+    private var outputTask: Task<Void, Never>?
+    private var lastOutputTime: TimeInterval?
+    private var hasPendingOutput = false
     private var lastFrameTime: TimeInterval?
     private var restartTask: Task<Void, Never>?
     private var captureTask: Task<Void, Never>?
@@ -91,7 +95,7 @@ final class LightingModel: ObservableObject {
             updated.reversed != previous.reversed ||
             updated.rows != previous.rows ||
             updated.columns != previous.columns {
-            smoother.reset()
+            resetOutput()
         }
     }
 
@@ -105,11 +109,12 @@ final class LightingModel: ObservableObject {
         desiredCapture = false
         restartTask?.cancel()
         captureTask?.cancel()
+        stopOutputClock()
         captureTask = Task {
             do { try await capture.stop() } catch { captureStatus = error.localizedDescription }
             isCapturing = false
             captureStatus = "Stopped"
-            smoother.reset()
+            resetOutput()
             serial.send(Array(repeating: .black, count: configuration.ledCount),
                         maximumLEDs: configuration.deviceLEDCount)
         }
@@ -148,7 +153,10 @@ final class LightingModel: ObservableObject {
         let corrected = frame.colors.map {
             ColorProcessing.corrected($0.srgbEncoded, with: configuration.calibration)
         }
-        colors = smoother.apply(corrected, amount: configuration.calibration.smoothing)
+        smoother.configure(smoothing: configuration.calibration.smoothing)
+        smoother.setTarget(corrected)
+        hasPendingOutput = true
+        startOutputClock()
         zones = frame.zones
         previewWidth = frame.imageWidth
         previewHeight = frame.imageHeight
@@ -161,9 +169,46 @@ final class LightingModel: ObservableObject {
             actualFPS = actualFPS == 0 ? instantaneous : actualFPS * 0.8 + instantaneous * 0.2
         }
         lastFrameTime = now
-        if serial.isConnected {
-            serial.send(colors, maximumLEDs: configuration.deviceLEDCount)
+    }
+
+    /// LED output runs on its own clock so smoothing stays fluid between capture frames
+    /// and its speed does not depend on the capture rate.
+    private func startOutputClock() {
+        guard outputTask == nil else { return }
+        outputTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                let interval = 1 / SerialPacket.outputFrequency(
+                    ledCount: self.configuration.ledCount, baudRate: self.configuration.baudRate
+                )
+                self.outputTick()
+                try? await Task.sleep(for: .seconds(interval))
+            }
         }
+    }
+
+    private func stopOutputClock() {
+        outputTask?.cancel()
+        outputTask = nil
+        lastOutputTime = nil
+    }
+
+    private func outputTick() {
+        let now = ProcessInfo.processInfo.systemUptime
+        let elapsed = lastOutputTime.map { now - $0 } ?? 0
+        lastOutputTime = now
+        guard hasPendingOutput || !smoother.isSettled else { return }
+        let output = antiFlicker.apply(smoother.advance(by: elapsed))
+        if smoother.isSettled { hasPendingOutput = false }
+        if output != colors { colors = output }
+        if serial.isConnected {
+            serial.send(output, maximumLEDs: configuration.deviceLEDCount)
+        }
+    }
+
+    private func resetOutput() {
+        smoother.reset()
+        antiFlicker.reset()
     }
 
     private func save() {
