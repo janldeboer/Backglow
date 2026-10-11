@@ -242,7 +242,72 @@ private struct MainWindow: View {
                     model.change { $0.calibration = ColorCalibration() }
                 }
             }
+            SurfaceCard {
+                Label("LED-Kalibrierung", systemImage: "lightbulb.led")
+                    .font(.headline)
+                Picker("Farbtemperatur", selection: configBinding(\.ledCalibration.temperature)) {
+                    ForEach(LEDCalibration.Temperature.allCases, id: \.self) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                Text("Lege fest, welche Farbe die LEDs für die reinen Bildfarben zeigen sollen. Mit einer Testfarbe siehst du die Wirkung direkt am Strip.")
+                    .font(.caption).foregroundStyle(.secondary)
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading), count: 4),
+                          alignment: .leading, spacing: 12) {
+                    ForEach(LEDCalibration.Corner.allCases, id: \.self) { corner in
+                        ColorPicker(corner.title, selection: targetBinding(corner), supportsOpacity: false)
+                    }
+                }
+                HStack {
+                    Picker("Testfarbe an LEDs", selection: Binding(
+                        get: { model.testCorner },
+                        set: { model.showTestCorner($0) }
+                    )) {
+                        Text("Aus").tag(Optional<LEDCalibration.Corner>.none)
+                        ForEach(LEDCalibration.Corner.allCases, id: \.self) { Text($0.title).tag(Optional($0)) }
+                    }
+                    .frame(maxWidth: 300)
+                    Spacer()
+                    Button("Kalibrierung zurücksetzen") {
+                        model.change { $0.ledCalibration.targets = LEDCalibration().targets }
+                    }
+                }
+            }
+            SurfaceCard {
+                Label("Grundlicht und Leistung", systemImage: "bolt")
+                    .font(.headline)
+                slider("Grundlicht", keyPath: \.ledCalibration.minimumBacklight, range: 0...0.1)
+                Toggle("Grundlicht in Bildfarbe", isOn: configBinding(\.ledCalibration.coloredBacklight))
+                slider("Leistung", keyPath: \.ledCalibration.powerLimit, range: 0.2...1)
+                Text(powerSummary).font(.caption).foregroundStyle(.secondary)
+            }
         }
+    }
+
+    private var powerSummary: String {
+        // About 60 mA per WS2812B LED at full white.
+        let leds = Double(model.configuration.ledCount)
+        let full = leds * 0.06
+        let limit = model.configuration.ledCalibration.powerLimit
+        let format = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(1))
+        if limit >= 1 {
+            return "Keine Begrenzung. \(Int(leds)) LEDs ziehen bei Vollweiß bis etwa \(full.formatted(format)) A."
+        }
+        return "Höchstens etwa \((full * limit).formatted(format)) A statt \(full.formatted(format)) A bei Vollweiß; helle Bilder werden gleichmäßig abgedunkelt."
+    }
+
+    private func targetBinding(_ corner: LEDCalibration.Corner) -> Binding<Color> {
+        Binding(
+            get: {
+                let rgb = model.configuration.ledCalibration.target(corner)
+                return Color(.sRGB, red: rgb.red, green: rgb.green, blue: rgb.blue)
+            },
+            set: { color in
+                guard let srgb = NSColor(color).usingColorSpace(.sRGB) else { return }
+                let rgb = LightingRGB(red: srgb.redComponent, green: srgb.greenComponent,
+                                      blue: srgb.blueComponent)
+                model.change { $0.ledCalibration.setTarget(rgb, for: corner) }
+            }
+        )
     }
 
     private var device: some View {
@@ -446,6 +511,31 @@ private struct LEDStrip: View {
         }
         .overlay {
             if colors.isEmpty { Text("Noch keine Farbwerte").foregroundStyle(.secondary) }
+        }
+    }
+}
+
+private extension LEDCalibration.Temperature {
+    var title: String {
+        switch self {
+        case .neutral: "Neutral"
+        case .warm: "Warm"
+        case .cold: "Kalt"
+        }
+    }
+}
+
+private extension LEDCalibration.Corner {
+    var title: String {
+        switch self {
+        case .black: "Schwarz"
+        case .red: "Rot"
+        case .green: "Grün"
+        case .yellow: "Gelb"
+        case .blue: "Blau"
+        case .magenta: "Magenta"
+        case .cyan: "Cyan"
+        case .white: "Weiß"
         }
     }
 }

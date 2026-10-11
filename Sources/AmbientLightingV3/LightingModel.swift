@@ -16,6 +16,8 @@ final class LightingModel: ObservableObject {
     @Published private(set) var processingMilliseconds = 0.0
     @Published private(set) var actualFPS = 0.0
     @Published private(set) var usesGPU = false
+    /// While set, every LED shows this calibration corner instead of the screen.
+    @Published private(set) var testCorner: LEDCalibration.Corner?
 
     let serial = SerialDevice()
     private let capture = ScreenCaptureEngine()
@@ -105,8 +107,25 @@ final class LightingModel: ObservableObject {
         captureTask = Task { await startCapture() }
     }
 
+    func showTestCorner(_ corner: LEDCalibration.Corner?) {
+        testCorner = corner
+        if corner != nil {
+            startOutputClock()
+            return
+        }
+        resetOutput()
+        if desiredCapture {
+            hasPendingOutput = true
+        } else {
+            stopOutputClock()
+            colors = []
+            sendBlack()
+        }
+    }
+
     func stop() {
         desiredCapture = false
+        testCorner = nil
         restartTask?.cancel()
         captureTask?.cancel()
         stopOutputClock()
@@ -115,8 +134,7 @@ final class LightingModel: ObservableObject {
             isCapturing = false
             captureStatus = "Stopped"
             resetOutput()
-            serial.send(Array(repeating: .black, count: configuration.ledCount),
-                        maximumLEDs: configuration.deviceLEDCount)
+            sendBlack()
         }
     }
 
@@ -150,9 +168,7 @@ final class LightingModel: ObservableObject {
 
     private func receive(_ frame: ProcessedFrame) {
         guard desiredCapture else { return }
-        let corrected = frame.colors.map {
-            ColorProcessing.corrected($0.srgbEncoded, with: configuration.calibration)
-        }
+        let corrected = frame.colors.map(processed)
         smoother.configure(smoothing: configuration.calibration.smoothing)
         smoother.setTarget(corrected)
         hasPendingOutput = true
@@ -193,17 +209,37 @@ final class LightingModel: ObservableObject {
         lastOutputTime = nil
     }
 
+    /// HyperHDR's order: linear calibration, sRGB encoding, user correction, minimum backlight.
+    private func processed(_ linear: LightingRGB) -> LightingRGB {
+        let calibrated = ColorProcessing.calibrated(linear, with: configuration.ledCalibration)
+        let corrected = ColorProcessing.corrected(calibrated.srgbEncoded, with: configuration.calibration)
+        return ColorProcessing.withMinimumBacklight(corrected, calibration: configuration.ledCalibration)
+    }
+
     private func outputTick() {
         let now = ProcessInfo.processInfo.systemUptime
         let elapsed = lastOutputTime.map { now - $0 } ?? 0
         lastOutputTime = now
-        guard hasPendingOutput || !smoother.isSettled else { return }
-        let output = antiFlicker.apply(smoother.advance(by: elapsed))
-        if smoother.isSettled { hasPendingOutput = false }
+        let frame: [LightingRGB]
+        if let testCorner {
+            frame = Array(repeating: processed(testCorner.ideal), count: configuration.ledCount)
+        } else {
+            guard hasPendingOutput || !smoother.isSettled else { return }
+            frame = smoother.advance(by: elapsed)
+            if smoother.isSettled { hasPendingOutput = false }
+        }
+        let output = antiFlicker.apply(
+            ColorProcessing.limitingPower(frame, to: configuration.ledCalibration.powerLimit)
+        )
         if output != colors { colors = output }
         if serial.isConnected {
             serial.send(output, maximumLEDs: configuration.deviceLEDCount)
         }
+    }
+
+    private func sendBlack() {
+        serial.send(Array(repeating: .black, count: configuration.ledCount),
+                    maximumLEDs: configuration.deviceLEDCount)
     }
 
     private func resetOutput() {
