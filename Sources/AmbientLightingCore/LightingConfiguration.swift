@@ -14,6 +14,7 @@ public struct LightingConfiguration: Codable, Equatable, Sendable {
     public var portPath: String?
     public var baudRate: Int = 230_400
     public var calibration = ColorCalibration()
+    public var ledCalibration = LEDCalibration()
 
     public init() {}
 
@@ -32,27 +33,30 @@ public struct LightingConfiguration: Codable, Equatable, Sendable {
         captureScale = min(max(captureScale, 0.25), 1)
         baudRate = max(baudRate, 1_200)
         calibration.normalize()
+        ledCalibration.normalize()
     }
 }
 
-public struct ColorCalibration: Codable, Equatable, Sendable {
-    public var saturation: Double = 1
-    public var gamma: Double = 1
-    public var redGain: Double = 1
-    public var greenGain: Double = 1
-    public var blueGain: Double = 1
-    public var brightness: Double = 1
-    public var smoothing: Double = 0.25
-
-    public init() {}
-
-    public mutating func normalize() {
-        saturation = min(max(saturation, 0), 2)
-        gamma = min(max(gamma, 0.25), 3)
-        redGain = min(max(redGain, 0), 2)
-        greenGain = min(max(greenGain, 0), 2)
-        blueGain = min(max(blueGain, 0), 2)
-        brightness = min(max(brightness, 0), 1)
-        smoothing = min(max(smoothing, 0), 0.95)
+extension LightingConfiguration {
+    /// Missing keys fall back to defaults, so settings saved by older builds still load
+    /// when new options are added.
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = LightingConfiguration()
+        displayID = try values.decodeIfPresent(UInt32.self, forKey: .displayID)
+        rows = try values.decodeIfPresent(Int.self, forKey: .rows) ?? defaults.rows
+        columns = try values.decodeIfPresent(Int.self, forKey: .columns) ?? defaults.columns
+        ledCount = try values.decodeIfPresent(Int.self, forKey: .ledCount) ?? defaults.ledCount
+        deviceLEDCount = try values.decodeIfPresent(Int.self, forKey: .deviceLEDCount) ?? defaults.deviceLEDCount
+        startOffset = try values.decodeIfPresent(Int.self, forKey: .startOffset) ?? defaults.startOffset
+        reversed = try values.decodeIfPresent(Bool.self, forKey: .reversed) ?? defaults.reversed
+        ignoreBlackBars = try values.decodeIfPresent(Bool.self, forKey: .ignoreBlackBars) ?? defaults.ignoreBlackBars
+        framesPerSecond = try values.decodeIfPresent(Int.self, forKey: .framesPerSecond) ?? defaults.framesPerSecond
+        captureScale = try values.decodeIfPresent(Double.self, forKey: .captureScale) ?? defaults.captureScale
+        portPath = try values.decodeIfPresent(String.self, forKey: .portPath)
+        baudRate = try values.decodeIfPresent(Int.self, forKey: .baudRate) ?? defaults.baudRate
+        calibration = try values.decodeIfPresent(ColorCalibration.self, forKey: .calibration) ?? defaults.calibration
+        ledCalibration = try values.decodeIfPresent(LEDCalibration.self, forKey: .ledCalibration)
+            ?? defaults.ledCalibration
     }
 }

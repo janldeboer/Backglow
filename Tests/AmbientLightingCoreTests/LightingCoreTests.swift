@@ -175,6 +175,57 @@ final class LightingCoreTests: XCTestCase {
         XCTAssertEqual(stabilizer.update(letterbox, at: 12.8), letterbox)
     }
 
+    func testLEDCalibrationInterpolatesCornerTargets() {
+        var calibration = LEDCalibration()
+        let neutralGray = LightingRGB(red: 0.2, green: 0.3, blue: 0.4)
+        XCTAssertEqual(ColorProcessing.calibrated(neutralGray, with: calibration), neutralGray)
+        calibration.setTarget(LightingRGB(red: 1, green: 0.8, blue: 0.7), for: .white)
+        let white = ColorProcessing.calibrated(LightingRGB(red: 1, green: 1, blue: 1), with: calibration)
+        XCTAssertEqual(white.srgbEncoded.green, 0.8, accuracy: 0.0001)
+        XCTAssertEqual(white.srgbEncoded.blue, 0.7, accuracy: 0.0001)
+        // Pure red is untouched by the white target.
+        XCTAssertEqual(ColorProcessing.calibrated(LightingRGB(red: 1, green: 0, blue: 0), with: calibration),
+                       LightingRGB(red: 1, green: 0, blue: 0))
+        // Mid-gray weighs all eight corners equally, so the white target counts one eighth.
+        let half = ColorProcessing.calibrated(LightingRGB(red: 0.5, green: 0.5, blue: 0.5), with: calibration)
+        XCTAssertEqual(half.green, (3 + SRGB.toLinear(0.8)) / 8, accuracy: 0.0001)
+
+        calibration = LEDCalibration()
+        calibration.temperature = .warm
+        let warm = ColorProcessing.calibrated(LightingRGB(red: 1, green: 1, blue: 1), with: calibration)
+        XCTAssertEqual(warm, LightingRGB(red: 1, green: 0.93, blue: 0.85))
+    }
+
+    func testMinimumBacklightAndPowerLimit() {
+        var calibration = LEDCalibration()
+        calibration.minimumBacklight = 0.05
+        let dim = LightingRGB(red: 0.08, green: 0.01, blue: 0)
+        XCTAssertEqual(ColorProcessing.withMinimumBacklight(dim, calibration: calibration),
+                       LightingRGB(red: 0.05, green: 0.05, blue: 0.05))
+        calibration.coloredBacklight = true
+        XCTAssertEqual(ColorProcessing.withMinimumBacklight(dim, calibration: calibration),
+                       LightingRGB(red: 0.08, green: 0.05, blue: 0.05))
+
+        let white = LightingRGB(red: 1, green: 1, blue: 1)
+        let limited = ColorProcessing.limitingPower([white, .black], to: 0.25)
+        XCTAssertEqual(limited[0].red, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(ColorProcessing.limitingPower([white, .black], to: 0.5), [white, .black])
+        XCTAssertEqual(ColorProcessing.limitingPower([white], to: 1), [white])
+    }
+
+    func testSettingsFromOlderBuildsStillLoad() throws {
+        let legacy = #"{"rows":10,"columns":18,"ledCount":50,"deviceLEDCount":70,"startOffset":3,"reversed":false,"ignoreBlackBars":true,"framesPerSecond":40,"captureScale":0.5,"baudRate":230400,"calibration":{"saturation":1.2,"gamma":1,"redGain":1,"greenGain":1,"blueGain":1,"brightness":0.8,"smoothing":0.3}}"#
+        let decoded = try JSONDecoder().decode(LightingConfiguration.self, from: Data(legacy.utf8))
+        XCTAssertEqual(decoded.rows, 10)
+        XCTAssertEqual(decoded.calibration.saturation, 1.2)
+        XCTAssertEqual(decoded.ledCalibration, LEDCalibration())
+        var current = LightingConfiguration()
+        current.ledCalibration.powerLimit = 0.6
+        let roundTrip = try JSONDecoder().decode(LightingConfiguration.self,
+                                                 from: JSONEncoder().encode(current))
+        XCTAssertEqual(roundTrip, current)
+    }
+
     func testControllerProfileRoundTripKeepsComputerSettingsLocal() {
         var local = LightingConfiguration()
         local.displayID = 1234

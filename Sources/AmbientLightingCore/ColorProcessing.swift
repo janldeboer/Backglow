@@ -1,6 +1,6 @@
 import Foundation
 
-public struct LightingRGB: Equatable, Sendable {
+public struct LightingRGB: Codable, Equatable, Sendable {
     public var red: Double
     public var green: Double
     public var blue: Double
