@@ -79,10 +79,10 @@ pio run -e nodemcuv2 -t upload</code></pre>
 
     <h2 id="app">App installieren</h2>
     <ol>
-      <li><a href="https://github.com/Janldeboer/Backglow/releases/download/v3.0.1/Backglow-3.0.1.dmg">Backglow-3.0.1.dmg</a> laden, öffnen und Backglow in den Programme-Ordner ziehen.</li>
-      <li>Backglow einmal öffnen. Weil die App noch nicht notarisiert ist, blockiert macOS den ersten Start. Klicke dann unter <em>Systemeinstellungen → Datenschutz &amp; Sicherheit</em> auf <strong>Dennoch öffnen</strong>.</li>
+      <li><a href="https://github.com/Janldeboer/Backglow/releases/download/v3.0.2/Backglow-3.0.2.dmg">Backglow-3.0.2.dmg</a> laden, öffnen und Backglow in den Programme-Ordner ziehen.</li>
+      <li>Backglow öffnen. Die App ist von Apple notarisiert und startet ohne Warnung.</li>
     </ol>
-    <p>Was neu ist, steht in den <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.0.1">Release Notes</a>.</p>
+    <p>Was neu ist, steht in den <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.0.2">Release Notes</a>.</p>
     <h3>Selbst bauen</h3>
 <pre><code>cd Backglow
 ./scripts/build-app.sh
@@ -144,7 +144,7 @@ open dist/Backglow.app</code></pre>
 
     <h2 id="probleme">Wenn etwas nicht klappt</h2>
     <h3>Die Vorschau bleibt leer</h3>
-    <p>Fehlt die Freigabe für die Bildschirmaufnahme, prüfe sie in den Systemeinstellungen und starte Backglow neu. Nach einem Update oder neuen Build mit Ad-hoc-Signatur kann macOS die Freigabe vergessen. Entferne Backglow dann aus der Liste und füge es erneut hinzu.</p>
+    <p>Fehlt die Freigabe für die Bildschirmaufnahme, prüfe sie in den Systemeinstellungen und starte Backglow neu. Nach einem selbst gebauten Build mit Ad-hoc-Signatur kann macOS die Freigabe vergessen. Entferne Backglow dann aus der Liste und füge es erneut hinzu.</p>
     <h3>Der ESP taucht nicht als Anschluss auf</h3>
     <p>Viele USB-Kabel laden nur und übertragen keine Daten. Probiere ein anderes Kabel und tippe auf <strong>Anschlüsse aktualisieren</strong>.</p>
     <h3>Die LEDs flackern oder zeigen falsche Farben</h3>
