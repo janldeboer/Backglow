@@ -22,7 +22,7 @@ final class LightingModel: ObservableObject {
     @Published private(set) var configuration = LightingConfiguration()
     @Published private(set) var displays: [DisplayChoice] = []
     @Published private(set) var isCapturing = false
-    @Published private(set) var captureStatus = "Ready"
+    @Published private(set) var captureStatus = String(localized: "Bereit")
     /// While set, every LED shows this calibration corner instead of the screen.
     @Published private(set) var testCorner: LEDCalibration.Corner?
 
@@ -92,7 +92,7 @@ final class LightingModel: ObservableObject {
                 if let first = displays.first { change { $0.displayID = first.id } }
             }
         } catch {
-            captureStatus = "Display list: \(error.localizedDescription)"
+            captureStatus = String(localized: "Bildschirmliste nicht verfügbar: \(error.localizedDescription)")
         }
     }
 
@@ -150,7 +150,7 @@ final class LightingModel: ObservableObject {
         captureTask = Task {
             do { try await capture.stop() } catch { captureStatus = error.localizedDescription }
             isCapturing = false
-            captureStatus = "Stopped"
+            captureStatus = String(localized: "Gestoppt")
             resetOutput()
             sendBlack()
         }
@@ -191,11 +191,11 @@ final class LightingModel: ObservableObject {
         live.colors = (gpuColors ?? cpuColors).map(processed)
         live.usesGPU = gpuColors != nil
         live.processingMilliseconds = (CFAbsoluteTimeGetCurrent() - start) * 1000
-        captureStatus = "Demo-Bild"
+        captureStatus = String(localized: "Demo-Bild")
     }
 
     private func startCapture() async {
-        captureStatus = "Starting screen capture…"
+        captureStatus = String(localized: "Bildschirmaufnahme startet…")
         do {
             let displayID = try await capture.start(configuration)
             guard desiredCapture else {
@@ -204,7 +204,7 @@ final class LightingModel: ObservableObject {
             }
             if configuration.displayID != displayID { change { $0.displayID = displayID } }
             isCapturing = true
-            captureStatus = "Live"
+            captureStatus = String(localized: "Live")
             lastFrameTime = nil
         } catch {
             isCapturing = false
@@ -316,7 +316,7 @@ final class LightingModel: ObservableObject {
                                                     withIntermediateDirectories: true)
             try JSONEncoder().encode(configuration).write(to: Self.settingsURL, options: .atomic)
         } catch {
-            captureStatus = "Settings could not be saved: \(error.localizedDescription)"
+            captureStatus = String(localized: "Einstellungen konnten nicht gespeichert werden: \(error.localizedDescription)")
         }
     }
 }

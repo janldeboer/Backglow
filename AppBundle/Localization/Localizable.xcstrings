@@ -1,0 +1,1514 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "%lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
+    "%lld Zonen": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Zone"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Zonen"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld zone"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld zones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld fps": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld fps"
+          }
+        }
+      }
+    },
+    "100 %": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "100%"
+          }
+        }
+      }
+    },
+    "25 %": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "25%"
+          }
+        }
+      }
+    },
+    "50 %": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "50%"
+          }
+        }
+      }
+    },
+    "75 %": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "75%"
+          }
+        }
+      }
+    },
+    "Abbrechen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Aktive LEDs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active LEDs"
+          }
+        }
+      }
+    },
+    "Aktuelle Einrichtung speichern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Current Setup"
+          }
+        }
+      }
+    },
+    "Analyse": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis"
+          }
+        }
+      }
+    },
+    "Analyse pro Bild": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analysis per frame"
+          }
+        }
+      }
+    },
+    "Anschluss": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port"
+          }
+        }
+      }
+    },
+    "Anschluss geschlossen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port closed"
+          }
+        }
+      }
+    },
+    "Anschluss verändert – bitte erneut auswählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Port changed – please select it again"
+          }
+        }
+      }
+    },
+    "Anschluss wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose Port"
+          }
+        }
+      }
+    },
+    "Anschlüsse aktualisieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh Ports"
+          }
+        }
+      }
+    },
+    "Auf Controller gespeichert und geprüft · Revision %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved to controller and verified · revision %lld"
+          }
+        }
+      }
+    },
+    "Aufnahme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Capture"
+          }
+        }
+      }
+    },
+    "Aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Off"
+          }
+        }
+      }
+    },
+    "Backglow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backglow"
+          }
+        }
+      }
+    },
+    "Baudrate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baud rate"
+          }
+        }
+      }
+    },
+    "Beim Verbinden werden gespeicherte LED-Anordnung und Farbwerte automatisch geladen. Änderungen bleiben zunächst lokal. Speichern schreibt sie ausdrücklich auf den Controller und prüft sie durch erneutes Lesen. Bildschirmwahl, Bildrate und serieller Anschluss bleiben auf diesem Mac.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you connect, the stored LED layout and colors load automatically. Changes stay local at first. Saving writes them to the controller and verifies them by reading them back. Display choice, frame rate and serial port stay on this Mac."
+          }
+        }
+      }
+    },
+    "Berechnung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computation"
+          }
+        }
+      }
+    },
+    "Berechtigung für Bildschirmaufnahme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen Recording Permission"
+          }
+        }
+      }
+    },
+    "Bereit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        }
+      }
+    },
+    "Bildquelle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Image Source"
+          }
+        }
+      }
+    },
+    "Bildrate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frame rate"
+          }
+        }
+      }
+    },
+    "Bildschirm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display"
+          }
+        }
+      }
+    },
+    "Bildschirm %lld · %lld × %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Bildschirm %1$lld · %2$lld × %3$lld"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display %lld · %lld × %lld"
+          }
+        }
+      }
+    },
+    "Bildschirm, Zonen und Lichtfarben in Echtzeit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen, zones and light colors in real time."
+          }
+        }
+      }
+    },
+    "Bildschirmaufnahme": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Screen capture"
+          }
+        }
+      }
+    },
+    "Bildschirmaufnahme startet…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting screen capture…"
+          }
+        }
+      }
+    },
+    "Bildschirme aktualisieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refresh Displays"
+          }
+        }
+      }
+    },
+    "Bildschirmliste nicht verfügbar: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display list unavailable: %@"
+          }
+        }
+      }
+    },
+    "Blau": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blue"
+          }
+        }
+      }
+    },
+    "CPU-Fallback": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "CPU fallback"
+          }
+        }
+      }
+    },
+    "Controller hat den Befehl abgelehnt (Code %lld)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller rejected the command (code %lld)"
+          }
+        }
+      }
+    },
+    "Controller-Einstellungen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller Settings"
+          }
+        }
+      }
+    },
+    "Controller-Profil geladen · Revision %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller profile loaded · revision %lld"
+          }
+        }
+      }
+    },
+    "Controller-Protokoll nicht kompatibel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller protocol not compatible"
+          }
+        }
+      }
+    },
+    "Controller-Speicher einrichten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Up Controller Storage"
+          }
+        }
+      }
+    },
+    "Controller-Speicher einrichten?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up controller storage?"
+          }
+        }
+      }
+    },
+    "Controller-Speicher nicht eingerichtet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller storage not set up"
+          }
+        }
+      }
+    },
+    "Controller-Speicher nicht verfügbar": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller storage not available"
+          }
+        }
+      }
+    },
+    "Cyan": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cyan"
+          }
+        }
+      }
+    },
+    "Das Einrichten formatiert den Dateisystembereich des ausdrücklich verbundenen ESP8266. Dort vorhandene Dateien werden gelöscht.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setting up formats the file system area of the ESP8266 you connected. Any files stored there are deleted."
+          }
+        }
+      }
+    },
+    "Dashboard": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dashboard"
+          }
+        }
+      }
+    },
+    "Dateisystem formatieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Format File System"
+          }
+        }
+      }
+    },
+    "Demo-Bild": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo image"
+          }
+        }
+      }
+    },
+    "Der Dateisystembereich des verbundenen ESP8266 wird formatiert. Vorhandene Dateien gehen verloren.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file system area of the connected ESP8266 will be formatted. Existing files will be lost."
+          }
+        }
+      }
+    },
+    "Diagnose": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diagnostics"
+          }
+        }
+      }
+    },
+    "Die Vorschau zeigt die erkannten Kacheln und die berechneten Ausgabefarben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The preview shows the detected tiles and the calculated output colors."
+          }
+        }
+      }
+    },
+    "Die Zahlen folgen der Ausgabe an den Controller. Änderungen werden live übernommen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The numbers follow the output order sent to the controller. Changes apply live."
+          }
+        }
+      }
+    },
+    "Einstellungen konnten nicht gespeichert werden: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings could not be saved: %@"
+          }
+        }
+      }
+    },
+    "Es erscheinen nur USB-Seriell-Anschlüsse. Bluetooth- und Systemports werden ausgeblendet. Die USB-Kennung bestätigt noch kein bestimmtes Board; Verbinden erfolgt nur nach deiner Auswahl.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only USB serial ports are listed. Bluetooth and system ports are hidden. The USB ID doesn't confirm a specific board; Backglow only connects after you choose a port."
+          }
+        }
+      }
+    },
+    "Farben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colors"
+          }
+        }
+      }
+    },
+    "Farbkanäle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color Channels"
+          }
+        }
+      }
+    },
+    "Farbtemperatur": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color temperature"
+          }
+        }
+      }
+    },
+    "Farbwerte zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Colors"
+          }
+        }
+      }
+    },
+    "Farbwirkung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Color Look"
+          }
+        }
+      }
+    },
+    "Gamma": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gamma"
+          }
+        }
+      }
+    },
+    "Gelb": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yellow"
+          }
+        }
+      }
+    },
+    "Gerät": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device"
+          }
+        }
+      }
+    },
+    "Gerät getrennt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device disconnected"
+          }
+        }
+      }
+    },
+    "Gerätekennung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Device ID"
+          }
+        }
+      }
+    },
+    "Gestoppt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped"
+          }
+        }
+      }
+    },
+    "Glättung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Smoothing"
+          }
+        }
+      }
+    },
+    "Grundlicht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backlight"
+          }
+        }
+      }
+    },
+    "Grundlicht in Bildfarbe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tint backlight with image color"
+          }
+        }
+      }
+    },
+    "Grundlicht und Leistung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backlight and Power"
+          }
+        }
+      }
+    },
+    "Grün": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Green"
+          }
+        }
+      }
+    },
+    "Helligkeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brightness"
+          }
+        }
+      }
+    },
+    "Höchstens etwa %@ A statt %@ A bei Vollweiß; helle Bilder werden gleichmäßig abgedunkelt.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Höchstens etwa %1$@ A statt %2$@ A bei Vollweiß; helle Bilder werden gleichmäßig abgedunkelt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At most about %1$@ A instead of %2$@ A at full white; bright images are dimmed evenly."
+          }
+        }
+      }
+    },
+    "In Ausgabe-Reihenfolge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In output order"
+          }
+        }
+      }
+    },
+    "Interne Auflösung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Internal resolution"
+          }
+        }
+      }
+    },
+    "Kachelvorschau": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tile Preview"
+          }
+        }
+      }
+    },
+    "Kalibrierung zurücksetzen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reset Calibration"
+          }
+        }
+      }
+    },
+    "Kalt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cool"
+          }
+        }
+      }
+    },
+    "Kein Bildschirm für die Aufnahme verfügbar.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No display is available for screen capture."
+          }
+        }
+      }
+    },
+    "Kein Controller-Profil erkannt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No controller profile detected"
+          }
+        }
+      }
+    },
+    "Kein Gerät verbunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No device connected"
+          }
+        }
+      }
+    },
+    "Keine Antwort vom Controller-Speicher": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No response from controller storage"
+          }
+        }
+      }
+    },
+    "Keine Begrenzung. %lld LEDs ziehen bei Vollweiß bis etwa %@ A.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Keine Begrenzung. %1$lld LEDs ziehen bei Vollweiß bis etwa %2$@ A."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit. %lld LEDs draw up to about %@ A at full white."
+          }
+        }
+      }
+    },
+    "Keine Bestätigung erhalten – Profil erneut laden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No confirmation received – reload the profile"
+          }
+        }
+      }
+    },
+    "Kompatibel mit dem vorhandenen led/les-Protokoll. Beim Stoppen werden die LEDs ausgeschaltet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compatible with the existing led/les protocol. The LEDs turn off when you stop."
+          }
+        }
+      }
+    },
+    "LED-Anordnung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LED Layout"
+          }
+        }
+      }
+    },
+    "LED-Farben": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LED Colors"
+          }
+        }
+      }
+    },
+    "LED-Kalibrierung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "LED Calibration"
+          }
+        }
+      }
+    },
+    "Laufzeit": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runtime"
+          }
+        }
+      }
+    },
+    "Lege fest, welche Farbe die LEDs für die reinen Bildfarben zeigen sollen. Mit einer Testfarbe siehst du die Wirkung direkt am Strip.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set which color the LEDs should show for each pure image color. A test color shows the result directly on the strip."
+          }
+        }
+      }
+    },
+    "Leistung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Power"
+          }
+        }
+      }
+    },
+    "Lese Controller-Profil…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading controller profile…"
+          }
+        }
+      }
+    },
+    "Live": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live"
+          }
+        }
+      }
+    },
+    "Live starten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start Live"
+          }
+        }
+      }
+    },
+    "Live-Vorschau": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Live Preview"
+          }
+        }
+      }
+    },
+    "Magenta": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Magenta"
+          }
+        }
+      }
+    },
+    "Neutral": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neutral"
+          }
+        }
+      }
+    },
+    "Noch kein Profil gespeichert – aktuelle Einstellungen übernehmen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No profile saved yet – using current settings"
+          }
+        }
+      }
+    },
+    "Noch keine Farbwerte": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No colors yet"
+          }
+        }
+      }
+    },
+    "Noch keine Live-Vorschau": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Live Preview Yet"
+          }
+        }
+      }
+    },
+    "Ordne Bildschirmkacheln den physischen LEDs zu.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Map screen tiles to your physical LEDs."
+          }
+        }
+      }
+    },
+    "Physische LEDs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Physical LEDs"
+          }
+        }
+      }
+    },
+    "Profil auf dem Controller": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile on the Controller"
+          }
+        }
+      }
+    },
+    "Profil erneut laden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reload Profile"
+          }
+        }
+      }
+    },
+    "Profil kann gerade nicht gespeichert werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile can't be saved right now"
+          }
+        }
+      }
+    },
+    "Profil-Version unbekannt – kein Überschreiben möglich": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown profile version – cannot overwrite"
+          }
+        }
+      }
+    },
+    "Prüfe Controller-Protokoll…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking controller protocol…"
+          }
+        }
+      }
+    },
+    "Quelle": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Source"
+          }
+        }
+      }
+    },
+    "Raster und LED-Reihenfolge": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grid and LED Order"
+          }
+        }
+      }
+    },
+    "Rechenweg": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compute path"
+          }
+        }
+      }
+    },
+    "Reihenfolge umkehren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverse order"
+          }
+        }
+      }
+    },
+    "Richte Controller-Speicher ein…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setting up controller storage…"
+          }
+        }
+      }
+    },
+    "Rot": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Red"
+          }
+        }
+      }
+    },
+    "Rückleseprüfung fehlgeschlagen – Profil unverändert lassen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read-back check failed – leave the profile unchanged"
+          }
+        }
+      }
+    },
+    "Rückleseprüfung fehlgeschlagen – kein Profil vorhanden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read-back check failed – no profile present"
+          }
+        }
+      }
+    },
+    "Schreibe Profil auf den Controller…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing profile to the controller…"
+          }
+        }
+      }
+    },
+    "Schwarz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Black"
+          }
+        }
+      }
+    },
+    "Schwarze Filmränder ausklammern": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignore black letterbox bars"
+          }
+        }
+      }
+    },
+    "Serielle Verbindung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serial connection"
+          }
+        }
+      }
+    },
+    "Serieller Controller": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serial Controller"
+          }
+        }
+      }
+    },
+    "Serielles Schreiben fehlgeschlagen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Serial write failed"
+          }
+        }
+      }
+    },
+    "Spalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Columns"
+          }
+        }
+      }
+    },
+    "Starte die Bildschirmaufnahme, um Kacheln und Farben zu sehen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start screen capture to see tiles and colors."
+          }
+        }
+      }
+    },
+    "Startversatz": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start offset"
+          }
+        }
+      }
+    },
+    "Status und Laufzeitwerte der Verarbeitung.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status and runtime figures of the processing."
+          }
+        }
+      }
+    },
+    "Steuerbefehl konnte nicht gesendet werden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Control command could not be sent"
+          }
+        }
+      }
+    },
+    "Stimme Farben und Übergänge auf deine Umgebung ab.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tune colors and transitions to your surroundings."
+          }
+        }
+      }
+    },
+    "Stoppen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        }
+      }
+    },
+    "Sättigung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saturation"
+          }
+        }
+      }
+    },
+    "Testfarbe an LEDs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Test color on LEDs"
+          }
+        }
+      }
+    },
+    "Trennen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnect"
+          }
+        }
+      }
+    },
+    "USB-Controller auswählen oder Anschlüsse aktualisieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select a USB controller or refresh ports"
+          }
+        }
+      }
+    },
+    "Ungültiges Controller-Profil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Invalid controller profile"
+          }
+        }
+      }
+    },
+    "Verbinde deinen LED-Controller über die serielle Schnittstelle.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect your LED controller over the serial port."
+          }
+        }
+      }
+    },
+    "Verbinden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect"
+          }
+        }
+      }
+    },
+    "Verbinde…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connecting…"
+          }
+        }
+      }
+    },
+    "Verbunden mit %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connected to %@"
+          }
+        }
+      }
+    },
+    "Warm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warm"
+          }
+        }
+      }
+    },
+    "Weiß": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "White"
+          }
+        }
+      }
+    },
+    "Wähle den Bildschirm und die Bildrate.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the display and frame rate."
+          }
+        }
+      }
+    },
+    "Zeilen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rows"
+          }
+        }
+      }
+    },
+    "Ziel-Bildrate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target frame rate"
+          }
+        }
+      }
+    },
+    "Zonen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zones"
+          }
+        }
+      }
+    },
+    "macOS fordert die Freigabe beim ersten Start der Live-Aufnahme an. Falls kein Bild erscheint, erlaube Backglow unter Datenschutz & Sicherheit → Bildschirmaufnahme und starte die App neu.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS asks for permission the first time you start live capture. If no image appears, allow Backglow under Privacy & Security → Screen Recording and restart the app."
+          }
+        }
+      }
+    },
+    "Ältere Firmware: Farbsteuerung verfügbar, kein Geräteprofil": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Older firmware: color output available, no device profile"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -17,8 +17,8 @@ struct SerialPortChoice: Identifiable, Hashable {
 final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
     @Published private(set) var ports: [SerialPortChoice] = []
     @Published private(set) var isConnected = false
-    @Published private(set) var status = "Kein Gerät verbunden"
-    @Published private(set) var profileStatus = "Kein Controller-Profil erkannt"
+    @Published private(set) var status = String(localized: "Kein Gerät verbunden")
+    @Published private(set) var profileStatus = String(localized: "Kein Controller-Profil erkannt")
     @Published private(set) var supportsProfiles = false
     @Published private(set) var profileReady = false
     @Published private(set) var canInitializeStorage = false
@@ -52,10 +52,10 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
 
     func connect(path: String?, baudRate: Int) {
         guard let path, let listed = ports.first(where: { $0.id == path }) else {
-            status = "USB-Controller auswählen oder Anschlüsse aktualisieren"
+            status = String(localized: "USB-Controller auswählen oder Anschlüsse aktualisieren")
             return
         }
-        status = "Verbinde…"
+        status = String(localized: "Verbinde…")
         resetProfileState()
         queue.async {
             guard USBSerialPortDiscovery.available().contains(where: {
@@ -65,7 +65,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
                 $0.path == path
             }) else {
                 DispatchQueue.main.async {
-                    self.status = "Anschluss verändert – bitte erneut auswählen"
+                    self.status = String(localized: "Anschluss verändert – bitte erneut auswählen")
                 }
                 return
             }
@@ -86,7 +86,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             self.port = nil
             DispatchQueue.main.async {
                 self.isConnected = false
-                self.status = "Kein Gerät verbunden"
+                self.status = String(localized: "Kein Gerät verbunden")
             }
         }
     }
@@ -97,12 +97,12 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
               let bytes = profile.encoded(),
               let payload = ControllerFrame.profilePayload(revision: currentRevision, profile: profile),
               let frame = ControllerFrame(.setProfile, payload: payload).encoded() else {
-            profileStatus = "Profil kann gerade nicht gespeichert werden"
+            profileStatus = String(localized: "Profil kann gerade nicht gespeichert werden")
             return
         }
         expectedSave = bytes
         isSavingProfile = true
-        profileStatus = "Schreibe Profil auf den Controller…"
+        profileStatus = String(localized: "Schreibe Profil auf den Controller…")
         sendControl(frame)
         let token = generation
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
@@ -111,7 +111,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             self.expectedRevision = nil
             self.isSavingProfile = false
             self.profileReady = false
-            self.profileStatus = "Keine Bestätigung erhalten – Profil erneut laden"
+            self.profileStatus = String(localized: "Keine Bestätigung erhalten – Profil erneut laden")
         }
     }
 
@@ -119,7 +119,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         guard isConnected, supportsProfiles,
               let frame = ControllerFrame(.getProfile).encoded() else { return }
         profileReady = false
-        profileStatus = "Lese Controller-Profil…"
+        profileStatus = String(localized: "Lese Controller-Profil…")
         sendControl(frame)
     }
 
@@ -128,14 +128,14 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
               let frame = ControllerFrame(.initializeStorage).encoded() else { return }
         canInitializeStorage = false
         initializingStorage = true
-        profileStatus = "Richte Controller-Speicher ein…"
+        profileStatus = String(localized: "Richte Controller-Speicher ein…")
         sendControl(frame)
         let token = generation
         DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
             guard let self, self.generation == token, self.initializingStorage else { return }
             self.initializingStorage = false
             self.canInitializeStorage = true
-            self.profileStatus = "Keine Antwort vom Controller-Speicher"
+            self.profileStatus = String(localized: "Keine Antwort vom Controller-Speicher")
         }
     }
 
@@ -154,14 +154,14 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         expectedSave = nil
         expectedRevision = nil
         isSavingProfile = false
-        profileStatus = "Prüfe Controller-Protokoll…"
+        profileStatus = String(localized: "Prüfe Controller-Protokoll…")
     }
 
     private func sendControl(_ data: Data) {
         queue.async {
             guard let port = self.port, port.isOpen else { return }
             if !port.send(data) {
-                DispatchQueue.main.async { self.profileStatus = "Steuerbefehl konnte nicht gesendet werden" }
+                DispatchQueue.main.async { self.profileStatus = String(localized: "Steuerbefehl konnte nicht gesendet werden") }
             }
         }
     }
@@ -176,7 +176,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         case .hello:
             guard frame.payload.count == 8, frame.payload[0] == 1,
                   frame.payload.readLE16(at: 1) >= 1 else {
-                profileStatus = "Controller-Protokoll nicht kompatibel"
+                profileStatus = String(localized: "Controller-Protokoll nicht kompatibel")
                 return
             }
             guard !recognizedProtocol || (!supportsProfiles && frame.payload[3] == 1) else { return }
@@ -187,9 +187,9 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             canInitializeStorage = frame.payload[3] == 0
             guard frame.payload[3] == 1 else {
                 switch frame.payload[3] {
-                case 0: profileStatus = "Controller-Speicher nicht eingerichtet"
-                case 2: profileStatus = "Profil-Version unbekannt – kein Überschreiben möglich"
-                default: profileStatus = "Controller-Speicher nicht verfügbar"
+                case 0: profileStatus = String(localized: "Controller-Speicher nicht eingerichtet")
+                case 2: profileStatus = String(localized: "Profil-Version unbekannt – kein Überschreiben möglich")
+                default: profileStatus = String(localized: "Controller-Speicher nicht verfügbar")
                 }
                 return
             }
@@ -198,7 +198,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         case .profile:
             guard supportsProfiles,
                   let (revision, profile) = ControllerFrame.parseProfilePayload(frame.payload) else {
-                profileStatus = "Ungültiges Controller-Profil"
+                profileStatus = String(localized: "Ungültiges Controller-Profil")
                 return
             }
             let wasSave = expectedSave != nil
@@ -208,15 +208,15 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
                     self.expectedSave = nil
                     expectedRevision = nil
                     profileReady = false
-                    profileStatus = "Rückleseprüfung fehlgeschlagen – Profil unverändert lassen"
+                    profileStatus = String(localized: "Rückleseprüfung fehlgeschlagen – Profil unverändert lassen")
                     return
                 }
                 self.expectedSave = nil
                 expectedRevision = nil
                 isSavingProfile = false
-                profileStatus = "Auf Controller gespeichert und geprüft · Revision \(revision)"
+                profileStatus = String(localized: "Auf Controller gespeichert und geprüft · Revision \(Int(revision))")
             } else {
-                profileStatus = "Controller-Profil geladen · Revision \(revision)"
+                profileStatus = String(localized: "Controller-Profil geladen · Revision \(Int(revision))")
             }
             currentRevision = revision
             storedProfile = profile
@@ -228,13 +228,13 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
                 expectedSave = nil
                 expectedRevision = nil
                 isSavingProfile = false
-                profileStatus = "Rückleseprüfung fehlgeschlagen – kein Profil vorhanden"
+                profileStatus = String(localized: "Rückleseprüfung fehlgeschlagen – kein Profil vorhanden")
                 return
             }
             storedProfile = nil
             currentRevision = 0
             profileReady = true
-            profileStatus = "Noch kein Profil gespeichert – aktuelle Einstellungen übernehmen"
+            profileStatus = String(localized: "Noch kein Profil gespeichert – aktuelle Einstellungen übernehmen")
         case .saved:
             guard isSavingProfile, frame.payload.count == 4 else { return }
             expectedRevision = frame.payload.readLE32(at: 0)
@@ -249,7 +249,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             expectedRevision = nil
             isSavingProfile = false
             profileReady = false
-            profileStatus = "Controller hat den Befehl abgelehnt (Code \(code))"
+            profileStatus = String(localized: "Controller hat den Befehl abgelehnt (Code \(Int(code)))")
         case .getProfile, .setProfile, .initializeStorage:
             break
         }
@@ -271,7 +271,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         pendingFrame = nil
         pendingLock.unlock()
         if let frame, let port, port.isOpen, !port.send(frame) {
-            DispatchQueue.main.async { self.status = "Serielles Schreiben fehlgeschlagen" }
+            DispatchQueue.main.async { self.status = String(localized: "Serielles Schreiben fehlgeschlagen") }
         }
         // Yield the queue after each frame so profile reads/writes and disconnects
         // are not starved when the LED stream exceeds the serial bandwidth.
@@ -290,7 +290,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             DispatchQueue.main.async {
                 self.resetProfileState()
                 self.isConnected = false
-                self.status = "Gerät getrennt"
+                self.status = String(localized: "Gerät getrennt")
                 self.refreshPorts()
             }
         }
@@ -298,14 +298,14 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
 
     func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         isConnected = true
-        status = "Verbunden mit \(serialPort.name)"
+        status = String(localized: "Verbunden mit \(serialPort.name)")
         let token = generation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.probe(token) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in self?.probe(token) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in self?.probe(token) }
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) { [weak self] in
             guard let self, self.generation == token, self.isConnected, !self.recognizedProtocol else { return }
-            self.profileStatus = "Ältere Firmware: Farbsteuerung verfügbar, kein Geräteprofil"
+            self.profileStatus = String(localized: "Ältere Firmware: Farbsteuerung verfügbar, kein Geräteprofil")
         }
     }
 
@@ -316,7 +316,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
 
     func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         isConnected = false
-        status = "Anschluss geschlossen"
+        status = String(localized: "Anschluss geschlossen")
         resetProfileState()
     }
 

@@ -45,7 +45,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         return content.displays.enumerated().map { index, display in
             DisplayChoice(
                 id: display.displayID,
-                title: "Display \(index + 1) · \(display.width) × \(display.height)",
+                title: String(localized: "Bildschirm \(index + 1) · \(display.width) × \(display.height)"),
                 width: display.width,
                 height: display.height
             )
@@ -213,7 +213,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         case noDisplay
 
         var errorDescription: String? {
-            "No display is available for screen capture."
+            String(localized: "Kein Bildschirm für die Aufnahme verfügbar.")
         }
     }
 }

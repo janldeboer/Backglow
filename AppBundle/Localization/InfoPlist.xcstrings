@@ -1,0 +1,23 @@
+{
+  "sourceLanguage": "de",
+  "strings": {
+    "NSScreenCaptureUsageDescription": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backglow analysiert die Bildschirmränder, um die LED-Farben in Echtzeit zu steuern."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backglow analyzes the edges of your screen to drive the LED colors in real time."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

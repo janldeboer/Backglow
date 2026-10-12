@@ -18,6 +18,11 @@ mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$product_dir/Backglow" "$app_dir/Contents/MacOS/"
 cp -R "$product_dir/Backglow_Backglow.bundle" "$app_dir/Contents/Resources/"
 cp "$project_dir/AppBundle/Info.plist" "$app_dir/Contents/Info.plist"
+# String Catalogs (German source, English translation) become de.lproj and en.lproj.
+for catalog in "$project_dir"/AppBundle/Localization/*.xcstrings; do
+    xcrun xcstringstool compile "$catalog" --output-directory "$app_dir/Contents/Resources" \
+        --serialization-format binary
+done
 # Compiles the Icon Composer document into Assets.car (Liquid Glass) plus a fallback .icns.
 xcrun actool "$project_dir/AppBundle/Backglow.icon" --compile "$app_dir/Contents/Resources" \
     --platform macosx --minimum-deployment-target 26.0 --app-icon Backglow --target-device mac \

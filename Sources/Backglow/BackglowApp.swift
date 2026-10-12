@@ -17,16 +17,21 @@ struct BackglowApp: App {
     }
 }
 
-private enum Page: String, CaseIterable, Identifiable {
-    case dashboard = "Dashboard"
-    case source = "Bildquelle"
-    case layout = "LED-Anordnung"
-    case color = "Farben"
-    case device = "Gerät"
-    case diagnostics = "Diagnose"
+private enum Page: CaseIterable, Identifiable {
+    case dashboard, source, layout, color, device, diagnostics
 
     var id: Self { self }
     var fileName: String { String(describing: self) }
+    var title: LocalizedStringKey {
+        switch self {
+        case .dashboard: "Dashboard"
+        case .source: "Bildquelle"
+        case .layout: "LED-Anordnung"
+        case .color: "Farben"
+        case .device: "Gerät"
+        case .diagnostics: "Diagnose"
+        }
+    }
     var symbol: String {
         switch self {
         case .dashboard: "square.grid.2x2"
@@ -48,7 +53,7 @@ private struct MainWindow: View {
     var body: some View {
         NavigationSplitView {
             List(Page.allCases, selection: $selection) { page in
-                Label(page.rawValue, systemImage: page.symbol).tag(page)
+                Label(page.title, systemImage: page.symbol).tag(page)
             }
             .navigationTitle("Backglow")
             .navigationSplitViewColumnWidth(min: 190, ideal: 215)
@@ -89,7 +94,7 @@ private struct MainWindow: View {
                     Button {
                         model.isCapturing ? model.stop() : model.start()
                     } label: {
-                        Label(model.isCapturing ? "Stoppen" : "Live starten",
+                        Label(model.isCapturing ? LocalizedStringKey("Stoppen") : "Live starten",
                               systemImage: model.isCapturing ? "stop.fill" : "play.fill")
                     }
                     .buttonStyle(.glassProminent)
@@ -126,14 +131,14 @@ private struct MainWindow: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text((selection ?? .dashboard).rawValue)
+            Text((selection ?? .dashboard).title)
                 .font(.largeTitle.bold())
             Text(subtitle)
                 .foregroundStyle(.secondary)
         }
     }
 
-    private var subtitle: String {
+    private var subtitle: LocalizedStringKey {
         switch selection ?? .dashboard {
         case .dashboard: "Bildschirm, Zonen und Lichtfarben in Echtzeit."
         case .source: "Wähle den Bildschirm und die Bildrate."
@@ -312,9 +317,10 @@ private struct MainWindow: View {
         let limit = model.configuration.ledCalibration.powerLimit
         let format = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(1))
         if limit >= 1 {
-            return "Keine Begrenzung. \(Int(leds)) LEDs ziehen bei Vollweiß bis etwa \(full.formatted(format)) A."
+            return String(localized: "Keine Begrenzung. \(Int(leds)) LEDs ziehen bei Vollweiß bis etwa \(full.formatted(format)) A.")
         }
-        return "Höchstens etwa \((full * limit).formatted(format)) A statt \(full.formatted(format)) A bei Vollweiß; helle Bilder werden gleichmäßig abgedunkelt."
+        let limited = (full * limit).formatted(format)
+        return String(localized: "Höchstens etwa \(limited) A statt \(full.formatted(format)) A bei Vollweiß; helle Bilder werden gleichmäßig abgedunkelt.")
     }
 
     private func targetBinding(_ corner: LEDCalibration.Corner) -> Binding<Color> {
@@ -340,12 +346,12 @@ private struct MainWindow: View {
                 Picker("Anschluss", selection: configBinding(\.portPath)) {
                     Text("Anschluss wählen").tag(Optional<String>.none)
                     ForEach(serial.ports) { port in
-                        Text("\(port.name) · \(port.detail) · \(port.id)").tag(Optional(port.id))
+                        Text(verbatim: "\(port.name) · \(port.detail) · \(port.id)").tag(Optional(port.id))
                     }
                 }
                 HStack {
                     Button("Anschlüsse aktualisieren") { serial.refreshPorts() }
-                    Button(serial.isConnected ? "Trennen" : "Verbinden") {
+                    Button(serial.isConnected ? LocalizedStringKey("Trennen") : "Verbinden") {
                         if serial.isConnected { serial.disconnect() }
                         else {
                             serial.connect(path: model.configuration.portPath,
@@ -370,7 +376,7 @@ private struct MainWindow: View {
                 }
                 Picker("Baudrate", selection: configBinding(\.baudRate)) {
                     ForEach([115_200, 230_400, 460_800, 921_600], id: \.self) { rate in
-                        Text("\(rate)").tag(rate)
+                        Text(verbatim: "\(rate)").tag(rate)
                     }
                 }
                 Text("Kompatibel mit dem vorhandenen led/les-Protokoll. Beim Stoppen werden die LEDs ausgeschaltet.")
@@ -439,7 +445,7 @@ private struct MainWindow: View {
                 set: { value in model.change { $0[keyPath: keyPath] = value } })
     }
 
-    private func slider(_ title: String,
+    private func slider(_ title: LocalizedStringKey,
                         keyPath: WritableKeyPath<LightingConfiguration, Double>,
                         range: ClosedRange<Double>) -> some View {
         HStack(spacing: 14) {
@@ -482,7 +488,7 @@ private struct LiveMetrics: View {
         }
     }
 
-    private func metric(_ title: String, value: String) -> some View {
+    private func metric(_ title: LocalizedStringKey, value: String) -> some View {
         SurfaceCard {
             Text(title).font(.caption).foregroundStyle(.secondary)
             Text(value).font(.title3.bold()).monospacedDigit()
@@ -495,8 +501,8 @@ private struct LiveDiagnostics: View {
     var body: some View {
         LabeledContent("Bildrate", value: live.actualFPS > 0 ? String(format: "%.1f fps", live.actualFPS) : "–")
         LabeledContent("Analyse pro Bild", value: String(format: "%.2f ms", live.processingMilliseconds))
-        LabeledContent("Berechnung", value: live.usesGPU ? "Metal" : "CPU-Fallback")
-        LabeledContent("Zonen", value: "\(live.zones.count)")
+        LabeledContent("Berechnung", value: live.usesGPU ? "Metal" : String(localized: "CPU-Fallback"))
+        LabeledContent("Zonen") { Text(live.zones.count, format: .number) }
     }
 }
 
@@ -540,7 +546,7 @@ private struct ScreenPreview: View {
                 context.fill(Path(tile), with: .color(tint.opacity(0.24)))
                 context.stroke(Path(tile), with: .color(.white.opacity(0.75)), lineWidth: 1)
                 if w > 26 && h > 18 {
-                    context.draw(Text("\(zone.id + 1)").font(.system(size: 10, weight: .bold))
+                    context.draw(Text(verbatim: "\(zone.id + 1)").font(.system(size: 10, weight: .bold))
                         .foregroundColor(.white), at: CGPoint(x: tile.midX, y: tile.midY))
                 }
             }
@@ -579,9 +585,9 @@ private struct LEDStrip: View {
 private extension LEDCalibration.Temperature {
     var title: String {
         switch self {
-        case .neutral: "Neutral"
-        case .warm: "Warm"
-        case .cold: "Kalt"
+        case .neutral: String(localized: "Neutral")
+        case .warm: String(localized: "Warm")
+        case .cold: String(localized: "Kalt")
         }
     }
 }
@@ -589,14 +595,14 @@ private extension LEDCalibration.Temperature {
 private extension LEDCalibration.Corner {
     var title: String {
         switch self {
-        case .black: "Schwarz"
-        case .red: "Rot"
-        case .green: "Grün"
-        case .yellow: "Gelb"
-        case .blue: "Blau"
-        case .magenta: "Magenta"
-        case .cyan: "Cyan"
-        case .white: "Weiß"
+        case .black: String(localized: "Schwarz")
+        case .red: String(localized: "Rot")
+        case .green: String(localized: "Grün")
+        case .yellow: String(localized: "Gelb")
+        case .blue: String(localized: "Blau")
+        case .magenta: String(localized: "Magenta")
+        case .cyan: String(localized: "Cyan")
+        case .white: String(localized: "Weiß")
         }
     }
 }

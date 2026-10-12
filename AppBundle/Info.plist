@@ -2,6 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
     <key>CFBundleDevelopmentRegion</key><string>de</string>
+    <key>CFBundleLocalizations</key><array><string>de</string><string>en</string></array>
     <key>CFBundleExecutable</key><string>Backglow</string>
     <key>CFBundleIdentifier</key><string>de.jandeboer.backglow</string>
     <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
