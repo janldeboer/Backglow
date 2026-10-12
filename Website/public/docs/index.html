@@ -24,7 +24,7 @@
       <li><a href="#voraussetzungen">Voraussetzungen</a></li>
       <li><a href="#hardware">Hardware verkabeln</a></li>
       <li><a href="#firmware">Firmware flashen</a></li>
-      <li><a href="#app">App bauen und starten</a></li>
+      <li><a href="#app">App installieren</a></li>
       <li><a href="#bildquelle">Bildquelle</a></li>
       <li><a href="#anordnung">LED-Anordnung</a></li>
       <li><a href="#geraet">Controller verbinden</a></li>
@@ -40,7 +40,7 @@
 
     <h2 id="voraussetzungen">Voraussetzungen</h2>
     <ul>
-      <li>Ein Mac mit <strong>macOS 26</strong> oder neuer. Zum Bauen der App brauchst du <strong>Xcode 26</strong>.</li>
+      <li>Ein Mac mit <strong>macOS 26</strong> oder neuer. Der Download läuft auf Macs mit Apple-Chip; auf einem Intel-Mac baust du die App selbst mit <strong>Xcode 26</strong>.</li>
       <li>Ein <strong>WS2812B</strong>-Strip (Farbreihenfolge GRB), lang genug für die Ränder deines Monitors. Bis zu 255 LEDs.</li>
       <li>Ein <strong>ESP32 Dev Module</strong> oder ein <strong>NodeMCU ESP8266</strong> mit USB-Datenkabel.</li>
       <li>Ein <strong>5-V-Netzteil</strong> für den Strip.</li>
@@ -77,7 +77,13 @@ pio run -e nodemcuv2 -t upload</code></pre>
     <p>Sind mehrere serielle Geräte angeschlossen, gibst du den Port mit <code>--upload-port /dev/cu.…</code> an. Ein frischer ESP8266 braucht eventuell noch einen eingerichteten Profilspeicher, siehe <a href="#profil">Profil speichern</a>.</p>
     <p>Im Ordner <code>Firmware/SerialLEDcontroller</code> liegt außerdem der ursprüngliche Arduino-Sketch (70 LEDs an Pin 2). Er funktioniert weiterhin, kann aber kein Profil speichern.</p>
 
-    <h2 id="app">App bauen und starten</h2>
+    <h2 id="app">App installieren</h2>
+    <ol>
+      <li><a href="https://github.com/Janldeboer/Backglow/releases/download/v3.0.1/Backglow-3.0.1.dmg">Backglow-3.0.1.dmg</a> laden, öffnen und Backglow in den Programme-Ordner ziehen.</li>
+      <li>Backglow einmal öffnen. Weil die App noch nicht notarisiert ist, blockiert macOS den ersten Start. Klicke dann unter <em>Systemeinstellungen → Datenschutz &amp; Sicherheit</em> auf <strong>Dennoch öffnen</strong>.</li>
+    </ol>
+    <p>Was neu ist, steht in den <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.0.1">Release Notes</a>.</p>
+    <h3>Selbst bauen</h3>
 <pre><code>cd Backglow
 ./scripts/build-app.sh
 open dist/Backglow.app</code></pre>
@@ -138,7 +144,7 @@ open dist/Backglow.app</code></pre>
 
     <h2 id="probleme">Wenn etwas nicht klappt</h2>
     <h3>Die Vorschau bleibt leer</h3>
-    <p>Fehlt die Freigabe für die Bildschirmaufnahme, prüfe sie in den Systemeinstellungen und starte Backglow neu. Nach einem neuen Build mit Ad-hoc-Signatur kann macOS die Freigabe vergessen. Entferne Backglow dann aus der Liste und füge es erneut hinzu.</p>
+    <p>Fehlt die Freigabe für die Bildschirmaufnahme, prüfe sie in den Systemeinstellungen und starte Backglow neu. Nach einem Update oder neuen Build mit Ad-hoc-Signatur kann macOS die Freigabe vergessen. Entferne Backglow dann aus der Liste und füge es erneut hinzu.</p>
     <h3>Der ESP taucht nicht als Anschluss auf</h3>
     <p>Viele USB-Kabel laden nur und übertragen keine Daten. Probiere ein anderes Kabel und tippe auf <strong>Anschlüsse aktualisieren</strong>.</p>
     <h3>Die LEDs flackern oder zeigen falsche Farben</h3>
