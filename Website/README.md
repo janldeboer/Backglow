@@ -1,8 +1,15 @@
 # backglow.jandeboer.de
 
-Static landing and docs page in German, matching the app's current UI language. No build step, no scripts, no cookies, no external resources.
+Static landing and docs page in German (`/`) and English (`/en/`), like the app. Every page links to its counterpart and declares it with `hreflang`; keep both versions in step when editing. No build step, no scripts, no cookies, no external resources.
 
-- `public/`: the site. Screenshots in `public/assets/screens/` come from `Backglow.app --screenshots <folder>` (dark variants, converted to 1600 px JPEG), so they show the demo image and no private screen content.
+| German | English |
+| --- | --- |
+| `/` | `/en/` |
+| `/docs/` | `/en/docs/` |
+| `/datenschutz/` | `/en/privacy/` |
+| `/impressum/` | `/en/legal/` |
+
+- `public/`: the site. Screenshots in `public/assets/screens/<language>/` come from `Backglow.app --screenshots <folder> -AppleLanguages "(en)"` (dark variants, converted to 1600 px JPEG), so they show the demo image and no private screen content. `assets/icon.png` is an `ictool` render of `AppBundle/Backglow.icon`.
 - `deploy/`: nginx config, Compose project `backglow-website` and the Traefik router file.
 
 Preview locally:

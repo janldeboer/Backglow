@@ -64,6 +64,7 @@ pre code { background: none; padding: 0; }
 .site-header nav { display: flex; gap: 22px; font-size: 0.95rem; }
 .site-header nav a { color: var(--muted); text-decoration: none; }
 .site-header nav a:hover, .site-header nav a[aria-current] { color: var(--text); }
+.site-header nav a.lang { border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; }
 
 /* Hero */
 .hero { padding: 88px 0 40px; text-align: center; }

@@ -5,6 +5,7 @@
   <title>Anleitung – Backglow</title>
   <meta name="description" content="Backglow einrichten: Hardware verkabeln, Firmware flashen, App bauen und LED-Anordnung und Farben einstellen.">
   <link rel="canonical" href="https://backglow.jandeboer.de/docs/">
+  <link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/docs/"><link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/docs/"><link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/docs/">
   <meta name="theme-color" content="#070a14">
   <link rel="icon" type="image/png" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="stylesheet" href="/styles.css">
@@ -13,7 +14,7 @@
 <a class="skip" href="#main">Zum Inhalt</a>
 <header class="site-header"><div class="wrap">
   <a class="brand" href="/"><img src="/assets/icon.png" alt="" width="28" height="28"><span>Backglow</span></a>
-  <nav aria-label="Hauptnavigation"><a href="/docs/" aria-current="page">Anleitung</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a></nav>
+  <nav aria-label="Hauptnavigation"><a href="/docs/" aria-current="page">Anleitung</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a><a class="lang" href="/en/docs/" hreflang="en" lang="en">English</a></nav>
 </div></header>
 
 <div class="wrap page">
@@ -82,6 +83,7 @@ pio run -e nodemcuv2 -t upload</code></pre>
 open dist/Backglow.app</code></pre>
     <p>Das Skript baut die App und signiert sie mit deiner Apple-Development-Identität, falls vorhanden, sonst ad hoc. Du kannst <code>Backglow.app</code> danach in den Programme-Ordner ziehen.</p>
     <p>Starte die Aufnahme mit der Wiedergabetaste oben rechts. Beim ersten Mal fragt macOS nach der Freigabe für die <strong>Bildschirmaufnahme</strong>. Erlaube sie unter <em>Systemeinstellungen → Datenschutz &amp; Sicherheit → Bildschirm- &amp; Systemaudioaufnahme</em> und starte Backglow neu.</p>
+    <p>Backglow folgt der Systemsprache. Für eine eigene Sprache nur für Backglow fügst du die App unter <em>Systemeinstellungen → Allgemein → Sprache &amp; Region → Apps</em> hinzu.</p>
 
     <h2 id="bildquelle">Bildquelle</h2>
     <p>Unter <strong>Bildquelle</strong> wählst du den Bildschirm, hinter dem der Strip hängt.</p>
@@ -93,7 +95,7 @@ open dist/Backglow.app</code></pre>
 
     <h2 id="anordnung">LED-Anordnung</h2>
     <figure>
-      <img src="/assets/screens/layout.jpg" width="1600" height="1006" loading="lazy" alt="Seite LED-Anordnung mit Zeilen 12, Spalten 21, Aktive LEDs 59, Startversatz 43 und aktivierter Umkehr der Reihenfolge.">
+      <img src="/assets/screens/de/layout.jpg" width="1600" height="1006" loading="lazy" alt="Seite LED-Anordnung mit Zeilen 12, Spalten 21, Aktive LEDs 59, Startversatz 43 und aktivierter Umkehr der Reihenfolge.">
       <figcaption>Die Zahlen in der Kachelvorschau entsprechen der Reihenfolge der LEDs am Strip.</figcaption>
     </figure>
     <p>Backglow legt ein Raster über das Bild und nutzt nur dessen äußeren Ring. Jede Randkachel wird zu einer LED.</p>
@@ -108,7 +110,7 @@ open dist/Backglow.app</code></pre>
 
     <h2 id="geraet">Controller verbinden</h2>
     <figure>
-      <img src="/assets/screens/device.jpg" width="1600" height="1006" loading="lazy" alt="Seite Gerät mit Anschlussauswahl, Verbinden-Taste, physischen LEDs, Baudrate und Profilbereich.">
+      <img src="/assets/screens/de/device.jpg" width="1600" height="1006" loading="lazy" alt="Seite Gerät mit Anschlussauswahl, Verbinden-Taste, physischen LEDs, Baudrate und Profilbereich.">
     </figure>
     <ol>
       <li>Unter <strong>Gerät</strong> den <strong>Anschluss</strong> des ESP wählen. Backglow zeigt nur USB-Seriell-Anschlüsse, Bluetooth- und Systemports sind ausgeblendet.</li>
@@ -120,7 +122,7 @@ open dist/Backglow.app</code></pre>
 
     <h2 id="farben">Farben abstimmen</h2>
     <figure>
-      <img src="/assets/screens/color.jpg" width="1600" height="1006" loading="lazy" alt="Seite Farben mit Reglern für Sättigung, Gamma, Helligkeit, Glättung und Farbkanäle sowie der LED-Kalibrierung.">
+      <img src="/assets/screens/de/color.jpg" width="1600" height="1006" loading="lazy" alt="Seite Farben mit Reglern für Sättigung, Gamma, Helligkeit, Glättung und Farbkanäle sowie der LED-Kalibrierung.">
     </figure>
     <ul>
       <li><strong>Farbwirkung</strong>: Sättigung, Gamma, Helligkeit und Glättung. Mehr Glättung wirkt ruhiger, reagiert aber träger.</li>

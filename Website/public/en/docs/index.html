@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guide – Backglow</title>
+  <meta name="description" content="Set up Backglow: wire the hardware, flash the firmware, build the app and configure LED layout and colors.">
+  <link rel="canonical" href="https://backglow.jandeboer.de/en/docs/">
+  <link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/docs/"><link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/docs/"><link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/docs/">
+  <meta name="theme-color" content="#070a14">
+  <link rel="icon" type="image/png" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="/en/"><img src="/assets/icon.png" alt="" width="28" height="28"><span>Backglow</span></a>
+  <nav aria-label="Main navigation"><a href="/en/docs/" aria-current="page">Guide</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a><a class="lang" href="/docs/" hreflang="de" lang="de">Deutsch</a></nav>
+</div></header>
+
+<div class="wrap page">
+  <aside class="toc" aria-label="Contents">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#requirements">Requirements</a></li>
+      <li><a href="#hardware">Wiring the hardware</a></li>
+      <li><a href="#firmware">Flashing the firmware</a></li>
+      <li><a href="#app">Building and starting the app</a></li>
+      <li><a href="#source">Image source</a></li>
+      <li><a href="#layout">LED layout</a></li>
+      <li><a href="#device">Connecting the controller</a></li>
+      <li><a href="#colors">Tuning colors</a></li>
+      <li><a href="#profile">Saving a profile</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ol>
+  </aside>
+
+  <main id="main" class="prose">
+    <h1>Setting up Backglow</h1>
+    <p class="meta">From a bare monitor back to finished light. As of version 3.0, October 2026.</p>
+
+    <h2 id="requirements">Requirements</h2>
+    <ul>
+      <li>A Mac with <strong>macOS 26</strong> or later. To build the app you need <strong>Xcode 26</strong>.</li>
+      <li>A <strong>WS2812B</strong> strip (GRB color order), long enough for the edges of your monitor. Up to 255 LEDs.</li>
+      <li>An <strong>ESP32 Dev Module</strong> or a <strong>NodeMCU ESP8266</strong> with a USB data cable.</li>
+      <li>A <strong>5 V power supply</strong> for the strip.</li>
+      <li><a href="https://platformio.org/install/cli">PlatformIO Core</a> for the firmware.</li>
+    </ul>
+
+    <h2 id="hardware">Wiring the hardware</h2>
+    <p>Stick the strip around the back of your monitor as a ring. Where the stand sits, you can leave a gap; you'll skip it in the app later.</p>
+    <table>
+      <thead><tr><th>Board</th><th>Data pin</th><th>Label on the board</th></tr></thead>
+      <tbody>
+        <tr><td>ESP32 Dev Module</td><td>GPIO 18</td><td>usually “D18” or “18”</td></tr>
+        <tr><td>NodeMCU ESP8266</td><td>GPIO 5</td><td>“D1”</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>Connect the strip's data line (DIN) to the data pin, ideally through a resistor of about 330 Ω.</li>
+      <li>Connect the strip's 5 V and GND directly to the power supply. The ESP keeps getting power from the Mac over USB.</li>
+      <li><strong>Connect the GND of power supply, strip and ESP.</strong> Without a shared ground, the LEDs flicker or stay dark.</li>
+      <li>A capacitor of about 1000 µF across 5 V and GND at the start of the strip absorbs inrush spikes.</li>
+    </ul>
+    <div class="callout"><p>Check the pinout and voltage of your board before powering up for the first time. The firmware doesn't detect the board; it assumes the pins in the table.</p></div>
+
+    <h2 id="firmware">Flashing the firmware</h2>
+    <p>The firmware is in the repository under <code>Firmware/BackglowController</code>. It receives colors at 230,400 baud and caps the strip's brightness at 50 of 255, which is easier on both the power supply and your eyes.</p>
+<pre><code>git clone https://github.com/Janldeboer/Backglow.git
+cd Backglow/Firmware/BackglowController
+
+# ESP32
+pio run -e esp32dev -t upload
+
+# or ESP8266 (NodeMCU)
+pio run -e nodemcuv2 -t upload</code></pre>
+    <p>If several serial devices are connected, pick the port with <code>--upload-port /dev/cu.…</code>. A brand-new ESP8266 may still need its profile storage set up; see <a href="#profile">Saving a profile</a>.</p>
+    <p>The folder <code>Firmware/SerialLEDcontroller</code> also holds the original Arduino sketch (70 LEDs on pin 2). It still works but can't store a profile.</p>
+
+    <h2 id="app">Building and starting the app</h2>
+<pre><code>cd Backglow
+./scripts/build-app.sh
+open dist/Backglow.app</code></pre>
+    <p>The script builds the app and signs it with your Apple Development identity if you have one, otherwise ad hoc. You can then drag <code>Backglow.app</code> into your Applications folder.</p>
+    <p>Start capturing with the play button at the top right. The first time, macOS asks for <strong>Screen Recording</strong> permission. Allow it under <em>System Settings → Privacy &amp; Security → Screen &amp; System Audio Recording</em> and restart Backglow.</p>
+    <p>Backglow follows your system language. To pick a language just for Backglow, add it under <em>System Settings → General → Language &amp; Region → Applications</em>.</p>
+
+    <h2 id="source">Image source</h2>
+    <p>Under <strong>Image Source</strong>, choose the display the strip is mounted behind.</p>
+    <ul>
+      <li><strong>Target frame rate</strong>: 30 fps is enough for most content; up to 60 is possible.</li>
+      <li><strong>Internal resolution</strong>: 25% is almost always enough and saves compute time, since only averages matter.</li>
+      <li><strong>Ignore black letterbox bars</strong>: for widescreen movies, the LEDs then glow in the colors of the actual picture instead of black.</li>
+    </ul>
+
+    <h2 id="layout">LED layout</h2>
+    <figure>
+      <img src="/assets/screens/en/layout.jpg" width="1600" height="1006" loading="lazy" alt="LED Layout page with rows 12, columns 21, active LEDs 59, start offset 43 and reverse order enabled.">
+      <figcaption>The numbers in the tile preview match the order of the LEDs on the strip.</figcaption>
+    </figure>
+    <p>Backglow lays a grid over the picture and uses only its outer ring. Each edge tile becomes one LED.</p>
+    <ul>
+      <li><strong>Columns</strong>: as many as there are LEDs along the top edge.</li>
+      <li><strong>Rows</strong>: as many as there are LEDs along one side, corners included.</li>
+      <li><strong>Active LEDs</strong>: how many LEDs actually light up. If the value is smaller than the ring, a gap remains at the end, for example at the stand.</li>
+      <li><strong>Start offset</strong>: moves which edge tile LED 1 sits at, counted clockwise from the top-left corner.</li>
+      <li><strong>Reverse order</strong>: for strips laid counterclockwise.</li>
+    </ul>
+    <p>When the preview matches your strip, every LED glows in the color of the tile right in front of it. If everything is off by a few LEDs, fix it with the start offset.</p>
+
+    <h2 id="device">Connecting the controller</h2>
+    <figure>
+      <img src="/assets/screens/en/device.jpg" width="1600" height="1006" loading="lazy" alt="Device page with port selection, Connect button, physical LEDs, baud rate and the profile section.">
+    </figure>
+    <ol>
+      <li>Under <strong>Device</strong>, choose the ESP's <strong>Port</strong>. Backglow lists only USB serial ports; Bluetooth and system ports are hidden.</li>
+      <li>Set <strong>Physical LEDs</strong> to the total number of LEDs on the strip.</li>
+      <li>Leave <strong>Baud rate</strong> at 230400 to match the firmware.</li>
+      <li>Click <strong>Connect</strong> and start capturing.</li>
+    </ol>
+    <p>Backglow never opens a port on its own. When you stop, the app turns the LEDs off.</p>
+
+    <h2 id="colors">Tuning colors</h2>
+    <figure>
+      <img src="/assets/screens/en/color.jpg" width="1600" height="1006" loading="lazy" alt="Colors page with sliders for saturation, gamma, brightness, smoothing and color channels, plus LED calibration.">
+    </figure>
+    <ul>
+      <li><strong>Color Look</strong>: saturation, gamma, brightness and smoothing. More smoothing looks calmer but reacts more slowly.</li>
+      <li><strong>Color Channels</strong>: compensates for a color cast of the strip or the wall.</li>
+      <li><strong>LED Calibration</strong>: choose a <strong>Test color on LEDs</strong> and set how the strip should show that base color. Add a <strong>Color temperature</strong> (neutral, warm, cool) on top.</li>
+      <li><strong>Backlight and Power</strong>: a faint backlight keeps the wall softly lit in dark scenes. The power limit dims very bright images evenly.</li>
+    </ul>
+
+    <h2 id="profile">Saving a profile on the controller</h2>
+    <p>With the firmware from this repository, the controller can keep a profile. <strong>Save Current Setup</strong> writes the LED layout and colors to the ESP and reads them back to verify. Next time you connect, Backglow loads the profile automatically.</p>
+    <p>If an ESP8266 can't open its file system area, for example because the board is new, <strong>Set Up Controller Storage</strong> appears. It formats that area only after you confirm. Any files stored there are lost.</p>
+    <p>Display choice, frame rate and port stay on the Mac, and for now so do color temperature, LED calibration, backlight and power limit. Settings live in <code>~/Library/Application Support/Backglow/settings.json</code>.</p>
+
+    <h2 id="troubleshooting">Troubleshooting</h2>
+    <h3>The preview stays empty</h3>
+    <p>If Screen Recording permission is missing, check it in System Settings and restart Backglow. After a new build with an ad hoc signature, macOS may forget the permission. Remove Backglow from the list and add it again.</p>
+    <h3>The ESP doesn't show up as a port</h3>
+    <p>Many USB cables only charge and don't carry data. Try another cable and click <strong>Refresh Ports</strong>.</p>
+    <h3>The LEDs flicker or show wrong colors</h3>
+    <p>Usually the shared ground is missing or the data line is too long. Also check that your strip really is a WS2812B with GRB order. If red and green are swapped, the firmware doesn't match the strip.</p>
+    <h3>The light is shifted by a few LEDs</h3>
+    <p>Adjust <strong>Start offset</strong> and, if needed, <strong>Reverse order</strong> until the colors at the corners match.</p>
+    <p>For more questions or bugs, open an <a href="https://github.com/Janldeboer/Backglow/issues">issue on GitHub</a>.</p>
+  </main>
+</div>
+
+<footer class="site-footer"><div class="wrap">
+  <span>© 2026 Jan de Boer</span>
+  <nav aria-label="Legal information"><a href="/en/docs/">Guide</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a><a href="/en/privacy/">Privacy</a><a href="/en/legal/">Legal Notice</a></nav>
+</div></footer>
+</body>
+</html>

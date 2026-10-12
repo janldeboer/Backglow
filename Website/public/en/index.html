@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backglow – Ambient Lighting for Mac</title>
+  <meta name="description" content="Backglow extends your Mac's screen onto the wall behind it as light, with an LED strip, an ESP32 and a native macOS app.">
+  <link rel="canonical" href="https://backglow.jandeboer.de/en/">
+  <link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/"><link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/"><link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/">
+  <meta property="og:title" content="Backglow – Ambient Lighting for Mac">
+  <meta property="og:description" content="Your Mac's picture, as light on the wall behind it.">
+  <meta property="og:image" content="https://backglow.jandeboer.de/assets/screens/en/dashboard.jpg">
+  <meta property="og:url" content="https://backglow.jandeboer.de/en/">
+  <meta name="theme-color" content="#070a14">
+  <link rel="icon" type="image/png" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="/en/"><img src="/assets/icon.png" alt="" width="28" height="28"><span>Backglow</span></a>
+  <nav aria-label="Main navigation"><a href="/en/docs/">Guide</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a><a class="lang" href="/" hreflang="de" lang="de">Deutsch</a></nav>
+</div></header>
+
+<main id="main">
+  <section class="hero"><div class="wrap">
+    <p class="eyebrow">Ambient Lighting for Mac · Open Source</p>
+    <h1>Your screen, <span class="glow-text">all the way to the wall.</span></h1>
+    <p class="lead">Backglow reads the edges of your Mac's screen and sends their colors in real time to an LED strip behind your monitor. Movies, games and music videos feel bigger, and in a dark room the contrast with the bright screen is easier on the eyes.</p>
+    <div class="actions">
+      <a class="button primary" href="/en/docs/">Set it up</a>
+      <a class="button" href="https://github.com/Janldeboer/Backglow">Source on GitHub</a>
+    </div>
+    <p class="note">For macOS 26 · Free under GPL-3.0 · In English and German</p>
+    <div class="stage">
+      <img src="/assets/screens/en/dashboard.jpg" width="1600" height="1006" alt="Backglow window with live preview: a sunset framed by 59 numbered zones, each showing the color of the image edge.">
+    </div>
+  </div></section>
+
+  <section id="how-it-works"><div class="wrap">
+    <div class="section-head">
+      <h2>From pixel to LED in milliseconds</h2>
+      <p>Everything runs locally on your Mac. Backglow never connects to the internet.</p>
+    </div>
+    <ol class="steps">
+      <li><h3>Capture the picture</h3><p>ScreenCaptureKit delivers one display, without Backglow's own windows, at an adjustable resolution and frame rate.</p></li>
+      <li><h3>Compute the zones</h3><p>A Metal shader averages the edges on the GPU in linear light. One zone per LED, matching how your strip is laid out.</p></li>
+      <li><h3>Send the light</h3><p>Smoothed colors go over USB to an ESP32 or ESP8266 that drives the strip. Up to 60 frames per second.</p></li>
+    </ol>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="section-head">
+      <h2>Calm light, not a disco</h2>
+      <p>The image processing follows the proven techniques of HyperHDR, rewritten for the Mac.</p>
+    </div>
+    <div class="features">
+      <div><h3>Live preview</h3><p>See every zone with its number and calculated color before a strip is even connected.</p></div>
+      <div><h3>Letterbox detection</h3><p>Black bars are ignored, but only once they are stable. Dark scenes don't make the frame jump.</p></div>
+      <div><h3>Smooth transitions</h3><p>Spring smoothing on its own output clock and an anti-flicker filter prevent jitter and flicker.</p></div>
+      <div><h3>Color calibration</h3><p>Eight reference colors, color temperature, gamma and channel gains match your strip to your wall.</p></div>
+      <div><h3>Backlight and power limit</h3><p>A gentle base light for dark images and a ceiling that dims bright scenes evenly.</p></div>
+      <div><h3>Profile on the controller</h3><p>Save the LED layout and colors on the ESP; they load automatically the next time you connect.</p></div>
+    </div>
+  </div></section>
+
+  <section><div class="wrap split">
+    <div>
+      <div class="section-head">
+        <h2>What you need</h2>
+        <p>Plus an evening of tinkering and a bit of solder.</p>
+      </div>
+      <ul class="checklist">
+        <li>A Mac with macOS 26<span>To build the app, also Xcode 26.</span></li>
+        <li>An addressable LED strip<span>WS2812B, stuck around the back of your monitor.</span></li>
+        <li>An ESP32 or ESP8266<span>The matching firmware is in the repository.</span></li>
+        <li>A 5 V power supply<span>Sized for your number of LEDs, with a shared ground.</span></li>
+      </ul>
+      <p class="more"><a href="/en/docs/">Step-by-step guide →</a></p>
+    </div>
+    <img src="/assets/screens/en/layout.jpg" width="1600" height="1006" loading="lazy" alt="LED Layout page with rows, columns, active LEDs, start offset and a tile preview.">
+  </div></section>
+
+  <section class="cta"><div class="wrap">
+    <h2>Pre-release, already in daily use</h2>
+    <p>Backglow is being prepared for a first release. Until then, you build the app yourself with one command. Questions and bugs are welcome as issues on GitHub.</p>
+    <div class="actions">
+      <a class="button primary" href="/en/docs/#app">Build the app</a>
+      <a class="button" href="https://github.com/Janldeboer/Backglow/issues">Report an issue</a>
+    </div>
+  </div></section>
+</main>
+
+<footer class="site-footer"><div class="wrap">
+  <span>© 2026 Jan de Boer</span>
+  <nav aria-label="Legal information"><a href="/en/docs/">Guide</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a><a href="/en/privacy/">Privacy</a><a href="/en/legal/">Legal Notice</a></nav>
+</div></footer>
+</body>
+</html>
