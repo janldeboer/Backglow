@@ -19,14 +19,48 @@ jobs:
       - name: Core tests
         run: swift test --disable-sandbox
 
-      - name: Build app
-        # No signing identity on CI; the app is signed ad hoc.
+      # Tag builds are signed with Developer ID and notarized; everything else is signed ad hoc.
+      # The secrets only reach tag builds, never pull requests.
+      - name: Import Developer ID certificate
+        if: startsWith(github.ref, 'refs/tags/')
         env:
-          SIGN_IDENTITY: "-"
-        run: ./scripts/build-app.sh
+          DEVELOPER_ID_P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/signing.keychain-db"
+          keychain_password="$(uuidgen)"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          echo "$DEVELOPER_ID_P12" | base64 --decode > "$RUNNER_TEMP/developer-id.p12"
+          security import "$RUNNER_TEMP/developer-id.p12" -k "$keychain" \
+            -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign
+          rm "$RUNNER_TEMP/developer-id.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$keychain_password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v -p codesigning "$keychain" | grep -q "Developer ID Application" \
+            || { echo "The certificate in DEVELOPER_ID_P12 is not a Developer ID Application identity." >&2; exit 1; }
+
+      - name: Build app
+        run: |
+          # build-app.sh picks the Developer ID identity from the keychain on tag builds.
+          [[ "$GITHUB_REF" == refs/tags/* ]] || export SIGN_IDENTITY=-
+          ./scripts/build-app.sh
 
       - name: Package DMG
         run: ./scripts/make-dmg.sh
+
+      - name: Notarize DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: |
+          export NOTARY_KEY="$RUNNER_TEMP/notary-key.p8"
+          printf '%s\n' "$NOTARY_KEY_P8" > "$NOTARY_KEY"
+          ./scripts/notarize.sh
+          rm "$NOTARY_KEY"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -43,3 +77,7 @@ jobs:
           notes=(--generate-notes)
           if [ -f "docs/releases/$GITHUB_REF_NAME.md" ]; then notes=(--notes-file "docs/releases/$GITHUB_REF_NAME.md"); fi
           gh release create "$GITHUB_REF_NAME" dist/*.dmg --title "Backglow $GITHUB_REF_NAME" "${notes[@]}" --prerelease
+
+      - name: Remove signing keychain
+        if: always() && startsWith(github.ref, 'refs/tags/')
+        run: security delete-keychain "$RUNNER_TEMP/signing.keychain-db" || true
