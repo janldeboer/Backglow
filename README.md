@@ -1,6 +1,8 @@
-# Ambient Lighting 3 for macOS
+# Backglow – Ambient Lighting for Mac
 
-Version 3 is a native SwiftUI redesign of the earlier Ambilight for Mac experiments. It uses a sidebar and macOS Liquid Glass surfaces, while keeping the working LED controller protocol and perimeter layout from the older builds. The app is named **Ambient Lighting** to avoid using *Ambilight* as a product name.
+Backglow mirrors the edges of your Mac's screen onto an LED strip behind it. Version 3 is a native SwiftUI redesign of the earlier Ambilight for Mac experiments, previously published as *macOS Ambient Lighting*. It uses a sidebar and macOS Liquid Glass surfaces, while keeping the working LED controller protocol and perimeter layout from the older builds.
+
+Website and docs: [backglow.jandeboer.de](https://backglow.jandeboer.de)
 
 ## Requirements
 
@@ -12,7 +14,7 @@ Version 3 is a native SwiftUI redesign of the earlier Ambilight for Mac experime
 
 ```sh
 ./scripts/build-app.sh
-open dist/AmbientLightingV3.app
+open dist/Backglow.app
 ```
 
 The script creates an ad hoc signed native app in `dist/`. Open `Package.swift` in Xcode to work on the source. To run the pure core tests:
@@ -37,7 +39,7 @@ Linear-light averaging, the LED calibration, minimum backlight and power limit, 
 
 The device menu only lists USB-backed serial callout ports. Virtual Bluetooth and system ports are hidden, and a selected port is checked again before opening. This is a guard against accidental connection, not proof that an arbitrary USB serial adapter is a microcontroller. No port is opened automatically.
 
-Settings are saved in `~/Library/Application Support/AmbientLightingV3/settings.json`.
+Settings are saved in `~/Library/Application Support/Backglow/settings.json`.
 With v3 firmware, the app loads the controller's LED layout and color calibration
 after an explicit connection. Temperature, the eight-corner LED calibration, minimum
 backlight and power limit are stored only in the local settings for now, because the
@@ -51,7 +53,7 @@ settings remain local.
 
 The serial library is ORSSerialPort **2.1.0**, the latest upstream release checked for this rebuild. It is vendored at `Vendor/ORSSerialPort` so builds do not depend on GitHub access. Its MIT license is in that directory. The app's own license is GPL-3.0, as in the original repository.
 
-The new ESP32/ESP8266 firmware is in [Firmware/AmbientController](Firmware/AmbientController/README.md).
+The new ESP32/ESP8266 firmware is in [Firmware/BackglowController](Firmware/BackglowController/README.md).
 It stores a versioned profile in ESP32 NVS or ESP8266 LittleFS and continues to
 accept the `led`/`les` color stream. The legacy sketch does not store profiles.
 Build and board setup are described in the firmware README. Guarded in-app
@@ -60,13 +62,13 @@ flashing and automatic monitor-to-controller pairing remain planned in
 
 ## Code map
 
-- `Sources/AmbientLightingCore`: device-independent configuration, perimeter mapping, pixel analysis, color correction, and serial packet/profile encoding.
-- `Sources/AmbientLightingV3/ScreenCaptureEngine.swift`: ScreenCaptureKit lifecycle and frame delivery.
-- `Sources/AmbientLightingV3/GPUZoneReducer.swift` and `Shaders/ZoneAverage.metal`: GPU zone averaging.
-- `Sources/AmbientLightingV3/LightingModel.swift`: app state, settings, frame processing, and output coordination.
-- `Sources/AmbientLightingV3/AmbientLightingApp.swift`: native sidebar and preview UI.
-- `Sources/AmbientLightingV3/SerialDevice.swift`: ORSSerialPort adapter.
-- `Sources/AmbientLightingV3/USBSerialPortDiscovery.swift`: read-only USB serial discovery.
+- `Sources/BackglowCore`: device-independent configuration, perimeter mapping, pixel analysis, color correction, and serial packet/profile encoding.
+- `Sources/Backglow/ScreenCaptureEngine.swift`: ScreenCaptureKit lifecycle and frame delivery.
+- `Sources/Backglow/GPUZoneReducer.swift` and `Shaders/ZoneAverage.metal`: GPU zone averaging.
+- `Sources/Backglow/LightingModel.swift`: app state, settings, frame processing, and output coordination.
+- `Sources/Backglow/BackglowApp.swift`: native sidebar and preview UI.
+- `Sources/Backglow/SerialDevice.swift`: ORSSerialPort adapter.
+- `Sources/Backglow/USBSerialPortDiscovery.swift`: read-only USB serial discovery.
 
 The previous history remains in Git. The complete older implementation is on `origin/main`; the later architecture experiments are available as `legacy/v2`, `origin/2.1`, `legacy/serial-fix`, and `legacy/2.2-pipeline` in this checkout. Version 3 is a fresh implementation rather than a continuation of the incomplete pipeline rebuild.
 
@@ -77,6 +79,6 @@ LED calibration, minimum backlight, power limit, loading older settings,
 spring smoothing, anti-flicker, black-bar detection and stabilization, output rate,
 the legacy packet, and the new profile protocol. A native
 C++ harness checks the firmware's protocol and persistence logic. Both PlatformIO
-firmware environments build. `swift scripts/check-metal.swift Sources/AmbientLightingV3/Shaders/ZoneAverage.metal`
+firmware environments build. `swift scripts/check-metal.swift Sources/Backglow/Shaders/ZoneAverage.metal`
 runs a real Metal dispatch with a known 2×2 test image and checks the sRGB-to-linear averaging. Live capture permissions,
 serial transfer and persistent storage still require testing with real hardware.

@@ -4,7 +4,7 @@ Stand: 22.09.2026 · Profilfunktion implementiert, Flasher weiterhin Entwurf
 
 ## Ausgangspunkt
 
-Die bisherige FastLED-Firmware versteht nur `led`-Farbpakete und `les` zum Anzeigen eines Bildes. Sie meldet keine Geräteidentität und speichert keine Einstellungen. Die neue Firmware unter `Firmware/AmbientController` ergänzt ein persistentes Profil; die App behält ihre lokale JSON-Datei als Rückfallkopie.
+Die bisherige FastLED-Firmware versteht nur `led`-Farbpakete und `les` zum Anzeigen eines Bildes. Sie meldet keine Geräteidentität und speichert keine Einstellungen. Die neue Firmware unter `Firmware/BackglowController` ergänzt ein persistentes Profil; die App behält ihre lokale JSON-Datei als Rückfallkopie.
 
 Die App zeigt ab diesem Stand ausschließlich serielle Ports mit einem USB-Elternknoten und USB Vendor/Product ID an. Sie öffnet beim Suchen keinen Port. Das blendet virtuelle Bluetooth- und Systemports aus. Eine USB-Seriell-Kennung allein beweist **nicht**, dass dahinter ein ESP oder überhaupt ein Microcontroller steckt: CP210x-, CH34x- und FTDI-Brücken können an sehr unterschiedlichen Geräten hängen. Es gibt auch kein verlässliches Merkmal eines passiven „USB-Kabeltyps“. Automatische Verbindung oder automatisches Flashen allein aufgrund eines Namens oder einer VID/PID bleiben ausgeschlossen.
 

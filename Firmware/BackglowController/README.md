@@ -1,4 +1,4 @@
-# Ambient Lighting Controller v3
+# Backglow Controller v3
 
 This firmware adds a persistent controller profile to the historical `led`/`les`
 color stream. It targets generic **ESP32 Dev Module** (`esp32dev`, data pin GPIO18)
@@ -18,7 +18,7 @@ The host-side firmware protocol check runs without a board:
 
 ```sh
 clang++ -std=c++17 -DESP32 -DLED_DATA_PIN=18 -I tests/stubs \
-  tests/host_protocol.cpp -o /tmp/ambient-v3-protocol && /tmp/ambient-v3-protocol
+  tests/host_protocol.cpp -o /tmp/backglow-protocol && /tmp/backglow-protocol
 ```
 
 No upload command is configured here. The host app does not flash a controller
