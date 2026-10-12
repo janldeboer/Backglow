@@ -38,4 +38,8 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/*.dmg --title "Backglow $GITHUB_REF_NAME" --generate-notes --prerelease
+        # Hand-written notes in docs/releases/<tag>.md win over generated ones.
+        run: |
+          notes=(--generate-notes)
+          if [ -f "docs/releases/$GITHUB_REF_NAME.md" ]; then notes=(--notes-file "docs/releases/$GITHUB_REF_NAME.md"); fi
+          gh release create "$GITHUB_REF_NAME" dist/*.dmg --title "Backglow $GITHUB_REF_NAME" "${notes[@]}" --prerelease
