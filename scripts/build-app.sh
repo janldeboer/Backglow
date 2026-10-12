@@ -3,14 +3,16 @@ set -euo pipefail
 
 project_dir="${0:A:h:h}"
 scratch_dir="/private/tmp/ambient-lighting-v3-build"
-product_dir="$scratch_dir/out/Products/Release"
 app_dir="$project_dir/dist/AmbientLightingV3.app"
 
 export CLANG_MODULE_CACHE_PATH="/private/tmp/ambient-lighting-v3-module-cache"
 export SWIFTPM_MODULECACHE_OVERRIDE="$CLANG_MODULE_CACHE_PATH"
 
 cd "$project_dir"
-swift build --disable-sandbox -c release -debug-info-format none --scratch-path "$scratch_dir"
+build_flags=(--disable-sandbox -c release -debug-info-format none --scratch-path "$scratch_dir")
+swift build "${build_flags[@]}"
+# The output folder differs between SwiftPM build systems, so ask for it.
+product_dir="$(swift build "${build_flags[@]}" --show-bin-path)"
 rm -rf "$app_dir"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$product_dir/AmbientLightingV3" "$app_dir/Contents/MacOS/"
