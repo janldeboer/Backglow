@@ -16,7 +16,7 @@ product_dir="$(swift build "${build_flags[@]}" --show-bin-path)"
 rm -rf "$app_dir"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$product_dir/Backglow" "$app_dir/Contents/MacOS/"
-cp -R "$product_dir/Backglow_Backglow.bundle" "$app_dir/Contents/Resources/"
+cp "$project_dir/Sources/Backglow/Shaders/ZoneAverage.metal" "$app_dir/Contents/Resources/"
 cp "$project_dir/AppBundle/Info.plist" "$app_dir/Contents/Info.plist"
 # String Catalogs (German source, English translation) become de.lproj and en.lproj.
 for catalog in "$project_dir"/AppBundle/Localization/*.xcstrings; do

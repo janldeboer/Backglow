@@ -11,7 +11,11 @@ final class GPUZoneReducer {
     init?() {
         guard let device = MTLCreateSystemDefaultDevice(),
               let queue = device.makeCommandQueue(),
-              let shaderURL = Bundle.module.url(forResource: "ZoneAverage", withExtension: "metal"),
+              // The packaged app carries the shader in Contents/Resources. Bundle.module only
+              // finds SwiftPM's bundle next to the build folder and traps when it is missing,
+              // so it is just the fallback for `swift run`.
+              let shaderURL = Bundle.main.url(forResource: "ZoneAverage", withExtension: "metal")
+                ?? Bundle.module.url(forResource: "ZoneAverage", withExtension: "metal"),
               let shader = try? String(contentsOf: shaderURL, encoding: .utf8),
               let library = try? device.makeLibrary(source: shader, options: nil),
               let function = library.makeFunction(name: "zoneAverage"),
