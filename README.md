@@ -31,11 +31,10 @@ On the first capture, macOS may request Screen Recording access. Grant it in **S
 
 ```sh
 ./scripts/build-app.sh       # with Developer ID in the keychain
-./scripts/make-dmg.sh
-./scripts/notarize.sh        # signs the DMG, notarizes it with Apple and staples the ticket
+./scripts/notarize.sh        # notarizes and staples the app, then builds, notarizes and staples the DMG
 ```
 
-`notarize.sh` reads its credentials from the keychain profile `backglow-notary` (create it once with `xcrun notarytool store-credentials backglow-notary`) or from an App Store Connect API key in `NOTARY_KEY`, `NOTARY_KEY_ID` and `NOTARY_ISSUER`.
+On a `v3.*` tag, CI does the same once the repository secrets `DEVELOPER_ID_P12`, `DEVELOPER_ID_P12_PASSWORD`, `NOTARY_KEY_P8`, `NOTARY_KEY_ID` and `NOTARY_ISSUER_ID` exist, and publishes the release. Without them a tag only builds. `notarize.sh` reads its credentials from the keychain profile `backglow-notary` (create it once with `xcrun notarytool store-credentials backglow-notary`) or from an App Store Connect API key in `NOTARY_KEY`, `NOTARY_KEY_ID` and `NOTARY_ISSUER`.
 
 ## Languages
 
