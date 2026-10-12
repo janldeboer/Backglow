@@ -3,7 +3,7 @@ import SwiftUI
 
 @main
 struct AmbientLightingV3App: App {
-    @StateObject private var model = LightingModel()
+    @StateObject private var model = LightingModel(persistsSettings: !ScreenshotMode.isActive)
 
     var body: some Scene {
         WindowGroup {
@@ -26,6 +26,7 @@ private enum Page: String, CaseIterable, Identifiable {
     case diagnostics = "Diagnose"
 
     var id: Self { self }
+    var fileName: String { String(describing: self) }
     var symbol: String {
         switch self {
         case .dashboard: "square.grid.2x2"
@@ -80,6 +81,9 @@ private struct MainWindow: View {
                 .frame(maxWidth: .infinity, alignment: .top)
             }
             .background(Color(nsColor: .windowBackgroundColor))
+            .task {
+                if let folder = ScreenshotMode.folder { await takeScreenshots(into: folder) }
+            }
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
@@ -92,6 +96,32 @@ private struct MainWindow: View {
                 }
             }
         }
+    }
+
+    private func takeScreenshots(into folder: URL) async {
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }),
+                  let still = DemoImage.pixelBuffer() else { throw CocoaError(.featureUnsupported) }
+            window.setContentSize(NSSize(width: 1240, height: 780))
+            window.center()
+            model.change { $0.ignoreBlackBars = true }
+            await model.showStill(still)
+            for (appearance, suffix) in [(NSAppearance.Name.aqua, "light"), (.darkAqua, "dark")] {
+                NSApp.appearance = NSAppearance(named: appearance)
+                for page in Page.allCases {
+                    selection = page
+                    try await Task.sleep(for: .milliseconds(900))
+                    let image = try await ScreenshotMode.capture(window)
+                    try ScreenshotMode.save(image, to: folder.appendingPathComponent("\(page.fileName)-\(suffix).png"))
+                }
+            }
+        } catch {
+            // `open` drops stderr, so leave the reason next to the images.
+            try? "Screenshots failed: \(error)\n".write(to: folder.appendingPathComponent("error.txt"),
+                                                        atomically: true, encoding: .utf8)
+        }
+        NSApp.terminate(nil)
     }
 
     private var header: some View {
@@ -446,7 +476,7 @@ private struct LiveMetrics: View {
     @ObservedObject var live: LiveState
     var body: some View {
         HStack(spacing: 14) {
-            metric("Bildrate", value: String(format: "%.1f fps", live.actualFPS))
+            metric("Bildrate", value: live.actualFPS > 0 ? String(format: "%.1f fps", live.actualFPS) : "–")
             metric("Analyse", value: String(format: "%.1f ms", live.processingMilliseconds))
             metric("Rechenweg", value: live.usesGPU ? "Metal GPU" : "CPU")
         }
@@ -463,7 +493,7 @@ private struct LiveMetrics: View {
 private struct LiveDiagnostics: View {
     @ObservedObject var live: LiveState
     var body: some View {
-        LabeledContent("Bildrate", value: String(format: "%.1f fps", live.actualFPS))
+        LabeledContent("Bildrate", value: live.actualFPS > 0 ? String(format: "%.1f fps", live.actualFPS) : "–")
         LabeledContent("Analyse pro Bild", value: String(format: "%.2f ms", live.processingMilliseconds))
         LabeledContent("Berechnung", value: live.usesGPU ? "Metal" : "CPU-Fallback")
         LabeledContent("Zonen", value: "\(live.zones.count)")

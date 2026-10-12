@@ -1,5 +1,6 @@
 import AmbientLightingCore
 import AppKit
+import CoreImage
 import Foundation
 
 /// Fast-changing capture and output values. They live apart from `LightingModel` so their
@@ -39,6 +40,7 @@ final class LightingModel: ObservableObject {
     private var restartTask: Task<Void, Never>?
     private var captureTask: Task<Void, Never>?
     private var desiredCapture = false
+    private let persistsSettings: Bool
 
     private static let settingsURL: URL = {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -46,8 +48,11 @@ final class LightingModel: ObservableObject {
             .appendingPathComponent("settings.json")
     }()
 
-    init() {
-        if let saved = try? Data(contentsOf: Self.settingsURL),
+    /// With `persistsSettings` false, the model starts from defaults and never writes settings.
+    init(persistsSettings: Bool = true) {
+        self.persistsSettings = persistsSettings
+        if persistsSettings,
+           let saved = try? Data(contentsOf: Self.settingsURL),
            var decoded = try? JSONDecoder().decode(LightingConfiguration.self, from: saved) {
             decoded.normalize()
             configuration = decoded
@@ -145,6 +150,44 @@ final class LightingModel: ObservableObject {
             resetOutput()
             sendBlack()
         }
+    }
+
+    /// Shows a still image as if it had been captured, through the same GPU reduction and
+    /// color pipeline but without smoothing or LED output. Used by the screenshot mode.
+    func showStill(_ pixelBuffer: CVPixelBuffer) async {
+        let width = CVPixelBufferGetWidth(pixelBuffer)
+        let height = CVPixelBufferGetHeight(pixelBuffer)
+        let start = CFAbsoluteTimeGetCurrent()
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        let bytes = UnsafeRawBufferPointer(start: CVPixelBufferGetBaseAddress(pixelBuffer),
+                                           count: CVPixelBufferGetBytesPerRow(pixelBuffer) * height)
+        let content = configuration.ignoreBlackBars ? PixelAnalysis.detectContent(
+            bytes: bytes, bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer), width: width, height: height
+        ) : nil
+        let zones = PerimeterLayout.zones(width: width, height: height, configuration: configuration,
+                                          contentRect: content)
+        let cpuColors = zones.map {
+            PixelAnalysis.average(bytes: bytes, bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer),
+                                  imageWidth: width, imageHeight: height, rect: $0.rect)
+        }
+        CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+        let gpuColors: [LightingRGB]? = await withCheckedContinuation { continuation in
+            guard let reducer = GPUZoneReducer(),
+                  reducer.reduce(pixelBuffer: pixelBuffer, zones: zones, completion: { continuation.resume(returning: $0) })
+            else {
+                continuation.resume(returning: nil)
+                return
+            }
+        }
+        live.preview = CIContext().createCGImage(CIImage(cvPixelBuffer: pixelBuffer),
+                                                 from: CGRect(x: 0, y: 0, width: width, height: height))
+        live.zones = zones
+        live.imageWidth = width
+        live.imageHeight = height
+        live.colors = (gpuColors ?? cpuColors).map(processed)
+        live.usesGPU = gpuColors != nil
+        live.processingMilliseconds = (CFAbsoluteTimeGetCurrent() - start) * 1000
+        captureStatus = "Demo-Bild"
     }
 
     private func startCapture() async {
@@ -263,6 +306,7 @@ final class LightingModel: ObservableObject {
     }
 
     private func save() {
+        guard persistsSettings else { return }
         do {
             try FileManager.default.createDirectory(at: Self.settingsURL.deletingLastPathComponent(),
                                                     withIntermediateDirectories: true)
