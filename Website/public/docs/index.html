@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Anleitung – Backglow</title>
+  <meta name="description" content="Backglow einrichten: Hardware verkabeln, Firmware flashen, App bauen und LED-Anordnung und Farben einstellen.">
+  <link rel="canonical" href="https://backglow.jandeboer.de/docs/">
+  <meta name="theme-color" content="#070a14">
+  <link rel="icon" type="image/png" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt</a>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="/"><img src="/assets/icon.png" alt="" width="28" height="28"><span>Backglow</span></a>
+  <nav aria-label="Hauptnavigation"><a href="/docs/" aria-current="page">Anleitung</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a></nav>
+</div></header>
+
+<div class="wrap page">
+  <aside class="toc" aria-label="Inhalt">
+    <p>Inhalt</p>
+    <ol>
+      <li><a href="#voraussetzungen">Voraussetzungen</a></li>
+      <li><a href="#hardware">Hardware verkabeln</a></li>
+      <li><a href="#firmware">Firmware flashen</a></li>
+      <li><a href="#app">App bauen und starten</a></li>
+      <li><a href="#bildquelle">Bildquelle</a></li>
+      <li><a href="#anordnung">LED-Anordnung</a></li>
+      <li><a href="#geraet">Controller verbinden</a></li>
+      <li><a href="#farben">Farben abstimmen</a></li>
+      <li><a href="#profil">Profil speichern</a></li>
+      <li><a href="#probleme">Wenn etwas nicht klappt</a></li>
+    </ol>
+  </aside>
+
+  <main id="main" class="prose">
+    <h1>Backglow einrichten</h1>
+    <p class="meta">Von der leeren Monitorrückseite bis zum fertigen Licht. Stand: Version 3.0, Oktober 2026.</p>
+
+    <h2 id="voraussetzungen">Voraussetzungen</h2>
+    <ul>
+      <li>Ein Mac mit <strong>macOS 26</strong> oder neuer. Zum Bauen der App brauchst du <strong>Xcode 26</strong>.</li>
+      <li>Ein <strong>WS2812B</strong>-Strip (Farbreihenfolge GRB), lang genug für die Ränder deines Monitors. Bis zu 255 LEDs.</li>
+      <li>Ein <strong>ESP32 Dev Module</strong> oder ein <strong>NodeMCU ESP8266</strong> mit USB-Datenkabel.</li>
+      <li>Ein <strong>5-V-Netzteil</strong> für den Strip.</li>
+      <li>Für die Firmware <a href="https://platformio.org/install/cli">PlatformIO Core</a>.</li>
+    </ul>
+
+    <h2 id="hardware">Hardware verkabeln</h2>
+    <p>Klebe den Strip als Ring auf die Rückseite des Monitors. Wo der Standfuß sitzt, darf eine Lücke bleiben, die blendest du später in der App aus.</p>
+    <table>
+      <thead><tr><th>Board</th><th>Datenpin</th><th>Beschriftung auf dem Board</th></tr></thead>
+      <tbody>
+        <tr><td>ESP32 Dev Module</td><td>GPIO 18</td><td>meist „D18“ oder „18“</td></tr>
+        <tr><td>NodeMCU ESP8266</td><td>GPIO 5</td><td>„D1“</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li>Datenleitung des Strips (DIN) an den Datenpin, am besten über einen Widerstand von etwa 330 Ω.</li>
+      <li>5 V und GND des Strips direkt ans Netzteil. Den ESP versorgt weiter der Mac über USB.</li>
+      <li><strong>GND von Netzteil, Strip und ESP verbinden.</strong> Ohne gemeinsame Masse flackern die LEDs oder bleiben dunkel.</li>
+      <li>Ein Elko von etwa 1000 µF über 5 V und GND am Stripanfang fängt Einschaltspitzen ab.</li>
+    </ul>
+    <div class="callout"><p>Prüfe Pinbelegung und Spannung vor dem ersten Einschalten an deinem Board. Die Firmware erkennt das Board nicht automatisch, sie geht von den Pins in der Tabelle aus.</p></div>
+
+    <h2 id="firmware">Firmware flashen</h2>
+    <p>Die Firmware liegt im Repository unter <code>Firmware/BackglowController</code>. Sie empfängt die Farben mit 230 400 Baud und begrenzt die Helligkeit des Strips auf 50 von 255, damit Netzteil und Augen geschont werden.</p>
+<pre><code>git clone https://github.com/Janldeboer/Backglow.git
+cd Backglow/Firmware/BackglowController
+
+# ESP32
+pio run -e esp32dev -t upload
+
+# oder ESP8266 (NodeMCU)
+pio run -e nodemcuv2 -t upload</code></pre>
+    <p>Sind mehrere serielle Geräte angeschlossen, gibst du den Port mit <code>--upload-port /dev/cu.…</code> an. Ein frischer ESP8266 braucht eventuell noch einen eingerichteten Profilspeicher, siehe <a href="#profil">Profil speichern</a>.</p>
+    <p>Im Ordner <code>Firmware/SerialLEDcontroller</code> liegt außerdem der ursprüngliche Arduino-Sketch (70 LEDs an Pin 2). Er funktioniert weiterhin, kann aber kein Profil speichern.</p>
+
+    <h2 id="app">App bauen und starten</h2>
+<pre><code>cd Backglow
+./scripts/build-app.sh
+open dist/Backglow.app</code></pre>
+    <p>Das Skript baut die App und signiert sie mit deiner Apple-Development-Identität, falls vorhanden, sonst ad hoc. Du kannst <code>Backglow.app</code> danach in den Programme-Ordner ziehen.</p>
+    <p>Starte die Aufnahme mit der Wiedergabetaste oben rechts. Beim ersten Mal fragt macOS nach der Freigabe für die <strong>Bildschirmaufnahme</strong>. Erlaube sie unter <em>Systemeinstellungen → Datenschutz &amp; Sicherheit → Bildschirm- &amp; Systemaudioaufnahme</em> und starte Backglow neu.</p>
+
+    <h2 id="bildquelle">Bildquelle</h2>
+    <p>Unter <strong>Bildquelle</strong> wählst du den Bildschirm, hinter dem der Strip hängt.</p>
+    <ul>
+      <li><strong>Ziel-Bildrate</strong>: 30 fps reichen für die meisten Inhalte, bis zu 60 sind möglich.</li>
+      <li><strong>Interne Auflösung</strong>: 25 % genügt fast immer und spart Rechenzeit, denn es zählen nur Mittelwerte.</li>
+      <li><strong>Schwarze Filmränder ausklammern</strong>: Bei Filmen im Breitbild leuchten die LEDs dann in den Farben des eigentlichen Bildes statt schwarz.</li>
+    </ul>
+
+    <h2 id="anordnung">LED-Anordnung</h2>
+    <figure>
+      <img src="/assets/screens/layout.jpg" width="1600" height="1006" loading="lazy" alt="Seite LED-Anordnung mit Zeilen 12, Spalten 21, Aktive LEDs 59, Startversatz 43 und aktivierter Umkehr der Reihenfolge.">
+      <figcaption>Die Zahlen in der Kachelvorschau entsprechen der Reihenfolge der LEDs am Strip.</figcaption>
+    </figure>
+    <p>Backglow legt ein Raster über das Bild und nutzt nur dessen äußeren Ring. Jede Randkachel wird zu einer LED.</p>
+    <ul>
+      <li><strong>Spalten</strong>: so viele LEDs, wie oben entlang der Kante sitzen.</li>
+      <li><strong>Zeilen</strong>: so viele LEDs, wie an einer Seite sitzen, jeweils inklusive der Ecken.</li>
+      <li><strong>Aktive LEDs</strong>: wie viele LEDs tatsächlich leuchten. Ist der Wert kleiner als der Ring, bleibt am Ende eine Lücke, zum Beispiel am Standfuß.</li>
+      <li><strong>Startversatz</strong>: verschiebt, an welcher Randkachel LED 1 liegt. Gezählt wird ab der Ecke oben links im Uhrzeigersinn.</li>
+      <li><strong>Reihenfolge umkehren</strong>: für Strips, die gegen den Uhrzeigersinn verlegt sind.</li>
+    </ul>
+    <p>Stimmt die Vorschau mit dem Strip überein, leuchtet jede LED in der Farbe der Kachel direkt vor ihr. Liegt alles um ein paar LEDs daneben, korrigierst du das mit dem Startversatz.</p>
+
+    <h2 id="geraet">Controller verbinden</h2>
+    <figure>
+      <img src="/assets/screens/device.jpg" width="1600" height="1006" loading="lazy" alt="Seite Gerät mit Anschlussauswahl, Verbinden-Taste, physischen LEDs, Baudrate und Profilbereich.">
+    </figure>
+    <ol>
+      <li>Unter <strong>Gerät</strong> den <strong>Anschluss</strong> des ESP wählen. Backglow zeigt nur USB-Seriell-Anschlüsse, Bluetooth- und Systemports sind ausgeblendet.</li>
+      <li><strong>Physische LEDs</strong> auf die Gesamtzahl der LEDs am Strip setzen.</li>
+      <li><strong>Baudrate</strong> auf 230 400 lassen, passend zur Firmware.</li>
+      <li><strong>Verbinden</strong> und die Aufnahme starten.</li>
+    </ol>
+    <p>Backglow öffnet nie von selbst einen Anschluss. Beim Stoppen schaltet die App die LEDs aus.</p>
+
+    <h2 id="farben">Farben abstimmen</h2>
+    <figure>
+      <img src="/assets/screens/color.jpg" width="1600" height="1006" loading="lazy" alt="Seite Farben mit Reglern für Sättigung, Gamma, Helligkeit, Glättung und Farbkanäle sowie der LED-Kalibrierung.">
+    </figure>
+    <ul>
+      <li><strong>Farbwirkung</strong>: Sättigung, Gamma, Helligkeit und Glättung. Mehr Glättung wirkt ruhiger, reagiert aber träger.</li>
+      <li><strong>Farbkanäle</strong>: gleicht einen Farbstich des Strips oder der Wand aus.</li>
+      <li><strong>LED-Kalibrierung</strong>: Wähle eine <strong>Testfarbe an LEDs</strong> und stelle ein, wie der Strip diese Grundfarbe zeigen soll. Dazu kommt die <strong>Farbtemperatur</strong> (neutral, warm, kalt).</li>
+      <li><strong>Grundlicht und Leistung</strong>: Ein schwaches Grundlicht hält die Wand bei dunklen Szenen leicht beleuchtet. Die Leistungsgrenze dimmt sehr helle Bilder gleichmäßig.</li>
+    </ul>
+
+    <h2 id="profil">Profil auf dem Controller speichern</h2>
+    <p>Mit der Firmware aus diesem Repository kann der Controller ein Profil behalten. <strong>Aktuelle Einrichtung speichern</strong> schreibt LED-Anordnung und Farbwerte auf den ESP und liest sie zur Kontrolle zurück. Beim nächsten Verbinden lädt Backglow das Profil automatisch.</p>
+    <p>Kann ein ESP8266 seinen Dateisystembereich nicht öffnen, etwa weil das Board neu ist, erscheint <strong>Controller-Speicher einrichten</strong>. Das formatiert diesen Bereich erst nach deiner Bestätigung. Dort vorhandene Dateien gehen dabei verloren.</p>
+    <p>Bildschirmwahl, Bildrate und Anschluss bleiben auf dem Mac, ebenso vorerst Farbtemperatur, LED-Kalibrierung, Grundlicht und Leistungsgrenze. Die Einstellungen liegen in <code>~/Library/Application Support/Backglow/settings.json</code>.</p>
+
+    <h2 id="probleme">Wenn etwas nicht klappt</h2>
+    <h3>Die Vorschau bleibt leer</h3>
+    <p>Fehlt die Freigabe für die Bildschirmaufnahme, prüfe sie in den Systemeinstellungen und starte Backglow neu. Nach einem neuen Build mit Ad-hoc-Signatur kann macOS die Freigabe vergessen. Entferne Backglow dann aus der Liste und füge es erneut hinzu.</p>
+    <h3>Der ESP taucht nicht als Anschluss auf</h3>
+    <p>Viele USB-Kabel laden nur und übertragen keine Daten. Probiere ein anderes Kabel und tippe auf <strong>Anschlüsse aktualisieren</strong>.</p>
+    <h3>Die LEDs flackern oder zeigen falsche Farben</h3>
+    <p>Meist fehlt die gemeinsame Masse oder die Datenleitung ist zu lang. Prüfe auch, ob dein Strip wirklich ein WS2812B mit GRB-Reihenfolge ist. Bei Rot und Grün vertauscht passt die Firmware nicht zum Strip.</p>
+    <h3>Das Licht ist um einige LEDs verschoben</h3>
+    <p>Passe <strong>Startversatz</strong> und gegebenenfalls <strong>Reihenfolge umkehren</strong> an, bis die Farben an den Ecken stimmen.</p>
+    <p>Weitere Fragen oder Fehler gerne als <a href="https://github.com/Janldeboer/Backglow/issues">Issue auf GitHub</a>.</p>
+  </main>
+</div>
+
+<footer class="site-footer"><div class="wrap">
+  <span>© 2026 Jan de Boer</span>
+  <nav aria-label="Rechtliche Informationen"><a href="/docs/">Anleitung</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a><a href="/datenschutz/">Datenschutz</a><a href="/impressum/">Impressum</a></nav>
+</div></footer>
+</body>
+</html>

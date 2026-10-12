@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backglow – Ambient Lighting for Mac</title>
+  <meta name="description" content="Backglow verlängert das Bild deines Mac-Bildschirms als Licht an die Wand dahinter – mit einem LED-Strip, einem ESP32 und einer nativen macOS-App.">
+  <link rel="canonical" href="https://backglow.jandeboer.de/">
+  <meta property="og:title" content="Backglow – Ambient Lighting for Mac">
+  <meta property="og:description" content="Das Bild deines Macs, als Licht an der Wand dahinter.">
+  <meta property="og:image" content="https://backglow.jandeboer.de/assets/screens/dashboard.jpg">
+  <meta property="og:url" content="https://backglow.jandeboer.de/">
+  <meta name="theme-color" content="#070a14">
+  <link rel="icon" type="image/png" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Zum Inhalt</a>
+<header class="site-header"><div class="wrap">
+  <a class="brand" href="/"><img src="/assets/icon.png" alt="" width="28" height="28"><span>Backglow</span></a>
+  <nav aria-label="Hauptnavigation"><a href="/docs/">Anleitung</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a></nav>
+</div></header>
+
+<main id="main">
+  <section class="hero"><div class="wrap">
+    <p class="eyebrow">Ambient Lighting for Mac · Open Source</p>
+    <h1>Dein Bildschirm, <span class="glow-text">bis an die Wand.</span></h1>
+    <p class="lead">Backglow liest die Ränder deines Mac-Bildschirms und gibt ihre Farben in Echtzeit an einen LED-Strip hinter dem Monitor weiter. Filme, Spiele und Musikvideos wirken größer, und im dunklen Raum ist der Kontrast zum hellen Bildschirm weniger hart.</p>
+    <div class="actions">
+      <a class="button primary" href="/docs/">Einrichten</a>
+      <a class="button" href="https://github.com/Janldeboer/Backglow">Quellcode auf GitHub</a>
+    </div>
+    <p class="note">Für macOS 26 · Kostenlos unter GPL-3.0 · Oberfläche derzeit auf Deutsch</p>
+    <div class="stage">
+      <img src="/assets/screens/dashboard.jpg" width="1600" height="1006" alt="Backglow-Fenster mit Live-Vorschau: ein Sonnenuntergang, umrahmt von 59 nummerierten Zonen, die jeweils die Farbe des Bildrands zeigen.">
+    </div>
+  </div></section>
+
+  <section id="so-gehts"><div class="wrap">
+    <div class="section-head">
+      <h2>Vom Pixel zur LED in wenigen Millisekunden</h2>
+      <p>Alles läuft lokal auf deinem Mac. Backglow baut keine Internetverbindung auf.</p>
+    </div>
+    <ol class="steps">
+      <li><h3>Bild erfassen</h3><p>ScreenCaptureKit liefert das Bild eines Bildschirms, ohne Backglows eigene Fenster und mit einstellbarer Auflösung und Bildrate.</p></li>
+      <li><h3>Zonen berechnen</h3><p>Ein Metal-Shader mittelt die Ränder auf der GPU in linearem Licht. Eine Zone pro LED, so wie dein Strip verlegt ist.</p></li>
+      <li><h3>Licht ausgeben</h3><p>Geglättete Farben gehen per USB an einen ESP32 oder ESP8266, der den Strip ansteuert. Bis zu 60 Bilder pro Sekunde.</p></li>
+    </ol>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="section-head">
+      <h2>Ruhiges Licht statt Discoeffekt</h2>
+      <p>Die Bildverarbeitung folgt den bewährten Verfahren von HyperHDR und ist für den Mac neu geschrieben.</p>
+    </div>
+    <div class="features">
+      <div><h3>Live-Vorschau</h3><p>Du siehst jede Zone mit Nummer und berechneter Farbe, bevor überhaupt ein Strip angeschlossen ist.</p></div>
+      <div><h3>Filmränder erkennen</h3><p>Schwarze Balken werden ausgeklammert, aber erst, wenn sie stabil sind. Dunkle Szenen lassen den Rahmen nicht springen.</p></div>
+      <div><h3>Weiche Übergänge</h3><p>Eine Federglättung mit eigenem Ausgabetakt und ein Anti-Flicker-Filter verhindern Zappeln und Flimmern.</p></div>
+      <div><h3>Farbkalibrierung</h3><p>Acht Referenzfarben, Farbtemperatur, Gamma und Kanalverstärkung gleichen deinen Strip an deine Wand an.</p></div>
+      <div><h3>Grundlicht und Leistungsgrenze</h3><p>Ein sanftes Grundlicht für dunkle Bilder und eine Obergrenze, die helle Szenen gleichmäßig abdämpft.</p></div>
+      <div><h3>Profil auf dem Controller</h3><p>LED-Anordnung und Farbwerte lassen sich auf dem ESP speichern und werden beim nächsten Verbinden geladen.</p></div>
+    </div>
+  </div></section>
+
+  <section><div class="wrap split">
+    <div>
+      <div class="section-head">
+        <h2>Was du brauchst</h2>
+        <p>Dazu ein Abend Bastelzeit und etwas Lötzinn.</p>
+      </div>
+      <ul class="checklist">
+        <li>Einen Mac mit macOS 26<span>Für den Build außerdem Xcode 26.</span></li>
+        <li>Einen adressierbaren LED-Strip<span>WS2812B, rundum hinter den Monitor geklebt.</span></li>
+        <li>Einen ESP32 oder ESP8266<span>Die passende Firmware liegt im Repository.</span></li>
+        <li>Ein 5-V-Netzteil<span>Passend zur Zahl der LEDs, mit gemeinsamer Masse.</span></li>
+      </ul>
+      <p class="more"><a href="/docs/">Zur Schritt-für-Schritt-Anleitung →</a></p>
+    </div>
+    <img src="/assets/screens/layout.jpg" width="1600" height="1006" loading="lazy" alt="Seite LED-Anordnung mit Zeilen, Spalten, aktiven LEDs, Startversatz und einer Kachelvorschau.">
+  </div></section>
+
+  <section class="cta"><div class="wrap">
+    <h2>Noch Vorabversion, schon im Einsatz</h2>
+    <p>Backglow wird gerade für einen ersten Release vorbereitet. Bis dahin baust du die App mit einem Befehl selbst. Fragen und Fehler gerne als Issue auf GitHub.</p>
+    <div class="actions">
+      <a class="button primary" href="/docs/#app">App bauen</a>
+      <a class="button" href="https://github.com/Janldeboer/Backglow/issues">Issue melden</a>
+    </div>
+  </div></section>
+</main>
+
+<footer class="site-footer"><div class="wrap">
+  <span>© 2026 Jan de Boer</span>
+  <nav aria-label="Rechtliche Informationen"><a href="/docs/">Anleitung</a><a href="https://github.com/Janldeboer/Backglow">GitHub</a><a href="/datenschutz/">Datenschutz</a><a href="/impressum/">Impressum</a></nav>
+</div></footer>
+</body>
+</html>

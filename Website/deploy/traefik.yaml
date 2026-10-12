@@ -1,0 +1,33 @@
+# backglow.jandeboer.de, public. No Project Access middleware; no shared configuration changes.
+http:
+  routers:
+    backglow-website:
+      entryPoints: [https]
+      rule: Host(`backglow.jandeboer.de`)
+      priority: 1000
+      service: backglow-website
+      middlewares: [backglow-website-headers]
+      tls:
+        certResolver: letsencrypt
+      observability:
+        accessLogs: false
+    backglow-website-http:
+      entryPoints: [http]
+      rule: Host(`backglow.jandeboer.de`)
+      service: backglow-website
+      middlewares: [backglow-website-https]
+      observability:
+        accessLogs: false
+  middlewares:
+    backglow-website-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+    backglow-website-headers:
+      headers:
+        stsSeconds: 31536000
+  services:
+    backglow-website:
+      loadBalancer:
+        servers:
+          - url: http://backglow-website-web:8080
