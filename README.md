@@ -25,6 +25,18 @@ swift test --disable-sandbox
 
 On the first capture, macOS may request Screen Recording access. Grant it in **System Settings → Privacy & Security → Screen Recording**, then restart the app if prompted.
 
+## Signing and notarization
+
+`build-app.sh` signs with the hardened runtime. It prefers a *Developer ID Application* certificate, falls back to *Apple Development*, and signs ad hoc on CI or with `SIGN_IDENTITY=-`. A notarized download is built like this:
+
+```sh
+./scripts/build-app.sh       # with Developer ID in the keychain
+./scripts/make-dmg.sh
+./scripts/notarize.sh        # signs the DMG, notarizes it with Apple and staples the ticket
+```
+
+`notarize.sh` reads its credentials from the keychain profile `backglow-notary` (create it once with `xcrun notarytool store-credentials backglow-notary`) or from an App Store Connect API key in `NOTARY_KEY`, `NOTARY_KEY_ID` and `NOTARY_ISSUER`.
+
 ## Languages
 
 The app is localized in German (source language) and English, and follows the language set for it in System Settings. Strings live in String Catalogs under `AppBundle/Localization`; `build-app.sh` compiles them into the app bundle. After adding or changing user-facing text, run `./scripts/update-strings.sh` to add the new keys to `Localizable.xcstrings`, then translate them. To test a language without changing the system setting: `open dist/Backglow.app --args -AppleLanguages "(en)"`.

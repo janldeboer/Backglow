@@ -28,9 +28,15 @@ xcrun actool "$project_dir/AppBundle/Backglow.icon" --compile "$app_dir/Contents
     --platform macosx --minimum-deployment-target 26.0 --app-icon Backglow --target-device mac \
     --output-partial-info-plist "$scratch_dir/icon-info.plist" >/dev/null
 # A stable identity keeps macOS privacy grants such as Screen Recording across rebuilds;
-# ad hoc signatures change with every build. Override with SIGN_IDENTITY=- or a name.
-identity="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning 2>/dev/null \
-    | sed -n 's/.*"\(Apple Development: .*\)"/\1/p' | head -1)}"
-codesign --force --deep --sign "${identity:--}" "$app_dir"
+# ad hoc signatures change with every build. Developer ID is preferred so local builds and
+# notarized releases share one identity. Override with SIGN_IDENTITY=- or a name.
+identities="$(security find-identity -v -p codesigning 2>/dev/null)"
+identity="${SIGN_IDENTITY-$(echo "$identities" | sed -n 's/.*"\(Developer ID Application: .*\)"/\1/p' | head -1)}"
+[[ -z "$identity" && -z "${SIGN_IDENTITY+set}" ]] && \
+    identity="$(echo "$identities" | sed -n 's/.*"\(Apple Development: .*\)"/\1/p' | head -1)"
+# The hardened runtime is required for notarization; a secure timestamp only for Developer ID.
+timestamp=(--timestamp=none)
+[[ "$identity" == "Developer ID Application:"* ]] && timestamp=(--timestamp)
+codesign --force --options runtime "${timestamp[@]}" --sign "${identity:--}" "$app_dir"
 echo "Signed with ${identity:-ad hoc signature}"
 echo "Created $app_dir"
