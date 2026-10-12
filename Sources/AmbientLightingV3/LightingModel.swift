@@ -2,23 +2,30 @@ import AmbientLightingCore
 import AppKit
 import Foundation
 
+/// Fast-changing capture and output values. They live apart from `LightingModel` so their
+/// updates redraw only the views that show them, not the whole window.
+@MainActor
+final class LiveState: ObservableObject {
+    @Published fileprivate(set) var preview: CGImage?
+    @Published fileprivate(set) var zones: [LightingZone] = []
+    @Published fileprivate(set) var colors: [LightingRGB] = []
+    @Published fileprivate(set) var imageWidth = 0
+    @Published fileprivate(set) var imageHeight = 0
+    @Published fileprivate(set) var processingMilliseconds = 0.0
+    @Published fileprivate(set) var actualFPS = 0.0
+    @Published fileprivate(set) var usesGPU = false
+}
+
 @MainActor
 final class LightingModel: ObservableObject {
     @Published private(set) var configuration = LightingConfiguration()
     @Published private(set) var displays: [DisplayChoice] = []
-    @Published private(set) var preview: CGImage?
-    @Published private(set) var zones: [LightingZone] = []
-    @Published private(set) var colors: [LightingRGB] = []
-    @Published private(set) var previewWidth = 0
-    @Published private(set) var previewHeight = 0
     @Published private(set) var isCapturing = false
     @Published private(set) var captureStatus = "Ready"
-    @Published private(set) var processingMilliseconds = 0.0
-    @Published private(set) var actualFPS = 0.0
-    @Published private(set) var usesGPU = false
     /// While set, every LED shows this calibration corner instead of the screen.
     @Published private(set) var testCorner: LEDCalibration.Corner?
 
+    let live = LiveState()
     let serial = SerialDevice()
     private let capture = ScreenCaptureEngine()
     private var smoother = SpringColorSmoother()
@@ -27,6 +34,8 @@ final class LightingModel: ObservableObject {
     private var lastOutputTime: TimeInterval?
     private var hasPendingOutput = false
     private var lastFrameTime: TimeInterval?
+    private var smoothedFPS = 0.0
+    private var lastStatsTime: TimeInterval = 0
     private var restartTask: Task<Void, Never>?
     private var captureTask: Task<Void, Never>?
     private var desiredCapture = false
@@ -118,7 +127,7 @@ final class LightingModel: ObservableObject {
             hasPendingOutput = true
         } else {
             stopOutputClock()
-            colors = []
+            live.colors = []
             sendBlack()
         }
     }
@@ -173,18 +182,24 @@ final class LightingModel: ObservableObject {
         smoother.setTarget(corrected)
         hasPendingOutput = true
         startOutputClock()
-        zones = frame.zones
-        previewWidth = frame.imageWidth
-        previewHeight = frame.imageHeight
-        if let image = frame.image { preview = image }
-        processingMilliseconds = frame.processingMilliseconds
-        usesGPU = frame.usedGPU
+        // @Published fires on every assignment, so only assign values that changed.
+        if live.zones != frame.zones { live.zones = frame.zones }
+        if live.imageWidth != frame.imageWidth { live.imageWidth = frame.imageWidth }
+        if live.imageHeight != frame.imageHeight { live.imageHeight = frame.imageHeight }
+        if let image = frame.image { live.preview = image }
+        if live.usesGPU != frame.usedGPU { live.usesGPU = frame.usedGPU }
         let now = ProcessInfo.processInfo.systemUptime
         if let lastFrameTime, now > lastFrameTime {
             let instantaneous = 1 / (now - lastFrameTime)
-            actualFPS = actualFPS == 0 ? instantaneous : actualFPS * 0.8 + instantaneous * 0.2
+            smoothedFPS = smoothedFPS == 0 ? instantaneous : smoothedFPS * 0.8 + instantaneous * 0.2
         }
         lastFrameTime = now
+        // Readable numbers, and no redraw for every frame.
+        if now - lastStatsTime >= 0.5 {
+            lastStatsTime = now
+            live.actualFPS = smoothedFPS
+            live.processingMilliseconds = frame.processingMilliseconds
+        }
     }
 
     /// LED output runs on its own clock so smoothing stays fluid between capture frames
@@ -231,7 +246,7 @@ final class LightingModel: ObservableObject {
         let output = antiFlicker.apply(
             ColorProcessing.limitingPower(frame, to: configuration.ledCalibration.powerLimit)
         )
-        if output != colors { colors = output }
+        if output != live.colors { live.colors = output }
         if serial.isConnected {
             serial.send(output, maximumLEDs: configuration.deviceLEDCount)
         }

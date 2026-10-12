@@ -121,13 +121,11 @@ private struct MainWindow: View {
                     Label("Live-Vorschau", systemImage: "display")
                         .font(.headline)
                     Spacer()
-                    Text("\(model.zones.count) Zonen")
+                    ZoneCount(live: model.live)
                         .font(.caption.monospacedDigit())
                         .foregroundStyle(.secondary)
                 }
-                ScreenPreview(image: model.preview, zones: model.zones,
-                              colors: model.colors, imageWidth: model.previewWidth,
-                              imageHeight: model.previewHeight)
+                LivePreview(live: model.live)
                     .frame(maxWidth: .infinity)
                     .aspectRatio(16 / 9, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -140,14 +138,10 @@ private struct MainWindow: View {
                     Text("In Ausgabe-Reihenfolge")
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                LEDStrip(colors: model.colors)
+                LiveLEDStrip(live: model.live)
                     .frame(height: 56)
             }
-            HStack(spacing: 14) {
-                metric("Bildrate", value: String(format: "%.1f fps", model.actualFPS))
-                metric("Analyse", value: String(format: "%.1f ms", model.processingMilliseconds))
-                metric("Rechenweg", value: model.usesGPU ? "Metal GPU" : "CPU")
-            }
+            LiveMetrics(live: model.live)
         }
     }
 
@@ -211,9 +205,7 @@ private struct MainWindow: View {
             SurfaceCard {
                 Label("Kachelvorschau", systemImage: "viewfinder")
                     .font(.headline)
-                ScreenPreview(image: model.preview, zones: model.zones,
-                              colors: model.colors, imageWidth: model.previewWidth,
-                              imageHeight: model.previewHeight)
+                LivePreview(live: model.live)
                     .aspectRatio(16 / 9, contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                 Text("Die Zahlen folgen der Ausgabe an den Controller. Änderungen werden live übernommen.")
@@ -400,10 +392,7 @@ private struct MainWindow: View {
                 Label("Laufzeit", systemImage: "waveform.path.ecg")
                     .font(.headline)
                 LabeledContent("Bildschirmaufnahme", value: model.captureStatus)
-                LabeledContent("Bildrate", value: String(format: "%.1f fps", model.actualFPS))
-                LabeledContent("Analyse pro Bild", value: String(format: "%.2f ms", model.processingMilliseconds))
-                LabeledContent("Berechnung", value: model.usesGPU ? "Metal" : "CPU-Fallback")
-                LabeledContent("Zonen", value: "\(model.zones.count)")
+                LiveDiagnostics(live: model.live)
                 LabeledContent("Serielle Verbindung", value: serial.status)
             }
             SurfaceCard {
@@ -431,11 +420,53 @@ private struct MainWindow: View {
         }
     }
 
+}
+
+// Views that read `LiveState` are separate so frequent updates redraw only them.
+
+private struct LivePreview: View {
+    @ObservedObject var live: LiveState
+    var body: some View {
+        ScreenPreview(image: live.preview, zones: live.zones, colors: live.colors,
+                      imageWidth: live.imageWidth, imageHeight: live.imageHeight)
+    }
+}
+
+private struct LiveLEDStrip: View {
+    @ObservedObject var live: LiveState
+    var body: some View { LEDStrip(colors: live.colors) }
+}
+
+private struct ZoneCount: View {
+    @ObservedObject var live: LiveState
+    var body: some View { Text("\(live.zones.count) Zonen") }
+}
+
+private struct LiveMetrics: View {
+    @ObservedObject var live: LiveState
+    var body: some View {
+        HStack(spacing: 14) {
+            metric("Bildrate", value: String(format: "%.1f fps", live.actualFPS))
+            metric("Analyse", value: String(format: "%.1f ms", live.processingMilliseconds))
+            metric("Rechenweg", value: live.usesGPU ? "Metal GPU" : "CPU")
+        }
+    }
+
     private func metric(_ title: String, value: String) -> some View {
         SurfaceCard {
             Text(title).font(.caption).foregroundStyle(.secondary)
             Text(value).font(.title3.bold()).monospacedDigit()
         }
+    }
+}
+
+private struct LiveDiagnostics: View {
+    @ObservedObject var live: LiveState
+    var body: some View {
+        LabeledContent("Bildrate", value: String(format: "%.1f fps", live.actualFPS))
+        LabeledContent("Analyse pro Bild", value: String(format: "%.2f ms", live.processingMilliseconds))
+        LabeledContent("Berechnung", value: live.usesGPU ? "Metal" : "CPU-Fallback")
+        LabeledContent("Zonen", value: "\(live.zones.count)")
     }
 }
 
