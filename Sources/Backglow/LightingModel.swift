@@ -1,4 +1,4 @@
-import AmbientLightingCore
+import BackglowCore
 import AppKit
 import CoreImage
 import Foundation
@@ -42,17 +42,21 @@ final class LightingModel: ObservableObject {
     private var desiredCapture = false
     private let persistsSettings: Bool
 
-    private static let settingsURL: URL = {
+    private static let settingsURL = settingsURL(folder: "Backglow")
+    /// Settings saved before the rename; read only when Backglow has none of its own yet.
+    private static let legacySettingsURL = settingsURL(folder: "AmbientLightingV3")
+
+    private static func settingsURL(folder: String) -> URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-        return base.appendingPathComponent("AmbientLightingV3", isDirectory: true)
+        return base.appendingPathComponent(folder, isDirectory: true)
             .appendingPathComponent("settings.json")
-    }()
+    }
 
     /// With `persistsSettings` false, the model starts from defaults and never writes settings.
     init(persistsSettings: Bool = true) {
         self.persistsSettings = persistsSettings
         if persistsSettings,
-           let saved = try? Data(contentsOf: Self.settingsURL),
+           let saved = (try? Data(contentsOf: Self.settingsURL)) ?? (try? Data(contentsOf: Self.legacySettingsURL)),
            var decoded = try? JSONDecoder().decode(LightingConfiguration.self, from: saved) {
             decoded.normalize()
             configuration = decoded

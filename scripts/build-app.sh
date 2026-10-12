@@ -2,10 +2,10 @@
 set -euo pipefail
 
 project_dir="${0:A:h:h}"
-scratch_dir="/private/tmp/ambient-lighting-v3-build"
-app_dir="$project_dir/dist/AmbientLightingV3.app"
+scratch_dir="/private/tmp/backglow-build"
+app_dir="$project_dir/dist/Backglow.app"
 
-export CLANG_MODULE_CACHE_PATH="/private/tmp/ambient-lighting-v3-module-cache"
+export CLANG_MODULE_CACHE_PATH="/private/tmp/backglow-module-cache"
 export SWIFTPM_MODULECACHE_OVERRIDE="$CLANG_MODULE_CACHE_PATH"
 
 cd "$project_dir"
@@ -15,8 +15,8 @@ swift build "${build_flags[@]}"
 product_dir="$(swift build "${build_flags[@]}" --show-bin-path)"
 rm -rf "$app_dir"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
-cp "$product_dir/AmbientLightingV3" "$app_dir/Contents/MacOS/"
-cp -R "$product_dir/AmbientLightingV3_AmbientLightingV3.bundle" "$app_dir/Contents/Resources/"
+cp "$product_dir/Backglow" "$app_dir/Contents/MacOS/"
+cp -R "$product_dir/Backglow_Backglow.bundle" "$app_dir/Contents/Resources/"
 cp "$project_dir/AppBundle/Info.plist" "$app_dir/Contents/Info.plist"
 cp "$project_dir/AppBundle/AppIcon.icns" "$app_dir/Contents/Resources/"
 # A stable identity keeps macOS privacy grants such as Screen Recording across rebuilds;

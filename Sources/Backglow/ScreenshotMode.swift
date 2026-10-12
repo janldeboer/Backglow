@@ -1,4 +1,4 @@
-import AmbientLightingCore
+import BackglowCore
 import AppKit
 import CoreVideo
 import ImageIO

@@ -1,8 +1,8 @@
-import AmbientLightingCore
+import BackglowCore
 import SwiftUI
 
 @main
-struct AmbientLightingV3App: App {
+struct BackglowApp: App {
     @StateObject private var model = LightingModel(persistsSettings: !ScreenshotMode.isActive)
 
     var body: some Scene {
@@ -50,7 +50,7 @@ private struct MainWindow: View {
             List(Page.allCases, selection: $selection) { page in
                 Label(page.rawValue, systemImage: page.symbol).tag(page)
             }
-            .navigationTitle("Ambient Lighting")
+            .navigationTitle("Backglow")
             .navigationSplitViewColumnWidth(min: 190, ideal: 215)
             .safeAreaInset(edge: .bottom) {
                 HStack(spacing: 8) {
@@ -428,7 +428,7 @@ private struct MainWindow: View {
             SurfaceCard {
                 Text("Berechtigung für Bildschirmaufnahme")
                     .font(.headline)
-                Text("macOS fordert die Freigabe beim ersten Start der Live-Aufnahme an. Falls kein Bild erscheint, erlaube Ambient Lighting unter Datenschutz & Sicherheit → Bildschirmaufnahme und starte die App neu.")
+                Text("macOS fordert die Freigabe beim ersten Start der Live-Aufnahme an. Falls kein Bild erscheint, erlaube Backglow unter Datenschutz & Sicherheit → Bildschirmaufnahme und starte die App neu.")
                     .foregroundStyle(.secondary)
             }
         }

@@ -1,5 +1,5 @@
 import XCTest
-@testable import AmbientLightingCore
+@testable import BackglowCore
 
 final class LightingCoreTests: XCTestCase {
     func testPerimeterMappingKeepsLEDOrderAndEdgePixels() {

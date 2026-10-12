@@ -1,4 +1,4 @@
-import AmbientLightingCore
+import BackglowCore
 import Foundation
 import ORSSerial
 
