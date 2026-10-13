@@ -219,8 +219,17 @@ final class LightingCoreTests: XCTestCase {
         XCTAssertEqual(decoded.rows, 10)
         XCTAssertEqual(decoded.calibration.saturation, 1.2)
         XCTAssertEqual(decoded.ledCalibration, LEDCalibration())
+        XCTAssertEqual(decoded.outputMode, .screen)
+        XCTAssertEqual(decoded.pairings, [])
         var current = LightingConfiguration()
         current.ledCalibration.powerLimit = 0.6
+        current.outputMode = .solidColor
+        current.solidColor = LightingRGB(red: 0.2, green: 0.4, blue: 1)
+        current.pairings = [AutoConnectPairing(
+            name: "Desk", display: DisplayIdentity(vendor: 1, model: 2, serial: 3, displayID: 4),
+            device: USBDeviceIdentity(vendorID: 0x10C4, productID: 0xEA60, serialNumber: "A1", path: "/dev/cu.a"),
+            controllerID: "0000BEEF"
+        )]
         let roundTrip = try JSONDecoder().decode(LightingConfiguration.self,
                                                  from: JSONEncoder().encode(current))
         XCTAssertEqual(roundTrip, current)
@@ -282,5 +291,53 @@ final class LightingCoreTests: XCTestCase {
         bytes[1] = 70
         bytes[9] = 4
         XCTAssertNil(ControllerProfile.decode(bytes))
+    }
+
+    func testDisplayMatchUsesSerialOrFallsBackToDisplayID() {
+        let paired = DisplayIdentity(vendor: 0x10AC, model: 0xA0C4, serial: 42, displayID: 3)
+        XCTAssertTrue(paired.matches(DisplayIdentity(vendor: 0x10AC, model: 0xA0C4, serial: 42, displayID: 9)))
+        XCTAssertFalse(paired.matches(DisplayIdentity(vendor: 0x10AC, model: 0xA0C4, serial: 43, displayID: 3)))
+        XCTAssertFalse(paired.matches(DisplayIdentity(vendor: 0x10AC, model: 0xA0C5, serial: 42, displayID: 3)))
+        let withoutSerial = DisplayIdentity(vendor: 0x10AC, model: 0xA0C4, serial: 0, displayID: 3)
+        XCTAssertTrue(withoutSerial.matches(DisplayIdentity(vendor: 0x10AC, model: 0xA0C4, serial: 0, displayID: 3)))
+        XCTAssertFalse(withoutSerial.matches(DisplayIdentity(vendor: 0x10AC, model: 0xA0C4, serial: 0, displayID: 4)))
+    }
+
+    func testDeviceMatchNeedsSerialNumberOrSamePort() {
+        let paired = USBDeviceIdentity(vendorID: 0x10C4, productID: 0xEA60, serialNumber: "0001", path: "/dev/cu.a")
+        XCTAssertTrue(paired.matches(USBDeviceIdentity(vendorID: 0x10C4, productID: 0xEA60, serialNumber: "0001",
+                                                       path: "/dev/cu.b")))
+        XCTAssertFalse(paired.matches(USBDeviceIdentity(vendorID: 0x10C4, productID: 0xEA60, serialNumber: "0002",
+                                                        path: "/dev/cu.a")))
+        // A CH340 without serial number: another adapter of the same kind in another socket is not it.
+        let generic = USBDeviceIdentity(vendorID: 0x1A86, productID: 0x7523, serialNumber: nil,
+                                        path: "/dev/cu.usbserial-110")
+        XCTAssertTrue(generic.matches(USBDeviceIdentity(vendorID: 0x1A86, productID: 0x7523, serialNumber: nil,
+                                                        path: "/dev/cu.usbserial-110")))
+        XCTAssertFalse(generic.matches(USBDeviceIdentity(vendorID: 0x1A86, productID: 0x7523, serialNumber: nil,
+                                                         path: "/dev/cu.usbserial-120")))
+    }
+
+    func testFirstAvailablePairingNeedsDisplayAndDevice() {
+        let office = AutoConnectPairing(
+            name: "Office", display: DisplayIdentity(vendor: 1, model: 1, serial: 1, displayID: 5),
+            device: USBDeviceIdentity(vendorID: 1, productID: 1, serialNumber: "office", path: "/dev/cu.o"),
+            controllerID: nil
+        )
+        let home = AutoConnectPairing(
+            name: "Home", display: DisplayIdentity(vendor: 2, model: 2, serial: 2, displayID: 6),
+            device: USBDeviceIdentity(vendorID: 2, productID: 2, serialNumber: "home", path: "/dev/cu.h"),
+            controllerID: nil
+        )
+        let homeDisplay = DisplayIdentity(vendor: 2, model: 2, serial: 2, displayID: 8)
+        let homeDevice = USBDeviceIdentity(vendorID: 2, productID: 2, serialNumber: "home", path: "/dev/cu.h2")
+        XCTAssertNil(AutoConnectPairing.firstAvailable([office, home], displays: [homeDisplay], devices: []))
+        XCTAssertNil(AutoConnectPairing.firstAvailable([office, home], displays: [office.display],
+                                                       devices: [homeDevice]))
+        let match = AutoConnectPairing.firstAvailable([office, home], displays: [office.display, homeDisplay],
+                                                      devices: [homeDevice])
+        XCTAssertEqual(match?.pairing.name, "Home")
+        XCTAssertEqual(match?.displayID, 8)
+        XCTAssertEqual(match?.portPath, "/dev/cu.h2")
     }
 }
