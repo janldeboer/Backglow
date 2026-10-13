@@ -40,12 +40,15 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private var contentBounds: PixelRect?
     private var borderStabilizer = BlackBorderStabilizer()
 
+    @MainActor
     static func availableDisplays() async throws -> [DisplayChoice] {
         let content = try await SCShareableContent.current
         return content.displays.enumerated().map { index, display in
-            DisplayChoice(
+            let name = DisplayDiscovery.name(display.displayID)
+                ?? String(localized: "Bildschirm \(index + 1)")
+            return DisplayChoice(
                 id: display.displayID,
-                title: String(localized: "Bildschirm \(index + 1) · \(display.width) × \(display.height)"),
+                title: "\(name) · \(display.width) × \(display.height)",
                 width: display.width,
                 height: display.height
             )

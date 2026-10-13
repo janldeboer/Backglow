@@ -12,6 +12,10 @@ struct SerialPortChoice: Identifiable, Hashable {
     var detail: String {
         String(format: "%04X:%04X", vendorID, productID)
     }
+
+    var identity: USBDeviceIdentity {
+        USBDeviceIdentity(vendorID: vendorID, productID: productID, serialNumber: serialNumber, path: id)
+    }
 }
 
 final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
@@ -25,7 +29,12 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
     @Published private(set) var storedProfile: ControllerProfile?
     @Published private(set) var controllerID: String?
     @Published private(set) var isSavingProfile = false
+    /// The listed port that is open right now.
+    @Published private(set) var connectedPort: SerialPortChoice?
     var onProfileLoaded: ((ControllerProfile) -> Void)?
+    var onControllerIdentified: ((String) -> Void)?
+    /// After USB serial ports appeared or disappeared and the list was refreshed.
+    var onPortsChanged: (() -> Void)?
 
     private let queue = DispatchQueue(label: "lighting.serial.output", qos: .userInitiated)
     private let pendingLock = NSLock()
@@ -40,10 +49,19 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
     private var expectedSave: [UInt8]?
     private var expectedRevision: UInt32?
     private var initializingStorage = false
+    private var connectingPort: SerialPortChoice?
+    private var portObservers: [NSObjectProtocol] = []
 
     override init() {
         super.init()
         refreshPorts()
+        // Only the list is refreshed here; nothing is opened because a port appeared.
+        portObservers = [Notification.Name.ORSSerialPortsWereConnected, .ORSSerialPortsWereDisconnected].map {
+            NotificationCenter.default.addObserver(forName: $0, object: nil, queue: .main) { [weak self] _ in
+                self?.refreshPorts()
+                self?.onPortsChanged?()
+            }
+        }
     }
 
     func refreshPorts() {
@@ -57,6 +75,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         }
         status = String(localized: "Verbinde…")
         resetProfileState()
+        connectingPort = listed
         queue.async {
             guard USBSerialPortDiscovery.available().contains(where: {
                 $0.id == listed.id && $0.vendorID == listed.vendorID &&
@@ -80,6 +99,8 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
 
     func disconnect() {
         resetProfileState()
+        connectingPort = nil
+        connectedPort = nil
         queue.async {
             self.port?.close()
             self.port?.delegate = nil
@@ -183,7 +204,9 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             initializingStorage = false
             recognizedProtocol = true
             controllerCapacity = Int(frame.payload.readLE16(at: 1))
-            controllerID = String(format: "%08X", frame.payload.readLE32(at: 4))
+            let identifier = String(format: "%08X", frame.payload.readLE32(at: 4))
+            controllerID = identifier
+            onControllerIdentified?(identifier)
             canInitializeStorage = frame.payload[3] == 0
             guard frame.payload[3] == 1 else {
                 switch frame.payload[3] {
@@ -265,6 +288,11 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         if shouldSchedule { queue.async { self.drain() } }
     }
 
+    /// Waits until frames queued so far have been handed to the port, for example before quitting.
+    func flush() {
+        queue.sync {}
+    }
+
     private func drain() {
         pendingLock.lock()
         let frame = pendingFrame
@@ -290,6 +318,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             DispatchQueue.main.async {
                 self.resetProfileState()
                 self.isConnected = false
+                self.connectedPort = nil
                 self.status = String(localized: "Gerät getrennt")
                 self.refreshPorts()
             }
@@ -298,6 +327,8 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
 
     func serialPortWasOpened(_ serialPort: ORSSerialPort) {
         isConnected = true
+        connectedPort = connectingPort?.id == serialPort.path ? connectingPort
+            : ports.first(where: { $0.id == serialPort.path })
         status = String(localized: "Verbunden mit \(serialPort.name)")
         let token = generation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.probe(token) }
@@ -316,12 +347,14 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
 
     func serialPortWasClosed(_ serialPort: ORSSerialPort) {
         isConnected = false
+        connectedPort = nil
         status = String(localized: "Anschluss geschlossen")
         resetProfileState()
     }
 
     func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: Error) {
         isConnected = false
+        connectedPort = nil
         status = error.localizedDescription
         resetProfileState()
     }
