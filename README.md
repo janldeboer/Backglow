@@ -1,4 +1,8 @@
+[![Backglow: a monitor showing a sunset, its edge colors spilling onto the wall behind it as light, with the Backglow app window and its numbered LED zones in front](docs/images/backglow-hero.jpg)](https://backglow.jandeboer.de)
+
 # Backglow – Ambient Lighting for Mac
+
+**[Download for macOS](https://github.com/Janldeboer/Backglow/releases/latest)** · [Website](https://backglow.jandeboer.de) · [Setup guide](https://backglow.jandeboer.de/en/docs/)
 
 Backglow mirrors the edges of your Mac's screen onto an LED strip behind it. Version 3 is a native SwiftUI redesign of the earlier Ambilight for Mac experiments, previously published as *macOS Ambient Lighting*. It uses a sidebar and macOS Liquid Glass surfaces, while keeping the working LED controller protocol and perimeter layout from the older builds.
 

@@ -1,0 +1,101 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Source of backglow-hero.jpg, the README header. Render from this folder with:
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+    --force-device-scale-factor=2 --window-size=1280,640 --virtual-time-budget=2000 \
+    --screenshot="$PWD/hero.png" "file://$PWD/hero.html"
+  sips -s format jpeg -s formatOptions 90 hero.png --out backglow-hero.jpg && rm hero.png -->
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1280px; height: 640px; overflow: hidden; background: #070a14; }
+  body { position: relative; font-family: -apple-system, "SF Pro Display", system-ui, sans-serif; color: #e9edf7; -webkit-font-smoothing: antialiased; }
+  #wall { position: absolute; inset: 0; width: 1280px; height: 640px; }
+  .text { position: absolute; left: 64px; top: 0; bottom: 0; width: 480px; display: flex; flex-direction: column; justify-content: center; }
+  .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+  .brand img { width: 68px; height: 68px; }
+  .brand span { font-size: 54px; font-weight: 700; letter-spacing: -0.035em; }
+  h1 { font-size: 40px; line-height: 1.08; letter-spacing: -0.03em; font-weight: 700; margin-bottom: 18px; }
+  .glow { background: linear-gradient(90deg, #2ec4ff, #7a6bff 35%, #ff5cab 65%, #ffa64f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  p { color: #9aa5bd; font-size: 19px; line-height: 1.45; margin-bottom: 26px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { font-size: 13.5px; color: #c9d1e3; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.05); border-radius: 999px; padding: 5px 12px; }
+  .monitor { position: absolute; left: 640px; top: 128px; width: 548px; height: 310px; border-radius: 10px; background: #05060a; padding: 9px; box-shadow: 0 0 0 1px rgba(255,255,255,0.10), 0 24px 60px rgba(0,0,0,0.55); }
+  .monitor canvas { width: 530px; height: 292px; border-radius: 3px; display: block; }
+  .stand { position: absolute; left: 884px; top: 438px; width: 56px; height: 72px; background: linear-gradient(#1a1d26, #11131a); }
+  .foot { position: absolute; left: 837px; top: 508px; width: 160px; height: 10px; border-radius: 5px; background: #1a1d26; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+  .window { position: absolute; left: 560px; top: 322px; width: 360px; border-radius: 10px; overflow: hidden; box-shadow: 0 0 0 1px rgba(255,255,255,0.16), 0 30px 70px rgba(0,0,0,0.7); }
+  .window img { width: 100%; display: block; }
+</style></head>
+<body>
+<canvas id="wall" width="2560" height="1280"></canvas>
+<div class="text">
+  <div class="brand"><img src="../../Website/public/assets/icon.png" alt=""><span>Backglow</span></div>
+  <h1>Your screen,<br><span class="glow">all the way to the wall.</span></h1>
+  <p>Ambient lighting for Mac. Backglow mirrors the edges of your screen in real time onto an LED strip behind your monitor.</p>
+  <div class="chips"><span>macOS 26</span><span>ESP32 / ESP8266</span><span>WS2812B</span><span>Open source</span></div>
+</div>
+<div class="monitor"><canvas id="screen" width="1060" height="584"></canvas></div>
+<div class="stand"></div><div class="foot"></div>
+<div class="window"><img src="../../Website/public/assets/screens/en/dashboard.jpg" alt=""></div>
+<script>
+// The app's demo frame (ScreenshotMode.swift, DemoImage), without the letterbox bars.
+const sc = document.getElementById('screen'), c = sc.getContext('2d');
+const W = sc.width, H = sc.height;
+const rgb = (r, g, b, a = 1) => `rgba(${r*255|0},${g*255|0},${b*255|0},${a})`;
+// CoreGraphics draws with y up; flip so the code reads the same.
+c.translate(0, H); c.scale(1, -1);
+const sky = c.createLinearGradient(0, H * 0.35, 0, H);
+[[0, rgb(.98,.55,.25)], [.3, rgb(.93,.33,.42)], [.62, rgb(.45,.20,.55)], [1, rgb(.08,.12,.38)]].forEach(([o, col]) => sky.addColorStop(o, col));
+c.fillStyle = rgb(.98,.55,.25); c.fillRect(0, 0, W, H);
+c.fillStyle = sky; c.fillRect(0, H * 0.35, W, H);
+const sun = [W * 0.68, H * 0.42];
+const glow = c.createRadialGradient(...sun, 0, ...sun, H * 0.55);
+glow.addColorStop(0, rgb(1,.93,.62)); glow.addColorStop(.18, rgb(1,.75,.35,.6)); glow.addColorStop(1, rgb(1,.6,.3,0));
+c.fillStyle = glow; c.fillRect(0, 0, W, H);
+function hills(base, amp, phase, fill) {
+  c.beginPath(); c.moveTo(0, 0);
+  for (let s = 0; s <= 96; s++) { const x = W * s / 96; c.lineTo(x, H * base + amp * H * Math.sin(x / W * Math.PI * 3 + phase)); }
+  c.lineTo(W, 0); c.closePath(); c.fillStyle = fill; c.fill();
+}
+hills(.34, .06, .4, rgb(.42,.18,.40)); hills(.24, .05, 2.1, rgb(.10,.28,.32)); hills(.12, .04, 4.0, rgb(.04,.12,.16));
+
+// Backglow in miniature: average each edge zone and throw its color onto the wall.
+const wall = document.getElementById('wall').getContext('2d');
+wall.scale(2, 2);
+const data = c.getImageData(0, 0, W, H).data;
+function avg(x0, y0, w, h) {
+  let r = 0, g = 0, b = 0, n = 0;
+  for (let y = y0; y < y0 + h; y += 2) for (let x = x0; x < x0 + w; x += 2) {
+    const i = (y * W + x) * 4; r += data[i]; g += data[i+1]; b += data[i+2]; n++;
+  }
+  return [r / n, g / n, b / n];
+}
+const M = { x: 640, y: 128, w: 548, h: 310 }, cols = 21, rows = 12, depth = 0.12;
+const zones = [];
+for (let i = 0; i < cols; i++) {
+  const zx = Math.floor(i * W / cols), zw = Math.ceil(W / cols);
+  zones.push({ col: avg(zx, 0, zw, H * depth | 0), px: M.x + (i + .5) * M.w / cols, py: M.y, dx: 0, dy: -1 });
+  zones.push({ col: avg(zx, H - (H * depth | 0), zw, H * depth | 0), px: M.x + (i + .5) * M.w / cols, py: M.y + M.h, dx: 0, dy: 1 });
+}
+for (let j = 0; j < rows; j++) {
+  const zy = Math.floor(j * H / rows), zh = Math.ceil(H / rows);
+  zones.push({ col: avg(0, zy, W * depth | 0, zh), px: M.x, py: M.y + (j + .5) * M.h / rows, dx: -1, dy: 0 });
+  zones.push({ col: avg(W - (W * depth | 0), zy, W * depth | 0, zh), px: M.x + M.w, py: M.y + (j + .5) * M.h / rows, dx: 1, dy: 0 });
+}
+wall.fillStyle = '#070a14'; wall.fillRect(0, 0, 1280, 640);
+wall.filter = 'blur(38px) saturate(1.35)';
+wall.globalCompositeOperation = 'lighter';
+for (const z of zones) {
+  const cx = z.px + z.dx * 40, cy = z.py + z.dy * 40, r = 120;
+  const g = wall.createRadialGradient(cx, cy, 0, cx, cy, r);
+  const [R, G, B] = z.col.map(v => v | 0);
+  g.addColorStop(0, `rgba(${R},${G},${B},0.42)`); g.addColorStop(1, `rgba(${R},${G},${B},0)`);
+  wall.fillStyle = g; wall.beginPath(); wall.arc(cx, cy, r, 0, Math.PI * 2); wall.fill();
+}
+// Fade the light out toward the text column so the headline stays readable.
+wall.filter = 'none'; wall.globalCompositeOperation = 'source-over';
+const fade = wall.createLinearGradient(0, 0, 640, 0);
+fade.addColorStop(0, 'rgba(7,10,20,1)'); fade.addColorStop(.75, 'rgba(7,10,20,0.85)'); fade.addColorStop(1, 'rgba(7,10,20,0)');
+wall.fillStyle = fade; wall.fillRect(0, 0, 640, 640);
+</script>
+</body></html>
