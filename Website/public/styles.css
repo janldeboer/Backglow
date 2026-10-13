@@ -151,6 +151,10 @@ section { padding: 72px 0; }
 
 .more { margin-top: 24px; }
 
+.faq { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px 48px; }
+.faq h3 { margin: 0 0 6px; font-size: 1.02rem; }
+.faq p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+
 .cta { text-align: center; border-top: 1px solid var(--line); }
 .cta h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); margin: 0 0 12px; letter-spacing: -0.02em; }
 .cta p { color: var(--muted); margin: 0 auto 28px; max-width: 36rem; }
@@ -188,7 +192,7 @@ address { font-style: normal; }
 .site-footer a:hover { color: var(--text); }
 
 @media (max-width: 860px) {
-  .steps, .features { grid-template-columns: 1fr; }
+  .steps, .features, .faq { grid-template-columns: 1fr; }
   .split { grid-template-columns: 1fr; gap: 28px; }
   .page { grid-template-columns: 1fr; gap: 24px; padding-top: 36px; }
   .toc { position: static; }

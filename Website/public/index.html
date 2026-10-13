@@ -2,17 +2,168 @@
 <html lang="de">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Backglow – Ambient Lighting for Mac</title>
-  <meta name="description" content="Backglow verlängert das Bild deines Mac-Bildschirms als Licht an die Wand dahinter – mit einem LED-Strip, einem ESP32 und einer nativen macOS-App.">
+  <title>Backglow – Ambient Lighting für den Mac mit LED-Strip und ESP32</title>
+  <meta name="description" content="Backglow verlängert das Bild deines Mac-Bildschirms als Licht an die Wand dahinter: kostenlose Open-Source-App für macOS, die einen WS2812B-LED-Strip über einen ESP32 oder ESP8266 in Echtzeit steuert.">
   <link rel="canonical" href="https://backglow.jandeboer.de/">
   <link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/"><link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/"><link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/">
-  <meta property="og:title" content="Backglow – Ambient Lighting for Mac">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Backglow">
+  <meta property="og:locale" content="de_DE"><meta property="og:locale:alternate" content="en_US">
+  <meta property="og:title" content="Backglow – Ambient Lighting für den Mac">
   <meta property="og:description" content="Das Bild deines Macs, als Licht an der Wand dahinter.">
   <meta property="og:image" content="https://backglow.jandeboer.de/assets/screens/de/dashboard.jpg">
+  <meta property="og:image:width" content="1600"><meta property="og:image:height" content="1006">
+  <meta property="og:image:alt" content="Backglow-Fenster mit Live-Vorschau und farbigen LED-Zonen rund um das Bild.">
   <meta property="og:url" content="https://backglow.jandeboer.de/">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#070a14">
   <link rel="icon" type="image/png" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "WebSite",
+   "@id": "https://backglow.jandeboer.de/#website",
+   "url": "https://backglow.jandeboer.de/",
+   "name": "Backglow",
+   "inLanguage": [
+    "de",
+    "en"
+   ],
+   "publisher": {
+    "@id": "https://backglow.jandeboer.de/#author"
+   }
+  },
+  {
+   "@type": "Person",
+   "@id": "https://backglow.jandeboer.de/#author",
+   "name": "Jan de Boer",
+   "url": "https://github.com/Janldeboer"
+  },
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://backglow.jandeboer.de/#app",
+   "name": "Backglow",
+   "url": "https://backglow.jandeboer.de/",
+   "description": "Kostenlose Open-Source-App für macOS, die die Ränder des Bildschirms in Echtzeit an einen WS2812B-LED-Strip hinter dem Monitor überträgt, angesteuert von einem ESP32 oder ESP8266 per USB.",
+   "applicationCategory": "MultimediaApplication",
+   "operatingSystem": "macOS 26 or later",
+   "softwareVersion": "3.0.2",
+   "downloadUrl": "https://github.com/Janldeboer/Backglow/releases/download/v3.0.2/Backglow-3.0.2.dmg",
+   "releaseNotes": "https://github.com/Janldeboer/Backglow/releases/tag/v3.0.2",
+   "softwareHelp": "https://backglow.jandeboer.de/docs/",
+   "screenshot": "https://backglow.jandeboer.de/assets/screens/de/dashboard.jpg",
+   "image": "https://backglow.jandeboer.de/assets/icon.png",
+   "inLanguage": [
+    "de",
+    "en"
+   ],
+   "isAccessibleForFree": true,
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "EUR"
+   },
+   "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+   "featureList": [
+    "Live-Vorschau aller LED-Zonen",
+    "Erkennung schwarzer Filmränder",
+    "Federglättung und Anti-Flicker-Filter",
+    "Farbkalibrierung mit acht Referenzfarben, Farbtemperatur und Gamma",
+    "Grundlicht und Leistungsgrenze",
+    "LED-Profil auf dem ESP32/ESP8266 speichern",
+    "Bis zu 60 Bilder pro Sekunde, bis zu 255 LEDs"
+   ],
+   "author": {
+    "@id": "https://backglow.jandeboer.de/#author"
+   },
+   "sameAs": [
+    "https://github.com/Janldeboer/Backglow"
+   ]
+  },
+  {
+   "@type": "FAQPage",
+   "@id": "https://backglow.jandeboer.de/#faq",
+   "url": "https://backglow.jandeboer.de/",
+   "inLanguage": "de",
+   "isPartOf": {
+    "@id": "https://backglow.jandeboer.de/#website"
+   },
+   "about": {
+    "@id": "https://backglow.jandeboer.de/#app"
+   },
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Was ist Backglow?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Backglow ist eine kostenlose Open-Source-App für macOS, die die Ränder deines Bildschirms in Echtzeit auswertet und ihre Farben an einen LED-Strip hinter dem Monitor schickt. So entsteht ein Hintergrundlicht, das dem Bild folgt."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Ist das ein Ambilight für den Mac?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Backglow funktioniert nach demselben Prinzip wie Ambilight bei Philips-Fernsehern, ist aber ein unabhängiges Selbstbau-Projekt für Mac-Bildschirme und steht in keiner Verbindung zu Philips."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Welche LED-Strips und Controller werden unterstützt?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Adressierbare WS2812B-Strips mit GRB-Farbreihenfolge und bis zu 255 LEDs, angesteuert von einem ESP32 Dev Module oder einem NodeMCU ESP8266. Die Firmware für beide liegt im Repository."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Läuft Backglow auf Intel-Macs?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Backglow braucht macOS 26. Der fertige Download ist für Macs mit Apple-Chip; auf einem Intel-Mac mit macOS 26 baust du die App selbst mit Xcode 26."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Funktioniert es mit einem externen Monitor?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Ja. Du wählst in der App den Bildschirm, hinter dem der Strip hängt, egal ob eingebautes Display oder externer Monitor."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Geht das auch per WLAN oder mit WLED?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Nein, derzeit nicht. Backglow schickt die Farben per USB-Kabel an den ESP. Das hält die Latenz niedrig und kommt ohne Netzwerk aus."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Was ist der Unterschied zu HyperHDR oder Hyperion?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Backglow ist eine native Mac-App ohne Server oder Weboberfläche: Bildschirm wählen, Strip verbinden, fertig. Die Bildverarbeitung folgt den Verfahren von HyperHDR und ist in Swift mit Metal neu geschrieben."
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Kostet Backglow etwas oder sammelt es Daten?",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Nein. Backglow ist kostenlos unter der GPL-3.0, läuft komplett lokal und baut keine Internetverbindung auf. Details stehen in der Datenschutzerklärung."
+     }
+    }
+   ]
+  }
+ ]
+}
+  </script>
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt</a>
@@ -23,7 +174,7 @@
 
 <main id="main">
   <section class="hero"><div class="wrap">
-    <p class="eyebrow">Ambient Lighting for Mac · Open Source</p>
+    <p class="eyebrow">Ambient Lighting für den Mac · Open Source</p>
     <h1>Dein Bildschirm, <span class="glow-text">bis an die Wand.</span></h1>
     <p class="lead">Backglow liest die Ränder deines Mac-Bildschirms und gibt ihre Farben in Echtzeit an einen LED-Strip hinter dem Monitor weiter. Filme, Spiele und Musikvideos wirken größer, und im dunklen Raum ist der Kontrast zum hellen Bildschirm weniger hart.</p>
     <div class="actions">
@@ -78,6 +229,22 @@
       <p class="more"><a href="/docs/">Zur Schritt-für-Schritt-Anleitung →</a></p>
     </div>
     <img src="/assets/screens/de/layout.jpg" width="1600" height="1006" loading="lazy" alt="Seite LED-Anordnung mit Zeilen, Spalten, aktiven LEDs, Startversatz und einer Kachelvorschau.">
+  </div></section>
+
+  <section id="fragen"><div class="wrap">
+    <div class="section-head">
+      <h2>Häufige Fragen</h2>
+    </div>
+    <div class="faq">
+      <div><h3>Was ist Backglow?</h3><p>Backglow ist eine kostenlose Open-Source-App für macOS, die die Ränder deines Bildschirms in Echtzeit auswertet und ihre Farben an einen LED-Strip hinter dem Monitor schickt. So entsteht ein Hintergrundlicht, das dem Bild folgt.</p></div>
+      <div><h3>Ist das ein Ambilight für den Mac?</h3><p>Backglow funktioniert nach demselben Prinzip wie Ambilight bei Philips-Fernsehern, ist aber ein unabhängiges Selbstbau-Projekt für Mac-Bildschirme und steht in keiner Verbindung zu Philips.</p></div>
+      <div><h3>Welche LED-Strips und Controller werden unterstützt?</h3><p>Adressierbare WS2812B-Strips mit GRB-Farbreihenfolge und bis zu 255 LEDs, angesteuert von einem ESP32 Dev Module oder einem NodeMCU ESP8266. Die Firmware für beide liegt im Repository.</p></div>
+      <div><h3>Läuft Backglow auf Intel-Macs?</h3><p>Backglow braucht macOS 26. Der fertige Download ist für Macs mit Apple-Chip; auf einem Intel-Mac mit macOS 26 baust du die App selbst mit Xcode 26.</p></div>
+      <div><h3>Funktioniert es mit einem externen Monitor?</h3><p>Ja. Du wählst in der App den Bildschirm, hinter dem der Strip hängt, egal ob eingebautes Display oder externer Monitor.</p></div>
+      <div><h3>Geht das auch per WLAN oder mit WLED?</h3><p>Nein, derzeit nicht. Backglow schickt die Farben per USB-Kabel an den ESP. Das hält die Latenz niedrig und kommt ohne Netzwerk aus.</p></div>
+      <div><h3>Was ist der Unterschied zu HyperHDR oder Hyperion?</h3><p>Backglow ist eine native Mac-App ohne Server oder Weboberfläche: Bildschirm wählen, Strip verbinden, fertig. Die Bildverarbeitung folgt den Verfahren von HyperHDR und ist in Swift mit Metal neu geschrieben.</p></div>
+      <div><h3>Kostet Backglow etwas oder sammelt es Daten?</h3><p>Nein. Backglow ist kostenlos unter der GPL-3.0, läuft komplett lokal und baut keine Internetverbindung auf. Details stehen in der <a href="/datenschutz/">Datenschutzerklärung</a>.</p></div>
+    </div>
   </div></section>
 
   <section class="cta"><div class="wrap">
