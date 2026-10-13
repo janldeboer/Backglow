@@ -204,8 +204,8 @@ final class LightingModel: ObservableObject {
 
     func disconnectController() {
         suppressCurrentPairing()
-        pendingControllerCheck = nil
         serial.disconnect()
+        pendingControllerCheck = nil
     }
 
     /// Dark LEDs before the app quits, so they do not keep the last color.
@@ -376,6 +376,8 @@ final class LightingModel: ObservableObject {
     }
 
     private func sendBlack() {
+        // An unconfirmed controller gets no data at all, not even black.
+        guard pendingControllerCheck == nil else { return }
         serial.send(Array(repeating: .black, count: configuration.ledCount),
                     maximumLEDs: configuration.deviceLEDCount)
     }
@@ -488,9 +490,9 @@ final class LightingModel: ObservableObject {
         if let suppressed = suppressedPairing, suppressed != match?.pairing.id { suppressedPairing = nil }
         if let active = autoConnectedPairing, active != match?.pairing.id {
             autoConnectedPairing = nil
-            pendingControllerCheck = nil
             switchOff()
             serial.disconnect()
+            pendingControllerCheck = nil
             autoConnectStatus = String(localized: "Bildschirm oder Controller getrennt – Licht aus")
         }
         guard let match, suppressedPairing != match.pairing.id,
@@ -540,9 +542,9 @@ final class LightingModel: ObservableObject {
     private func rejectController(_ message: String) {
         suppressedPairing = autoConnectedPairing
         autoConnectedPairing = nil
-        pendingControllerCheck = nil
         switchOff()
         serial.disconnect()
+        pendingControllerCheck = nil
         autoConnectStatus = message
     }
 

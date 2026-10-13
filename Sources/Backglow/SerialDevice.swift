@@ -206,7 +206,9 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             controllerCapacity = Int(frame.payload.readLE16(at: 1))
             let identifier = String(format: "%08X", frame.payload.readLE32(at: 4))
             controllerID = identifier
+            let token = generation
             onControllerIdentified?(identifier)
+            guard generation == token else { return } // Rejected and disconnected.
             canInitializeStorage = frame.payload[3] == 0
             guard frame.payload[3] == 1 else {
                 switch frame.payload[3] {
