@@ -97,7 +97,7 @@ private struct MainWindow: View {
                         Label(model.isCapturing ? LocalizedStringKey("Stoppen") : "Live starten",
                               systemImage: model.isCapturing ? "stop.fill" : "play.fill")
                     }
-                    .buttonStyle(.glassProminent)
+                    .prominentGlassButtonStyle()
                 }
             }
         }
@@ -512,7 +512,7 @@ private struct SurfaceCard<Content: View>: View {
         VStack(alignment: .leading, spacing: 15) { content }
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 18))
+            .cardBackground(in: RoundedRectangle(cornerRadius: 18))
     }
 }
 
@@ -603,6 +603,25 @@ private extension LEDCalibration.Corner {
         case .magenta: String(localized: "Magenta")
         case .cyan: String(localized: "Cyan")
         case .white: String(localized: "Weiß")
+        }
+    }
+}
+
+// Liquid Glass exists from macOS 26; macOS 14 and 15 get the closest standard look.
+private extension View {
+    @ViewBuilder func prominentGlassButtonStyle() -> some View {
+        if #available(macOS 26, *) {
+            buttonStyle(.glassProminent)
+        } else {
+            buttonStyle(.borderedProminent)
+        }
+    }
+
+    @ViewBuilder func cardBackground(in shape: some Shape) -> some View {
+        if #available(macOS 26, *) {
+            glassEffect(.regular, in: shape)
+        } else {
+            background(.regularMaterial, in: shape)
         }
     }
 }

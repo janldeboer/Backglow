@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Backglow",
-    platforms: [.macOS(.v26)],
+    platforms: [.macOS(.v14)],
     products: [
         .executable(name: "Backglow", targets: ["Backglow"])
     ],
