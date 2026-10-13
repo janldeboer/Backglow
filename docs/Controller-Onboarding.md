@@ -1,12 +1,12 @@
 # Controller-Erkennung, Firmware und portable LED-Profile
 
-Stand: 22.09.2026 · Profilfunktion implementiert, Flasher weiterhin Entwurf
+Stand: 13.10.2026 · Profilfunktion und gemerkte Monitor-Controller-Paare implementiert, Flasher weiterhin Entwurf
 
 ## Ausgangspunkt
 
 Die bisherige FastLED-Firmware versteht nur `led`-Farbpakete und `les` zum Anzeigen eines Bildes. Sie meldet keine Geräteidentität und speichert keine Einstellungen. Die neue Firmware unter `Firmware/BackglowController` ergänzt ein persistentes Profil; die App behält ihre lokale JSON-Datei als Rückfallkopie.
 
-Die App zeigt ab diesem Stand ausschließlich serielle Ports mit einem USB-Elternknoten und USB Vendor/Product ID an. Sie öffnet beim Suchen keinen Port. Das blendet virtuelle Bluetooth- und Systemports aus. Eine USB-Seriell-Kennung allein beweist **nicht**, dass dahinter ein ESP oder überhaupt ein Microcontroller steckt: CP210x-, CH34x- und FTDI-Brücken können an sehr unterschiedlichen Geräten hängen. Es gibt auch kein verlässliches Merkmal eines passiven „USB-Kabeltyps“. Automatische Verbindung oder automatisches Flashen allein aufgrund eines Namens oder einer VID/PID bleiben ausgeschlossen.
+Die App zeigt ab diesem Stand ausschließlich serielle Ports mit einem USB-Elternknoten und USB Vendor/Product ID an. Sie öffnet beim Suchen keinen Port. Das blendet virtuelle Bluetooth- und Systemports aus. Eine USB-Seriell-Kennung allein beweist **nicht**, dass dahinter ein ESP oder überhaupt ein Microcontroller steckt: CP210x-, CH34x- und FTDI-Brücken können an sehr unterschiedlichen Geräten hängen. Es gibt auch kein verlässliches Merkmal eines passiven „USB-Kabeltyps“. Automatische Verbindung oder automatisches Flashen allein aufgrund eines Namens oder einer VID/PID bleiben ausgeschlossen; automatisch verbunden wird nur ein vorher ausdrücklich verbundener und gemerkter Controller (siehe Abschnitt 2).
 
 ## 1. Geräteauswahl ohne ungewolltes Flashen
 
@@ -20,7 +20,7 @@ Ein explizit gewählter generischer USB-Seriell-Adapter ist noch kein verifizier
 
 ## 2. Profil auf dem Controller
 
-Die Firmware meldet eine Chip-Kennung und ein versioniertes Profil. Die App lädt es nach einem erfolgreichen `AL3`-Handshake automatisch. Das Profil ist die maßgebliche Quelle für die tragbaren LED-Einstellungen; lokale Einstellungen bleiben für alte Firmware und vor dem ersten Speichern erhalten. Die Chip-Kennung wird bislang nur angezeigt, nicht als automatische Port-Zuordnung verwendet.
+Die Firmware meldet eine Chip-Kennung und ein versioniertes Profil. Die App lädt es nach einem erfolgreichen `AL3`-Handshake automatisch. Das Profil ist die maßgebliche Quelle für die tragbaren LED-Einstellungen; lokale Einstellungen bleiben für alte Firmware und vor dem ersten Speichern erhalten. Die Chip-Kennung wird angezeigt und bei gemerkten Monitor-Controller-Paaren vor dem Senden geprüft.
 
 | Auf dem Controller | Weiterhin lokal auf dem Mac |
 | --- | --- |
@@ -30,7 +30,7 @@ Die Firmware meldet eine Chip-Kennung und ein versioniertes Profil. Die App läd
 
 Die LED-Pinbelegung steht im PlatformIO-Build-Flag der jeweiligen Board-Umgebung; LED-Typ und Farbreihenfolge stehen im Firmware-Code. Sie lassen sich mit FastLED nicht für jedes Board gefahrlos zur Laufzeit wechseln. Eine spätere dynamische Pinwahl braucht gesonderte Hardwaretests.
 
-Eine automatische Zuordnung bei mehreren Displays/Controllern ist noch nicht umgesetzt. Das Profil gilt aktuell für **einen LED-Aufbau pro Controller** und wird beim ausdrücklich gewählten Anschluss geladen. Für echte Plug-and-Play-Erkennung braucht die nächste Ausbaustufe eine stabile Monitor-Kennung aus EDID-Daten und eine Zuordnung zu einer eindeutig erkannten Controller-Identität. Ein macOS-`displayID` allein ist kein transportabler Schlüssel.
+Das Profil gilt für **einen LED-Aufbau pro Controller**. Seit 3.2 kann die App eine Kombination aus Monitor und Controller merken, nachdem der Nutzer den Controller einmal ausdrücklich verbunden hat. Der Monitor wird über EDID-Hersteller, -Modell und -Seriennummer erkannt (ohne Seriennummer zusätzlich über die `displayID`), der Controller über USB Vendor/Product ID und USB-Seriennummer, ohne Seriennummer nur am selben Portpfad, also an derselben USB-Buchse. Hat die Firmware beim Merken eine Chip-Kennung gemeldet, sendet die App nach dem automatischen Öffnen keine Daten, bis dieselbe Kennung im `AL3`-Handshake zurückkommt; eine andere Kennung oder keine Antwort innerhalb von 6 s schließt den Port wieder. Ein unbekannter Adapter wird weiterhin nie automatisch geöffnet. Sind mehrere gemerkte Kombinationen gleichzeitig vorhanden, bleibt die aktive verbunden, sonst gewinnt die zuerst gemerkte; eine Auswahl-Abfrage gibt es noch nicht.
 
 **Speichervorgang:** Änderungen an Slidern bleiben zunächst im RAM und in der lokalen Rückfallkopie. Erst „Aktuelle Einrichtung speichern“ validiert alle Felder, sendet eine vollständige Profilversion und wartet auf eine Bestätigung. Anschließend liest die App das Profil zurück und meldet Erfolg erst bei Übereinstimmung von Revision und Werten. Gleiche Daten werden nicht erneut in Flash geschrieben. So belasten Live-Regler das Flash nicht.
 
@@ -50,7 +50,7 @@ Ein Firmware-Update darf die Profil-Partition nicht absichtlich löschen. Vor de
 2. **Profil-Protokoll:** `AL3`-Handshake, getrennte Gerätekonfiguration, alte Farbpakete als Legacy-Fallback, ESP32-/ESP8266-Firmware und expliziter Speichern/Laden-Ablauf sind implementiert. Beide Firmware-Images bauen. Profil über Neustart und anderen Mac sowie Stromunterbrechung an echter Hardware prüfen.
 3. **Flasher:** Board-Manifeste, geprüfte Release-Images, Chip-Probe am gewählten Port, sichere Prozesszeitgrenzen, Backup/Restore, Fortschritt und Fehlerbehandlung. Erst nach erfolgreichen Hardwaretests in der App freischalten.
 
-Abnahmeszenarien: Bluetooth-Ports und ein gewöhnlicher USB-Stick werden nicht angeboten; ein unbekannter USB-Seriell-Adapter wird nie automatisch geöffnet oder geflasht; ein falscher Chip wird vor dem Schreiben abgewiesen; ein unantwortender Port blockiert nicht die Oberfläche; ein gespeichertes Profil überlebt Neustart, Firmware-Update und Laptop-Wechsel; bei zwei möglichen Monitoren fragt die App nach der Zuordnung.
+Abnahmeszenarien: Bluetooth-Ports und ein gewöhnlicher USB-Stick werden nicht angeboten; ein unbekannter USB-Seriell-Adapter wird nie automatisch geöffnet oder geflasht, nur ein gemerkter Controller an seinem gemerkten Monitor; ein falscher Chip wird vor dem Schreiben abgewiesen; ein unantwortender Port blockiert nicht die Oberfläche; ein gespeichertes Profil überlebt Neustart, Firmware-Update und Laptop-Wechsel; bei zwei möglichen Monitoren fragt die App nach der Zuordnung.
 
 ## Technische Quellen
 

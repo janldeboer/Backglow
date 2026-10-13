@@ -57,7 +57,15 @@ The app is localized in German (source language) and English, and follows the la
 
 Linear-light averaging, the LED calibration, minimum backlight and power limit, the spring smoother, the anti-flicker filter and the temporal black-border logic follow [HyperHDR](https://github.com/awawa-dev/HyperHDR) (MIT, awawa-dev). They are reimplemented in Swift here.
 
-The device menu only lists USB-backed serial callout ports. Virtual Bluetooth and system ports are hidden, and a selected port is checked again before opening. This is a guard against accidental connection, not proof that an arbitrary USB serial adapter is a microcontroller. No port is opened automatically.
+The device menu only lists USB-backed serial callout ports. Virtual Bluetooth and system ports are hidden, and a selected port is checked again before opening. This is a guard against accidental connection, not proof that an arbitrary USB serial adapter is a microcontroller. A port is only opened when you choose it, or for a display and controller pair you remembered under **Automatik**.
+
+## Menu bar, login and automatic connection
+
+A menu bar item switches the lights on and off, picks the mode (screen or a single color), sets the color and the brightness, and connects the controller. When the main window is closed, Backglow keeps running in the menu bar without a Dock icon. **Bei der Anmeldung starten** registers the app as a login item through `SMAppService`; started at login, it opens no window.
+
+Under **Automatik** you remember the selected display together with the connected controller. As soon as both are present, Backglow connects and switches the lights on in the chosen mode; when either disappears, the lights go off and the port is closed. The display is recognized by its EDID vendor, model and serial number. The controller must match its USB vendor and product ID plus its USB serial number, or, for adapters without one, the same port path, which follows the USB socket. With v3 firmware the chip ID is remembered as well, and no LED data, not even black, is sent before the controller has reported it. Switching off by hand keeps the pair off until it is unplugged once. The LEDs also go dark while the displays sleep and when Backglow quits.
+
+In **single-color mode** every LED shows one color, without screen capture or Screen Recording permission. The color runs through the same spring smoother, color correction and power limit as the screen colors.
 
 Settings are saved in `~/Library/Application Support/Backglow/settings.json`.
 With v3 firmware, the app loads the controller's LED layout and color calibration
@@ -77,7 +85,7 @@ The new ESP32/ESP8266 firmware is in [Firmware/BackglowController](Firmware/Back
 It stores a versioned profile in ESP32 NVS or ESP8266 LittleFS and continues to
 accept the `led`/`les` color stream. The legacy sketch does not store profiles.
 Build and board setup are described in the firmware README. Guarded in-app
-flashing and automatic monitor-to-controller pairing remain planned in
+flashing remains planned in
 [Controller-Onboarding.md](docs/Controller-Onboarding.md); the app does not flash devices.
 
 ## Code map
@@ -86,7 +94,11 @@ flashing and automatic monitor-to-controller pairing remain planned in
 - `Sources/Backglow/ScreenCaptureEngine.swift`: ScreenCaptureKit lifecycle and frame delivery.
 - `Sources/Backglow/GPUZoneReducer.swift` and `Shaders/ZoneAverage.metal`: GPU zone averaging.
 - `Sources/Backglow/LightingModel.swift`: app state, settings, frame processing, and output coordination.
-- `Sources/Backglow/BackglowApp.swift`: native sidebar and preview UI.
+- `Sources/Backglow/BackglowApp.swift`: native sidebar and preview UI, app delegate and scenes.
+- `Sources/Backglow/MenuBarPanel.swift` and `SolidColorPicker.swift`: menu bar control and single-color picker.
+- `Sources/Backglow/LoginItem.swift`: open at login through `SMAppService`.
+- `Sources/Backglow/DisplayDiscovery.swift`: display identity from EDID through Core Graphics.
+- `Sources/BackglowCore/AutoConnect.swift`: matching remembered display and controller pairs.
 - `Sources/Backglow/SerialDevice.swift`: ORSSerialPort adapter.
 - `Sources/Backglow/USBSerialPortDiscovery.swift`: read-only USB serial discovery.
 

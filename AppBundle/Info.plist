@@ -11,8 +11,8 @@
     <key>CFBundleIconFile</key><string>Backglow</string>
     <key>CFBundleIconName</key><string>Backglow</string>
     <key>CFBundlePackageType</key><string>APPL</string>
-    <key>CFBundleShortVersionString</key><string>3.1.0</string>
-    <key>CFBundleVersion</key><string>4</string>
+    <key>CFBundleShortVersionString</key><string>3.2.0</string>
+    <key>CFBundleVersion</key><string>5</string>
     <key>LSMinimumSystemVersion</key><string>14.0</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>NSScreenCaptureUsageDescription</key><string>Backglow analysiert die Bildschirmränder, um die LED-Farben in Echtzeit zu steuern.</string>
