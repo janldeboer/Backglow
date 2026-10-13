@@ -49,10 +49,10 @@
    "url": "https://backglow.jandeboer.de/en/",
    "description": "Free, open-source macOS app that sends the edges of your screen in real time to a WS2812B LED strip behind the monitor, driven by an ESP32 or ESP8266 over USB.",
    "applicationCategory": "MultimediaApplication",
-   "operatingSystem": "macOS 26 or later",
-   "softwareVersion": "3.0.2",
-   "downloadUrl": "https://github.com/Janldeboer/Backglow/releases/download/v3.0.2/Backglow-3.0.2.dmg",
-   "releaseNotes": "https://github.com/Janldeboer/Backglow/releases/tag/v3.0.2",
+   "operatingSystem": "macOS 14 or later",
+   "softwareVersion": "3.1.0",
+   "downloadUrl": "https://github.com/Janldeboer/Backglow/releases/download/v3.1.0/Backglow-3.1.0.dmg",
+   "releaseNotes": "https://github.com/Janldeboer/Backglow/releases/tag/v3.1.0",
    "softwareHelp": "https://backglow.jandeboer.de/en/docs/",
    "screenshot": "https://backglow.jandeboer.de/assets/screens/en/dashboard.jpg",
    "image": "https://backglow.jandeboer.de/assets/icon.png",
@@ -124,7 +124,7 @@
      "name": "Does Backglow run on Intel Macs?",
      "acceptedAnswer": {
       "@type": "Answer",
-      "text": "Backglow requires macOS 26. The ready-made download is for Apple silicon Macs; on an Intel Mac running macOS 26 you build the app yourself with Xcode 26."
+      "text": "Backglow runs on macOS 14 Sonoma and later. The ready-made download is for Apple silicon Macs; on an Intel Mac you build the app yourself with Xcode 26."
      }
     },
     {
@@ -178,10 +178,10 @@
     <h1>Your screen, <span class="glow-text">all the way to the wall.</span></h1>
     <p class="lead">Backglow reads the edges of your Mac's screen and sends their colors in real time to an LED strip behind your monitor. Movies, games and music videos feel bigger, and in a dark room the contrast with the bright screen is easier on the eyes.</p>
     <div class="actions">
-      <a class="button primary" href="https://github.com/Janldeboer/Backglow/releases/download/v3.0.2/Backglow-3.0.2.dmg">Download Backglow 3.0</a>
+      <a class="button primary" href="https://github.com/Janldeboer/Backglow/releases/download/v3.1.0/Backglow-3.1.0.dmg">Download Backglow 3.1</a>
       <a class="button" href="/en/docs/">Set it up</a>
     </div>
-    <p class="note">For macOS 26 on Apple silicon Macs · Free under GPL-3.0 · In English and German</p>
+    <p class="note">For macOS 14 and later on Apple silicon Macs · Free under GPL-3.0 · In English and German</p>
     <div class="stage">
       <img src="/assets/screens/en/dashboard.jpg" width="1600" height="1006" alt="Backglow window with live preview: a sunset framed by 59 numbered zones, each showing the color of the image edge.">
     </div>
@@ -221,7 +221,7 @@
         <p>Plus an evening of tinkering and a bit of solder.</p>
       </div>
       <ul class="checklist">
-        <li>A Mac with macOS 26<span>With Apple silicon, or build the app yourself with Xcode 26.</span></li>
+        <li>A Mac with macOS 14 or later<span>With Apple silicon, or build the app yourself with Xcode 26.</span></li>
         <li>An addressable LED strip<span>WS2812B, stuck around the back of your monitor.</span></li>
         <li>An ESP32 or ESP8266<span>The matching firmware is in the repository.</span></li>
         <li>A 5 V power supply<span>Sized for your number of LEDs, with a shared ground.</span></li>
@@ -239,7 +239,7 @@
       <div><h3>What is Backglow?</h3><p>Backglow is a free, open-source macOS app that reads the edges of your screen in real time and sends their colors to an LED strip behind your monitor. The result is a backlight that follows the picture.</p></div>
       <div><h3>Is this Ambilight for Mac?</h3><p>Backglow works on the same principle as Ambilight on Philips TVs, but it is an independent DIY project for Mac displays and is not affiliated with Philips.</p></div>
       <div><h3>Which LED strips and controllers are supported?</h3><p>Addressable WS2812B strips with GRB color order and up to 255 LEDs, driven by an ESP32 Dev Module or a NodeMCU ESP8266. The firmware for both is in the repository.</p></div>
-      <div><h3>Does Backglow run on Intel Macs?</h3><p>Backglow requires macOS 26. The ready-made download is for Apple silicon Macs; on an Intel Mac running macOS 26 you build the app yourself with Xcode 26.</p></div>
+      <div><h3>Does Backglow run on Intel Macs?</h3><p>Backglow runs on macOS 14 Sonoma and later. The ready-made download is for Apple silicon Macs; on an Intel Mac you build the app yourself with Xcode 26.</p></div>
       <div><h3>Does it work with an external monitor?</h3><p>Yes. In the app you choose the display the strip is mounted behind, whether that is the built-in display or an external monitor.</p></div>
       <div><h3>Does it work over Wi-Fi or with WLED?</h3><p>Not at the moment. Backglow sends the colors to the ESP over a USB cable, which keeps latency low and needs no network.</p></div>
       <div><h3>How is it different from HyperHDR or Hyperion?</h3><p>Backglow is a native Mac app with no server or web interface: pick a display, connect the strip, done. Its image processing follows the techniques of HyperHDR, rewritten in Swift with Metal.</p></div>
@@ -248,11 +248,11 @@
   </div></section>
 
   <section class="cta"><div class="wrap">
-    <h2>Version 3.0 is here</h2>
-    <p>The first version under the name Backglow, signed and notarized by Apple. Questions and bugs are welcome as issues on GitHub.</p>
+    <h2>Version 3.1 is here</h2>
+    <p>Backglow now runs on macOS 14 Sonoma and later, not only on macOS 26. Signed and notarized by Apple. Questions and bugs are welcome as issues on GitHub.</p>
     <div class="actions">
-      <a class="button primary" href="https://github.com/Janldeboer/Backglow/releases/download/v3.0.2/Backglow-3.0.2.dmg">Download (DMG)</a>
-      <a class="button" href="https://github.com/Janldeboer/Backglow/releases/tag/v3.0.2">Release notes</a>
+      <a class="button primary" href="https://github.com/Janldeboer/Backglow/releases/download/v3.1.0/Backglow-3.1.0.dmg">Download (DMG)</a>
+      <a class="button" href="https://github.com/Janldeboer/Backglow/releases/tag/v3.1.0">Release notes</a>
       <a class="button" href="https://github.com/Janldeboer/Backglow/issues">Report an issue</a>
     </div>
   </div></section>

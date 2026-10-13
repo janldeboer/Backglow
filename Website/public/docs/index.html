@@ -68,7 +68,7 @@
  "tool": [
   {
    "@type": "HowToTool",
-   "name": "Mac mit macOS 26"
+   "name": "Mac mit macOS 14 oder neuer"
   },
   {
    "@type": "HowToTool",
@@ -84,7 +84,7 @@
    "@type": "HowToStep",
    "position": 1,
    "name": "Voraussetzungen prüfen",
-   "text": "Mac mit macOS 26, WS2812B-Strip, ESP32 oder ESP8266, 5-V-Netzteil und PlatformIO Core bereitlegen.",
+   "text": "Mac mit macOS 14 oder neuer, WS2812B-Strip, ESP32 oder ESP8266, 5-V-Netzteil und PlatformIO Core bereitlegen.",
    "url": "https://backglow.jandeboer.de/docs/#voraussetzungen"
   },
   {
@@ -173,11 +173,11 @@
 
   <main id="main" class="prose">
     <h1>Backglow einrichten</h1>
-    <p class="meta">Von der leeren Monitorrückseite bis zum fertigen Licht. Stand: Version 3.0, Oktober 2026.</p>
+    <p class="meta">Von der leeren Monitorrückseite bis zum fertigen Licht. Stand: Version 3.1, Oktober 2026.</p>
 
     <h2 id="voraussetzungen">Voraussetzungen</h2>
     <ul>
-      <li>Ein Mac mit <strong>macOS 26</strong> oder neuer. Der Download läuft auf Macs mit Apple-Chip; auf einem Intel-Mac baust du die App selbst mit <strong>Xcode 26</strong>.</li>
+      <li>Ein Mac mit <strong>macOS 14 Sonoma</strong> oder neuer. Der Download läuft auf Macs mit Apple-Chip; auf einem Intel-Mac baust du die App selbst mit <strong>Xcode 26</strong>.</li>
       <li>Ein <strong>WS2812B</strong>-Strip (Farbreihenfolge GRB), lang genug für die Ränder deines Monitors. Bis zu 255 LEDs.</li>
       <li>Ein <strong>ESP32 Dev Module</strong> oder ein <strong>NodeMCU ESP8266</strong> mit USB-Datenkabel.</li>
       <li>Ein <strong>5-V-Netzteil</strong> für den Strip.</li>
@@ -216,10 +216,10 @@ pio run -e nodemcuv2 -t upload</code></pre>
 
     <h2 id="app">App installieren</h2>
     <ol>
-      <li><a href="https://github.com/Janldeboer/Backglow/releases/download/v3.0.2/Backglow-3.0.2.dmg">Backglow-3.0.2.dmg</a> laden, öffnen und Backglow in den Programme-Ordner ziehen.</li>
+      <li><a href="https://github.com/Janldeboer/Backglow/releases/download/v3.1.0/Backglow-3.1.0.dmg">Backglow-3.1.0.dmg</a> laden, öffnen und Backglow in den Programme-Ordner ziehen.</li>
       <li>Backglow öffnen. Die App ist von Apple notarisiert und startet ohne Warnung.</li>
     </ol>
-    <p>Was neu ist, steht in den <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.0.2">Release Notes</a>.</p>
+    <p>Was neu ist, steht in den <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.1.0">Release Notes</a>.</p>
     <h3>Selbst bauen</h3>
 <pre><code>cd Backglow
 ./scripts/build-app.sh
