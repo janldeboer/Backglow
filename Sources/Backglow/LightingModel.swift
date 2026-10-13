@@ -21,10 +21,14 @@ final class LiveState: ObservableObject {
 final class LightingModel: ObservableObject {
     @Published private(set) var configuration = LightingConfiguration()
     @Published private(set) var displays: [DisplayChoice] = []
+    /// The lights are on, from the screen or in a single color.
+    @Published private(set) var isRunning = false
     @Published private(set) var isCapturing = false
     @Published private(set) var captureStatus = String(localized: "Bereit")
     /// While set, every LED shows this calibration corner instead of the screen.
     @Published private(set) var testCorner: LEDCalibration.Corner?
+    /// What the last automatic connection did, for the automation page.
+    @Published private(set) var autoConnectStatus: String?
 
     let live = LiveState()
     let serial = SerialDevice()
@@ -39,8 +43,16 @@ final class LightingModel: ObservableObject {
     private var lastStatsTime: TimeInterval = 0
     private var restartTask: Task<Void, Never>?
     private var captureTask: Task<Void, Never>?
-    private var desiredCapture = false
     private let persistsSettings: Bool
+    /// Display sleep or system sleep: the LEDs are dark until the screens wake.
+    private var outputPaused = false
+    private var systemObservers: [NSObjectProtocol] = []
+    /// The pairing that switched the lights on; leaving it switches them off again.
+    private var autoConnectedPairing: AutoConnectPairing.ID?
+    /// Switched off by hand while present; ignored until it disappears once.
+    private var suppressedPairing: AutoConnectPairing.ID?
+    /// Chip ID the auto-connected controller must report before it gets LED data.
+    private var pendingControllerCheck: String?
 
     private static let settingsURL = settingsURL(folder: "Backglow")
     /// Settings saved before the rename; read only when Backglow has none of its own yet.
@@ -73,7 +85,14 @@ final class LightingModel: ObservableObject {
         serial.onProfileLoaded = { [weak self] profile in
             self?.change { $0 = profile.applying(to: $0) }
         }
+        serial.onControllerIdentified = { [weak self] id in self?.verifyController(id) }
         Task { await refreshDisplays() }
+        // The screenshot mode never touches real devices.
+        if persistsSettings {
+            serial.onPortsChanged = { [weak self] in self?.evaluateAutoConnect() }
+            observeSystem()
+            Task { evaluateAutoConnect() }
+        }
     }
 
     var profileHasLocalChanges: Bool {
@@ -117,12 +136,47 @@ final class LightingModel: ObservableObject {
             updated.columns != previous.columns {
             resetOutput()
         }
+        if updated.outputMode != previous.outputMode {
+            applyMode()
+        } else {
+            updateSolidTarget()
+        }
+        if updated.autoConnect != previous.autoConnect || updated.pairings != previous.pairings {
+            evaluateAutoConnect()
+        }
     }
 
     func start() {
-        desiredCapture = true
+        isRunning = true
+        applyMode()
+    }
+
+    /// Starts or ends the screen capture to match the output mode while the lights are on.
+    private func applyMode() {
+        guard isRunning else { return }
         captureTask?.cancel()
-        captureTask = Task { await startCapture() }
+        switch configuration.outputMode {
+        case .screen:
+            captureTask = Task { await startCapture() }
+        case .solidColor:
+            restartTask?.cancel()
+            captureTask = Task {
+                try? await capture.stop()
+                isCapturing = false
+                captureStatus = String(localized: "Einzelfarbe")
+            }
+            updateSolidTarget()
+        }
+    }
+
+    /// The spring fades to a new single color the same way it follows the screen.
+    private func updateSolidTarget() {
+        guard isRunning, configuration.outputMode == .solidColor else { return }
+        let color = processed(configuration.solidColor.linearized)
+        smoother.configure(smoothing: configuration.calibration.smoothing)
+        smoother.setTarget(Array(repeating: color, count: configuration.ledCount))
+        hasPendingOutput = true
+        startOutputClock()
     }
 
     func showTestCorner(_ corner: LEDCalibration.Corner?) {
@@ -132,8 +186,9 @@ final class LightingModel: ObservableObject {
             return
         }
         resetOutput()
-        if desiredCapture {
+        if isRunning {
             hasPendingOutput = true
+            updateSolidTarget()
         } else {
             stopOutputClock()
             live.colors = []
@@ -141,12 +196,32 @@ final class LightingModel: ObservableObject {
         }
     }
 
+    /// Switching off by hand also keeps a present pairing from switching on again right away.
     func stop() {
-        desiredCapture = false
+        suppressCurrentPairing()
+        switchOff()
+    }
+
+    func disconnectController() {
+        suppressCurrentPairing()
+        pendingControllerCheck = nil
+        serial.disconnect()
+    }
+
+    /// Dark LEDs before the app quits, so they do not keep the last color.
+    func prepareForTermination() {
+        guard serial.isConnected else { return }
+        sendBlack()
+        serial.flush()
+    }
+
+    private func switchOff() {
+        isRunning = false
         testCorner = nil
         restartTask?.cancel()
         captureTask?.cancel()
         stopOutputClock()
+        sendBlack()
         captureTask = Task {
             do { try await capture.stop() } catch { captureStatus = error.localizedDescription }
             isCapturing = false
@@ -198,7 +273,7 @@ final class LightingModel: ObservableObject {
         captureStatus = String(localized: "Bildschirmaufnahme startet…")
         do {
             let displayID = try await capture.start(configuration)
-            guard desiredCapture else {
+            guard isRunning, configuration.outputMode == .screen else {
                 try? await capture.stop()
                 return
             }
@@ -213,17 +288,17 @@ final class LightingModel: ObservableObject {
     }
 
     private func scheduleRestart() {
-        guard desiredCapture else { return }
+        guard isRunning, configuration.outputMode == .screen else { return }
         restartTask?.cancel()
         restartTask = Task {
             try? await Task.sleep(for: .milliseconds(350))
-            guard !Task.isCancelled, desiredCapture else { return }
+            guard !Task.isCancelled, isRunning, configuration.outputMode == .screen else { return }
             await startCapture()
         }
     }
 
     private func receive(_ frame: ProcessedFrame) {
-        guard desiredCapture else { return }
+        guard isRunning, configuration.outputMode == .screen else { return }
         let corrected = frame.colors.map(processed)
         smoother.configure(smoothing: configuration.calibration.smoothing)
         smoother.setTarget(corrected)
@@ -279,6 +354,7 @@ final class LightingModel: ObservableObject {
     }
 
     private func outputTick() {
+        guard !outputPaused else { return }
         let now = ProcessInfo.processInfo.systemUptime
         let elapsed = lastOutputTime.map { now - $0 } ?? 0
         lastOutputTime = now
@@ -294,7 +370,7 @@ final class LightingModel: ObservableObject {
             ColorProcessing.limitingPower(frame, to: configuration.ledCalibration.powerLimit)
         )
         if output != live.colors { live.colors = output }
-        if serial.isConnected {
+        if serial.isConnected, pendingControllerCheck == nil {
             serial.send(output, maximumLEDs: configuration.deviceLEDCount)
         }
     }
@@ -307,6 +383,167 @@ final class LightingModel: ObservableObject {
     private func resetOutput() {
         smoother.reset()
         antiFlicker.reset()
+    }
+
+    // MARK: Sleep and wake
+
+    private func observeSystem() {
+        let workspace = NSWorkspace.shared.notificationCenter
+        systemObservers = [
+            observe(.default, NSApplication.didChangeScreenParametersNotification) { $0.evaluateAutoConnect() },
+            observe(workspace, NSWorkspace.screensDidSleepNotification) { $0.setOutputPaused(true) },
+            observe(workspace, NSWorkspace.willSleepNotification) { $0.setOutputPaused(true) },
+            observe(workspace, NSWorkspace.screensDidWakeNotification) { $0.resumeIfScreensAwake() },
+            observe(workspace, NSWorkspace.didWakeNotification) { $0.resumeIfScreensAwake() },
+        ]
+    }
+
+    private func observe(_ center: NotificationCenter, _ name: Notification.Name,
+                         _ action: @escaping @MainActor (LightingModel) -> Void) -> NSObjectProtocol {
+        center.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor [weak self] in if let self { action(self) } }
+        }
+    }
+
+    private func resumeIfScreensAwake() {
+        // A dark wake or a wake with the lid closed leaves the screens asleep.
+        guard CGDisplayIsAsleep(CGMainDisplayID()) == 0 else { return }
+        setOutputPaused(false)
+        evaluateAutoConnect()
+    }
+
+    private func setOutputPaused(_ paused: Bool) {
+        guard outputPaused != paused else { return }
+        outputPaused = paused
+        if paused {
+            sendBlack()
+            serial.flush()
+        } else {
+            hasPendingOutput = true
+        }
+    }
+
+    // MARK: Automatic connection
+
+    var canRememberPairing: Bool {
+        serial.connectedPort != nil && configuration.displayID != nil
+    }
+
+    /// Remembers the selected display and the connected controller as a pair.
+    func rememberCurrentPairing() {
+        guard let port = serial.connectedPort, let displayID = configuration.displayID else { return }
+        let display = DisplayDiscovery.identity(displayID)
+        let displayName = DisplayDiscovery.name(displayID) ?? String(localized: "Bildschirm")
+        let pairing = AutoConnectPairing(name: "\(displayName) · \(port.name)", display: display,
+                                         device: port.identity, controllerID: serial.controllerID)
+        // Already connected, so it counts as switched on by this pairing.
+        autoConnectedPairing = pairing.id
+        suppressedPairing = nil
+        change {
+            $0.pairings.removeAll { $0.display.matches(display) && $0.device.matches(port.identity) }
+            $0.pairings.append(pairing)
+            $0.autoConnect = true
+        }
+        autoConnectStatus = String(localized: "Kombination gemerkt: \(pairing.name)")
+    }
+
+    func forgetPairing(_ id: AutoConnectPairing.ID) {
+        change { $0.pairings.removeAll { $0.id == id } }
+    }
+
+    func isPairingAvailable(_ pairing: AutoConnectPairing) -> Bool {
+        AutoConnectPairing.firstAvailable([pairing], displays: DisplayDiscovery.active(),
+                                          devices: serial.ports.map(\.identity)) != nil
+    }
+
+    /// The active pairing while it is still present, otherwise the first one that is.
+    private func currentMatch() -> AutoConnectPairing.Match? {
+        let displays = DisplayDiscovery.active()
+        let devices = serial.ports.map(\.identity)
+        let active = configuration.pairings.filter { $0.id == autoConnectedPairing }
+        return AutoConnectPairing.firstAvailable(active, displays: displays, devices: devices)
+            ?? AutoConnectPairing.firstAvailable(configuration.pairings, displays: displays, devices: devices)
+    }
+
+    private func suppressCurrentPairing() {
+        if let id = autoConnectedPairing ?? (configuration.autoConnect ? currentMatch()?.pairing.id : nil) {
+            suppressedPairing = id
+        }
+        autoConnectedPairing = nil
+    }
+
+    /// Runs when displays, USB serial ports or the pairings change. A port is only opened
+    /// when it matches a controller the user connected and remembered before.
+    func evaluateAutoConnect() {
+        guard persistsSettings else { return }
+        guard configuration.autoConnect else {
+            autoConnectedPairing = nil
+            suppressedPairing = nil
+            return
+        }
+        if let active = autoConnectedPairing, !configuration.pairings.contains(where: { $0.id == active }) {
+            autoConnectedPairing = nil // Forgotten; the lights stay as they are.
+        }
+        let match = currentMatch()
+        if let suppressed = suppressedPairing, suppressed != match?.pairing.id { suppressedPairing = nil }
+        if let active = autoConnectedPairing, active != match?.pairing.id {
+            autoConnectedPairing = nil
+            pendingControllerCheck = nil
+            switchOff()
+            serial.disconnect()
+            autoConnectStatus = String(localized: "Bildschirm oder Controller getrennt – Licht aus")
+        }
+        guard let match, suppressedPairing != match.pairing.id,
+              autoConnectedPairing != match.pairing.id else { return }
+        autoConnectedPairing = match.pairing.id
+        change {
+            $0.displayID = match.displayID
+            $0.portPath = match.portPath
+        }
+        if serial.connectedPort?.id != match.portPath {
+            connectAutomatically(match)
+        }
+        if !isRunning { start() }
+        autoConnectStatus = String(localized: "Automatisch eingeschaltet: \(match.pairing.name)")
+    }
+
+    private func connectAutomatically(_ match: AutoConnectPairing.Match) {
+        serial.connect(path: match.portPath, baudRate: configuration.baudRate)
+        guard let expected = match.pairing.controllerID else { return }
+        // LED data goes out only after the controller has reported the remembered chip ID.
+        pendingControllerCheck = expected
+        let pairingID = match.pairing.id
+        Task {
+            try? await Task.sleep(for: .seconds(6))
+            guard pendingControllerCheck != nil, autoConnectedPairing == pairingID else { return }
+            rejectController(String(localized: "Controller hat sich nicht gemeldet – automatische Verbindung getrennt"))
+        }
+    }
+
+    private func verifyController(_ id: String) {
+        guard let active = autoConnectedPairing,
+              let index = configuration.pairings.firstIndex(where: { $0.id == active }) else { return }
+        guard let expected = configuration.pairings[index].controllerID else {
+            change { $0.pairings[index].controllerID = id }
+            return
+        }
+        guard expected == id else {
+            rejectController(String(localized: "Anderer Controller an diesem Anschluss – automatische Verbindung getrennt"))
+            return
+        }
+        if pendingControllerCheck != nil {
+            pendingControllerCheck = nil
+            hasPendingOutput = true
+        }
+    }
+
+    private func rejectController(_ message: String) {
+        suppressedPairing = autoConnectedPairing
+        autoConnectedPairing = nil
+        pendingControllerCheck = nil
+        switchOff()
+        serial.disconnect()
+        autoConnectStatus = message
     }
 
     private func save() {

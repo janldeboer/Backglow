@@ -1,12 +1,15 @@
 import BackglowCore
+import ServiceManagement
 import SwiftUI
 
 @main
 struct BackglowApp: App {
-    @StateObject private var model = LightingModel(persistsSettings: !ScreenshotMode.isActive)
+    static let mainWindowID = "main"
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    private var model: LightingModel { appDelegate.model }
 
     var body: some Scene {
-        WindowGroup {
+        Window(Text(verbatim: "Backglow"), id: Self.mainWindowID) {
             MainWindow(model: model, serial: model.serial)
                 .frame(minWidth: 980, minHeight: 650)
         }
@@ -14,11 +17,46 @@ struct BackglowApp: App {
         .commands {
             CommandGroup(replacing: .newItem) {}
         }
+        MenuBarExtra {
+            MenuBarPanel(model: model, serial: model.serial)
+        } label: {
+            MenuBarLabel(model: model)
+        }
+        .menuBarExtraStyle(.window)
+    }
+}
+
+/// Keeps Backglow running in the menu bar without a window, and without a Dock icon then.
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// Owned here so it exists, and can switch the LEDs off on quit, without any window.
+    let model = LightingModel(persistsSettings: !ScreenshotMode.isActive)
+    var openMainWindow: (() -> Void)?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        guard LoginItem.launchedAtLogin else { return }
+        // Started at login: only the menu bar item, the lights follow the remembered setup.
+        DispatchQueue.main.async {
+            for window in NSApp.windows where window.canBecomeMain { window.close() }
+            NSApp.setActivationPolicy(.accessory)
+        }
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { openMainWindow?() }
+        return true
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        model.prepareForTermination()
+        return .terminateNow
     }
 }
 
 private enum Page: CaseIterable, Identifiable {
-    case dashboard, source, layout, color, device, diagnostics
+    case dashboard, source, layout, color, device, automation, diagnostics
 
     var id: Self { self }
     var fileName: String { String(describing: self) }
@@ -29,6 +67,7 @@ private enum Page: CaseIterable, Identifiable {
         case .layout: "LED-Anordnung"
         case .color: "Farben"
         case .device: "Gerät"
+        case .automation: "Automatik"
         case .diagnostics: "Diagnose"
         }
     }
@@ -39,6 +78,7 @@ private enum Page: CaseIterable, Identifiable {
         case .layout: "rectangle.split.3x3"
         case .color: "paintpalette"
         case .device: "cable.connector"
+        case .automation: "bolt.badge.automatic"
         case .diagnostics: "waveform.path.ecg"
         }
     }
@@ -47,6 +87,8 @@ private enum Page: CaseIterable, Identifiable {
 private struct MainWindow: View {
     @ObservedObject var model: LightingModel
     @ObservedObject var serial: SerialDevice
+    @StateObject private var loginItem = LoginItem()
+    @Environment(\.openWindow) private var openWindow
     @State private var selection: Page? = .dashboard
     @State private var showsStorageInitializationConfirmation = false
 
@@ -59,7 +101,7 @@ private struct MainWindow: View {
             .navigationSplitViewColumnWidth(min: 190, ideal: 215)
             .safeAreaInset(edge: .bottom) {
                 HStack(spacing: 8) {
-                    Circle().fill(model.isCapturing ? .green : .secondary)
+                    Circle().fill(model.isRunning ? .green : .secondary)
                         .frame(width: 8, height: 8)
                     Text(model.captureStatus).lineLimit(1)
                     Spacer()
@@ -78,6 +120,7 @@ private struct MainWindow: View {
                     case .layout: layout
                     case .color: colorSettings
                     case .device: device
+                    case .automation: automation
                     case .diagnostics: diagnostics
                     }
                 }
@@ -92,15 +135,31 @@ private struct MainWindow: View {
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {
-                        model.isCapturing ? model.stop() : model.start()
+                        model.isRunning ? model.stop() : model.start()
                     } label: {
-                        Label(model.isCapturing ? LocalizedStringKey("Stoppen") : "Live starten",
-                              systemImage: model.isCapturing ? "stop.fill" : "play.fill")
+                        Label(startStopTitle, systemImage: model.isRunning ? "stop.fill" : "play.fill")
                     }
                     .prominentGlassButtonStyle()
                 }
             }
         }
+        .onAppear {
+            NSApp.setActivationPolicy(.regular)
+            // Opening Backglow again from Finder or Launchpad shows this window.
+            let openWindow = openWindow
+            (NSApp.delegate as? AppDelegate)?.openMainWindow = {
+                NSApp.setActivationPolicy(.regular)
+                openWindow(id: BackglowApp.mainWindowID)
+                NSApp.activate()
+            }
+        }
+        // Without a window, Backglow lives on in the menu bar only.
+        .onDisappear { NSApp.setActivationPolicy(.accessory) }
+    }
+
+    private var startStopTitle: LocalizedStringKey {
+        if model.isRunning { return "Stoppen" }
+        return model.configuration.outputMode == .screen ? "Live starten" : "Einschalten"
     }
 
     private func takeScreenshots(into folder: URL) async {
@@ -145,25 +204,39 @@ private struct MainWindow: View {
         case .layout: "Ordne Bildschirmkacheln den physischen LEDs zu."
         case .color: "Stimme Farben und Übergänge auf deine Umgebung ab."
         case .device: "Verbinde deinen LED-Controller über die serielle Schnittstelle."
+        case .automation: "Starte mit dem Mac und schalte das Licht ein, sobald Bildschirm und Controller da sind."
         case .diagnostics: "Status und Laufzeitwerte der Verarbeitung."
         }
     }
 
     private var dashboard: some View {
         VStack(alignment: .leading, spacing: 20) {
-            SurfaceCard {
-                HStack {
-                    Label("Live-Vorschau", systemImage: "display")
+            if model.configuration.outputMode == .solidColor {
+                SurfaceCard {
+                    Label("Einzelfarbe", systemImage: "paintpalette")
                         .font(.headline)
-                    Spacer()
-                    ZoneCount(live: model.live)
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(.secondary)
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(model.configuration.solidColor.color)
+                        .frame(height: 140)
+                    SolidColorPicker(model: model)
+                    Text("Alle LEDs zeigen diese Farbe. Helligkeit, Farbkanäle und Kalibrierung gelten weiterhin.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
-                LivePreview(live: model.live)
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                SurfaceCard {
+                    HStack {
+                        Label("Live-Vorschau", systemImage: "display")
+                            .font(.headline)
+                        Spacer()
+                        ZoneCount(live: model.live)
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.secondary)
+                    }
+                    LivePreview(live: model.live)
+                        .frame(maxWidth: .infinity)
+                        .aspectRatio(16 / 9, contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
             }
             SurfaceCard {
                 HStack {
@@ -182,6 +255,21 @@ private struct MainWindow: View {
 
     private var source: some View {
         VStack(spacing: 16) {
+            SurfaceCard {
+                Label("Modus", systemImage: "lightspectrum.horizontal")
+                    .font(.headline)
+                Picker("Modus", selection: configBinding(\.outputMode)) {
+                    Text("Bildschirm").tag(OutputMode.screen)
+                    Text("Einzelfarbe").tag(OutputMode.solidColor)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                if model.configuration.outputMode == .solidColor {
+                    SolidColorPicker(model: model)
+                    Text("Ohne Bildschirmaufnahme: Alle LEDs leuchten in dieser Farbe.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
             SurfaceCard {
                 Label("Bildschirm", systemImage: "display.2")
                     .font(.headline)
@@ -325,14 +413,9 @@ private struct MainWindow: View {
 
     private func targetBinding(_ corner: LEDCalibration.Corner) -> Binding<Color> {
         Binding(
-            get: {
-                let rgb = model.configuration.ledCalibration.target(corner)
-                return Color(.sRGB, red: rgb.red, green: rgb.green, blue: rgb.blue)
-            },
+            get: { model.configuration.ledCalibration.target(corner).color },
             set: { color in
-                guard let srgb = NSColor(color).usingColorSpace(.sRGB) else { return }
-                let rgb = LightingRGB(red: srgb.redComponent, green: srgb.greenComponent,
-                                      blue: srgb.blueComponent)
+                guard let rgb = LightingRGB(color) else { return }
                 model.change { $0.ledCalibration.setTarget(rgb, for: corner) }
             }
         )
@@ -352,7 +435,7 @@ private struct MainWindow: View {
                 HStack {
                     Button("Anschlüsse aktualisieren") { serial.refreshPorts() }
                     Button(serial.isConnected ? LocalizedStringKey("Trennen") : "Verbinden") {
-                        if serial.isConnected { serial.disconnect() }
+                        if serial.isConnected { model.disconnectController() }
                         else {
                             serial.connect(path: model.configuration.portPath,
                                                  baudRate: model.configuration.baudRate)
@@ -364,7 +447,7 @@ private struct MainWindow: View {
                 Label(serial.status,
                       systemImage: serial.isConnected ? "checkmark.circle.fill" : "circle.dashed")
                     .foregroundStyle(serial.isConnected ? .green : .secondary)
-                Text("Es erscheinen nur USB-Seriell-Anschlüsse. Bluetooth- und Systemports werden ausgeblendet. Die USB-Kennung bestätigt noch kein bestimmtes Board; Verbinden erfolgt nur nach deiner Auswahl.")
+                Text("Es erscheinen nur USB-Seriell-Anschlüsse. Bluetooth- und Systemports werden ausgeblendet. Die USB-Kennung bestätigt noch kein bestimmtes Board; Verbinden erfolgt nur nach deiner Auswahl oder für eine unter Automatik gemerkte Kombination.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             SurfaceCard {
@@ -420,6 +503,78 @@ private struct MainWindow: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
+    }
+
+    private var automation: some View {
+        VStack(spacing: 16) {
+            SurfaceCard {
+                Label("Start", systemImage: "power")
+                    .font(.headline)
+                Toggle("Bei der Anmeldung starten", isOn: Binding(
+                    get: { loginItem.isEnabled },
+                    set: { loginItem.setEnabled($0) }
+                ))
+                if loginItem.status == .requiresApproval {
+                    HStack {
+                        Text("macOS muss Backglow noch als Anmeldeobjekt erlauben.")
+                            .foregroundStyle(.secondary)
+                        Button("Anmeldeobjekte öffnen") { SMAppService.openSystemSettingsLoginItems() }
+                    }
+                }
+                if let error = loginItem.error {
+                    Text(error).foregroundStyle(.red)
+                }
+                Text("Nach der Anmeldung startet Backglow ohne Fenster und erscheint nur in der Menüleiste. Dort schaltest du das Licht, wählst den Modus und die Helligkeit.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            .onAppear { loginItem.refresh() }
+            SurfaceCard {
+                Label("Automatisch verbinden", systemImage: "cable.connector")
+                    .font(.headline)
+                Toggle("Gemerkte Kombination automatisch verbinden und einschalten",
+                       isOn: configBinding(\.autoConnect))
+                if model.configuration.pairings.isEmpty {
+                    Text("Noch keine Kombination gemerkt.")
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(model.configuration.pairings) { pairing in
+                    let available = model.isPairingAvailable(pairing)
+                    HStack(spacing: 10) {
+                        Image(systemName: available ? "checkmark.circle.fill" : "circle.dashed")
+                            .foregroundStyle(available ? .green : .secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(verbatim: pairing.name)
+                            Text(verbatim: pairingDetail(pairing))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Button("Vergessen", role: .destructive) { model.forgetPairing(pairing.id) }
+                    }
+                }
+                HStack {
+                    Button("Aktuelle Kombination merken") { model.rememberCurrentPairing() }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(!model.canRememberPairing)
+                    Spacer()
+                }
+                if let status = model.autoConnectStatus {
+                    Text(status).foregroundStyle(.secondary)
+                }
+                Text("Wähle unter Bildquelle den Bildschirm, verbinde unter Gerät den Controller und merke dir dann die Kombination. Sind beide angeschlossen, verbindet Backglow und schaltet das Licht im gewählten Modus ein; fehlt einer, geht es wieder aus. Geöffnet wird nur ein Anschluss mit derselben USB-Kennung und Seriennummer, ohne Seriennummer nur an derselben USB-Buchse. Meldet die Firmware eine Gerätekennung, muss auch sie passen, bevor Farben gesendet werden.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private func pairingDetail(_ pairing: AutoConnectPairing) -> String {
+        var parts = [String(format: "%04X:%04X", pairing.device.vendorID, pairing.device.productID)]
+        if let serial = pairing.device.serialNumber, !serial.isEmpty {
+            parts.append(serial)
+        } else {
+            parts.append(pairing.device.path)
+        }
+        if let id = pairing.controllerID { parts.append(id) }
+        return parts.joined(separator: " · ")
     }
 
     private var diagnostics: some View {

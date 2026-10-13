@@ -131,6 +131,26 @@
         }
       }
     },
+    "Aktuelle Kombination merken": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remember current combination"
+          }
+        }
+      }
+    },
+    "Alle LEDs zeigen diese Farbe. Helligkeit, Farbkanäle und Kalibrierung gelten weiterhin.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every LED shows this color. Brightness, color channels and calibration still apply."
+          }
+        }
+      }
+    },
     "Analyse": {
       "localizations": {
         "en": {
@@ -147,6 +167,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Analysis per frame"
+          }
+        }
+      }
+    },
+    "Anderer Controller an diesem Anschluss – automatische Verbindung getrennt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A different controller is on this port – automatic connection closed"
+          }
+        }
+      }
+    },
+    "Anmeldeobjekte öffnen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Login Items"
           }
         }
       }
@@ -231,6 +271,36 @@
         }
       }
     },
+    "Automatik": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automation"
+          }
+        }
+      }
+    },
+    "Automatisch eingeschaltet: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switched on automatically: %@"
+          }
+        }
+      }
+    },
+    "Automatisch verbinden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect automatically"
+          }
+        }
+      }
+    },
     "Backglow": {
       "localizations": {
         "en": {
@@ -241,12 +311,42 @@
         }
       }
     },
+    "Backglow öffnen…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Backglow…"
+          }
+        }
+      }
+    },
     "Baudrate": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Baud rate"
+          }
+        }
+      }
+    },
+    "Beenden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit"
+          }
+        }
+      }
+    },
+    "Bei der Anmeldung starten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open at login"
           }
         }
       }
@@ -321,18 +421,22 @@
         }
       }
     },
-    "Bildschirm %lld · %lld × %lld": {
+    "Bildschirm %lld": {
       "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "new",
-            "value": "Bildschirm %1$lld · %2$lld × %3$lld"
-          }
-        },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Display %lld · %lld × %lld"
+            "value": "Display %lld"
+          }
+        }
+      }
+    },
+    "Bildschirm oder Controller getrennt – Licht aus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display or controller disconnected – lights off"
           }
         }
       }
@@ -413,6 +517,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Controller rejected the command (code %lld)"
+          }
+        }
+      }
+    },
+    "Controller hat sich nicht gemeldet – automatische Verbindung getrennt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controller did not identify itself – automatic connection closed"
           }
         }
       }
@@ -577,6 +691,26 @@
         }
       }
     },
+    "Eigene Farbe": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Custom color"
+          }
+        }
+      }
+    },
+    "Einschalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn On"
+          }
+        }
+      }
+    },
     "Einstellungen konnten nicht gespeichert werden: %@": {
       "localizations": {
         "en": {
@@ -587,12 +721,22 @@
         }
       }
     },
-    "Es erscheinen nur USB-Seriell-Anschlüsse. Bluetooth- und Systemports werden ausgeblendet. Die USB-Kennung bestätigt noch kein bestimmtes Board; Verbinden erfolgt nur nach deiner Auswahl.": {
+    "Einzelfarbe": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Only USB serial ports are listed. Bluetooth and system ports are hidden. The USB ID doesn't confirm a specific board; Backglow only connects after you choose a port."
+            "value": "Single color"
+          }
+        }
+      }
+    },
+    "Es erscheinen nur USB-Seriell-Anschlüsse. Bluetooth- und Systemports werden ausgeblendet. Die USB-Kennung bestätigt noch kein bestimmtes Board; Verbinden erfolgt nur nach deiner Auswahl oder für eine unter Automatik gemerkte Kombination.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only USB serial ports are listed. Bluetooth and system ports are hidden. The USB ID does not confirm a particular board; a port is only opened when you choose it or for a combination remembered under Automation."
           }
         }
       }
@@ -663,6 +807,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Yellow"
+          }
+        }
+      }
+    },
+    "Gemerkte Kombination automatisch verbinden und einschalten": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect and switch on remembered combinations automatically"
           }
         }
       }
@@ -899,6 +1053,16 @@
         }
       }
     },
+    "Kombination gemerkt: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Combination remembered: %@"
+          }
+        }
+      }
+    },
     "Kompatibel mit dem vorhandenen led/les-Protokoll. Beim Stoppen werden die LEDs ausgeschaltet.": {
       "localizations": {
         "en": {
@@ -979,6 +1143,16 @@
         }
       }
     },
+    "Licht": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lights"
+          }
+        }
+      }
+    },
     "Live": {
       "localizations": {
         "en": {
@@ -1019,6 +1193,26 @@
         }
       }
     },
+    "Modus": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mode"
+          }
+        }
+      }
+    },
+    "Nach der Anmeldung startet Backglow ohne Fenster und erscheint nur in der Menüleiste. Dort schaltest du das Licht, wählst den Modus und die Helligkeit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After login, Backglow opens without a window and appears only in the menu bar. From there you switch the lights, pick the mode and set the brightness."
+          }
+        }
+      }
+    },
     "Neutral": {
       "localizations": {
         "en": {
@@ -1049,12 +1243,42 @@
         }
       }
     },
+    "Noch keine Kombination gemerkt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No combination remembered yet."
+          }
+        }
+      }
+    },
     "Noch keine Live-Vorschau": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "No Live Preview Yet"
+          }
+        }
+      }
+    },
+    "Ohne Bildschirmaufnahme: Alle LEDs leuchten in dieser Farbe.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No screen capture: every LED glows in this color."
+          }
+        }
+      }
+    },
+    "Orange": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orange"
           }
         }
       }
@@ -1279,12 +1503,32 @@
         }
       }
     },
+    "Start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Startup"
+          }
+        }
+      }
+    },
     "Starte die Bildschirmaufnahme, um Kacheln und Farben zu sehen.": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Start screen capture to see tiles and colors."
+          }
+        }
+      }
+    },
+    "Starte mit dem Mac und schalte das Licht ein, sobald Bildschirm und Controller da sind.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start with your Mac and switch the lights on as soon as display and controller are there."
           }
         }
       }
@@ -1369,6 +1613,16 @@
         }
       }
     },
+    "Türkis": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turquoise"
+          }
+        }
+      }
+    },
     "USB-Controller auswählen oder Anschlüsse aktualisieren": {
       "localizations": {
         "en": {
@@ -1429,12 +1683,42 @@
         }
       }
     },
+    "Vergessen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forget"
+          }
+        }
+      }
+    },
+    "Violett": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Violet"
+          }
+        }
+      }
+    },
     "Warm": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Warm"
+          }
+        }
+      }
+    },
+    "Warmweiß": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warm white"
           }
         }
       }
@@ -1455,6 +1739,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose the display and frame rate."
+          }
+        }
+      }
+    },
+    "Wähle unter Bildquelle den Bildschirm, verbinde unter Gerät den Controller und merke dir dann die Kombination. Sind beide angeschlossen, verbindet Backglow und schaltet das Licht im gewählten Modus ein; fehlt einer, geht es wieder aus. Geöffnet wird nur ein Anschluss mit derselben USB-Kennung und Seriennummer, ohne Seriennummer nur an derselben USB-Buchse. Meldet die Firmware eine Gerätekennung, muss auch sie passen, bevor Farben gesendet werden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the display under Image Source, connect the controller under Device, then remember the combination. When both are plugged in, Backglow connects and switches the lights on in the chosen mode; when either is missing, they go off again. Only a port with the same USB ID and serial number is opened, or, without a serial number, only on the same USB socket. If the firmware reports a device ID, it has to match too before any colors are sent."
           }
         }
       }
@@ -1495,6 +1789,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "macOS asks for permission the first time you start live capture. If no image appears, allow Backglow under Privacy & Security → Screen Recording and restart the app."
+          }
+        }
+      }
+    },
+    "macOS muss Backglow noch als Anmeldeobjekt erlauben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS still has to allow Backglow as a login item."
           }
         }
       }
