@@ -1,11 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://backglow.jandeboer.de/</loc><lastmod>2026-10-12</lastmod></url>
-  <url><loc>https://backglow.jandeboer.de/docs/</loc><lastmod>2026-10-12</lastmod></url>
-  <url><loc>https://backglow.jandeboer.de/datenschutz/</loc><lastmod>2026-10-12</lastmod></url>
-  <url><loc>https://backglow.jandeboer.de/impressum/</loc><lastmod>2026-10-12</lastmod></url>
-  <url><loc>https://backglow.jandeboer.de/en/</loc><lastmod>2026-10-12</lastmod></url>
-  <url><loc>https://backglow.jandeboer.de/en/docs/</loc><lastmod>2026-10-12</lastmod></url>
-  <url><loc>https://backglow.jandeboer.de/en/privacy/</loc><lastmod>2026-10-12</lastmod></url>
-  <url><loc>https://backglow.jandeboer.de/en/legal/</loc><lastmod>2026-10-12</lastmod></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://backglow.jandeboer.de/</loc><lastmod>2026-10-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/"/>
+  </url>
+  <url>
+    <loc>https://backglow.jandeboer.de/en/</loc><lastmod>2026-10-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/"/>
+  </url>
+  <url>
+    <loc>https://backglow.jandeboer.de/docs/</loc><lastmod>2026-10-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/docs/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/docs/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/docs/"/>
+  </url>
+  <url>
+    <loc>https://backglow.jandeboer.de/en/docs/</loc><lastmod>2026-10-13</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/docs/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/docs/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/docs/"/>
+  </url>
+  <url>
+    <loc>https://backglow.jandeboer.de/datenschutz/</loc><lastmod>2026-10-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/datenschutz/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/privacy/"/>
+  </url>
+  <url>
+    <loc>https://backglow.jandeboer.de/en/privacy/</loc><lastmod>2026-10-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/datenschutz/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/privacy/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/privacy/"/>
+  </url>
+  <url>
+    <loc>https://backglow.jandeboer.de/impressum/</loc><lastmod>2026-10-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/impressum/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/legal/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/legal/"/>
+  </url>
+  <url>
+    <loc>https://backglow.jandeboer.de/en/legal/</loc><lastmod>2026-10-12</lastmod>
+    <xhtml:link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/impressum/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/legal/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/legal/"/>
+  </url>
 </urlset>

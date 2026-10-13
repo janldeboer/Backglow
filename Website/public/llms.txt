@@ -1,0 +1,28 @@
+# Backglow
+
+> Backglow is a free, open-source (GPL-3.0) macOS app that provides ambient lighting for Mac displays: it reads the edges of the screen in real time and sends their colors over USB to an ESP32 or ESP8266, which drives a WS2812B LED strip behind the monitor. It works like Ambilight on Philips TVs but is an independent DIY project, not affiliated with Philips.
+
+Key facts:
+
+- Platform: macOS 26 or later. The signed and notarized download (current version 3.0.2) is for Apple silicon Macs; Intel Macs on macOS 26 can build it with Xcode 26.
+- Hardware: WS2812B strip (GRB color order, up to 255 LEDs), ESP32 Dev Module (data on GPIO 18) or NodeMCU ESP8266 (data on D1), 5 V power supply. Firmware for both boards is in the repository and is flashed with PlatformIO.
+- Connection: USB serial at 230,400 baud. No Wi-Fi, no WLED support, no server or web interface.
+- Processing: ScreenCaptureKit capture, Metal shader averaging in linear light, letterbox detection, spring smoothing, anti-flicker filter, color calibration, minimum backlight and power limit. Up to 60 frames per second. The techniques follow HyperHDR, reimplemented in Swift.
+- The LED layout and colors can be stored on the controller and load automatically on the next connection.
+- Privacy: runs entirely on the Mac, makes no network connections, no telemetry.
+- Languages: English and German.
+- Author: Jan de Boer.
+
+## Pages
+
+- [Home (English)](https://backglow.jandeboer.de/en/): what Backglow does, features, requirements and FAQ
+- [Setup guide (English)](https://backglow.jandeboer.de/en/docs/): wiring, firmware, app installation, LED layout, colors, troubleshooting
+- [Privacy policy (English)](https://backglow.jandeboer.de/en/privacy/)
+- [Startseite (Deutsch)](https://backglow.jandeboer.de/)
+- [Anleitung (Deutsch)](https://backglow.jandeboer.de/docs/)
+
+## Source and downloads
+
+- [GitHub repository](https://github.com/Janldeboer/Backglow): source code, firmware, issues
+- [Download Backglow 3.0.2 (DMG)](https://github.com/Janldeboer/Backglow/releases/download/v3.0.2/Backglow-3.0.2.dmg)
+- [Release notes 3.0.2](https://github.com/Janldeboer/Backglow/releases/tag/v3.0.2)
