@@ -1,0 +1,18 @@
+name: Question or setup help
+description: Ask about wiring, firmware or getting the light right.
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: Please check the [setup guide](https://backglow.jandeboer.de/en/docs/) first. Photos of your wiring often help.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Your setup
+      description: Backglow version, Mac, controller, LED strip and power supply.

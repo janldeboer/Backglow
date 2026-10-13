@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest an idea or improvement for Backglow.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What would you like to do?
+      description: Describe the situation or problem. What is missing or hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: How could Backglow solve it? Mockups or examples from other tools are welcome.
+  - type: textarea
+    id: setup
+    attributes:
+      label: Your setup
+      description: Optional. Mac, display, controller and strip, if they matter for the idea.

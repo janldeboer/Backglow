@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Setup guide
+    url: https://backglow.jandeboer.de/en/docs/
+    about: Wiring, firmware, LED layout, colors and troubleshooting.
+  - name: Anleitung (Deutsch)
+    url: https://backglow.jandeboer.de/docs/
+    about: Verkabelung, Firmware, LED-Anordnung, Farben und Problemlösung.

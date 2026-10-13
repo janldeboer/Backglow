@@ -1,0 +1,68 @@
+name: Bug report
+description: Something in the app or firmware does not work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Many setup problems are covered in the [troubleshooting section of the guide](https://backglow.jandeboer.de/en/docs/#troubleshooting). German is fine too.
+        For security problems, please follow [SECURITY.md](https://github.com/Janldeboer/Backglow/blob/main/SECURITY.md) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Backglow and select …
+        2. Connect the controller …
+        3. …
+  - type: input
+    id: version
+    attributes:
+      label: Backglow version
+      description: Shown under Backglow → About Backglow. Write "self-built" plus the commit for your own builds.
+      placeholder: "3.0.2"
+    validations:
+      required: true
+  - type: input
+    id: mac
+    attributes:
+      label: Mac and macOS version
+      placeholder: "MacBook Pro M3, macOS 26.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: controller
+    attributes:
+      label: Controller
+      options:
+        - ESP32 Dev Module (BackglowController firmware)
+        - NodeMCU ESP8266 (BackglowController firmware)
+        - Legacy SerialLEDcontroller sketch
+        - Other or self-modified firmware
+        - No controller connected
+    validations:
+      required: true
+  - type: input
+    id: strip
+    attributes:
+      label: LED strip
+      description: Type, number of LEDs and power supply.
+      placeholder: "WS2812B, 59 LEDs, 5 V 4 A"
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: The values on the app's Diagnostics page (screen capture, frame rate, analysis time, Metal or CPU, serial connection) and screenshots if they help. Screenshots of the preview can show your screen content, so check them before posting.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or serial output
+      description: Optional. Pasted text is formatted as code automatically.
+      render: shell
