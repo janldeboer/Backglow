@@ -2,13 +2,150 @@
 <html lang="de">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Anleitung – Backglow</title>
-  <meta name="description" content="Backglow einrichten: Hardware verkabeln, Firmware flashen, App bauen und LED-Anordnung und Farben einstellen.">
+  <title>Ambient Lighting für den Mac einrichten – Backglow-Anleitung</title>
+  <meta name="description" content="Schritt für Schritt zum Ambient Light am Mac: WS2812B-Strip verkabeln, Firmware auf ESP32 oder ESP8266 flashen, Backglow installieren und LED-Anordnung und Farben einstellen.">
   <link rel="canonical" href="https://backglow.jandeboer.de/docs/">
   <link rel="alternate" hreflang="de" href="https://backglow.jandeboer.de/docs/"><link rel="alternate" hreflang="en" href="https://backglow.jandeboer.de/en/docs/"><link rel="alternate" hreflang="x-default" href="https://backglow.jandeboer.de/en/docs/">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="Backglow">
+  <meta property="og:locale" content="de_DE"><meta property="og:locale:alternate" content="en_US">
+  <meta property="og:title" content="Backglow einrichten">
+  <meta property="og:description" content="Von der leeren Monitorrückseite bis zum fertigen Licht.">
+  <meta property="og:image" content="https://backglow.jandeboer.de/assets/screens/de/layout.jpg">
+  <meta property="og:image:width" content="1600"><meta property="og:image:height" content="1006">
+  <meta property="og:url" content="https://backglow.jandeboer.de/docs/">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#070a14">
   <link rel="icon" type="image/png" href="/assets/icon.png"><link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
   <link rel="stylesheet" href="/styles.css">
+  <script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@type": "HowTo",
+ "@id": "https://backglow.jandeboer.de/docs/#howto",
+ "name": "Ambient Lighting für den Mac mit Backglow einrichten",
+ "description": "Schritt für Schritt zum Ambient Light am Mac: WS2812B-Strip verkabeln, Firmware auf ESP32 oder ESP8266 flashen, Backglow installieren und LED-Anordnung und Farben einstellen.",
+ "url": "https://backglow.jandeboer.de/docs/",
+ "inLanguage": "de",
+ "image": "https://backglow.jandeboer.de/assets/screens/de/layout.jpg",
+ "dateModified": "2026-10-13",
+ "author": {
+  "@type": "Person",
+  "name": "Jan de Boer",
+  "url": "https://github.com/Janldeboer"
+ },
+ "about": {
+  "@type": "SoftwareApplication",
+  "@id": "https://backglow.jandeboer.de/#app",
+  "name": "Backglow"
+ },
+ "supply": [
+  {
+   "@type": "HowToSupply",
+   "name": "WS2812B-LED-Strip (GRB, bis 255 LEDs)"
+  },
+  {
+   "@type": "HowToSupply",
+   "name": "ESP32 Dev Module oder NodeMCU ESP8266"
+  },
+  {
+   "@type": "HowToSupply",
+   "name": "5-V-Netzteil"
+  },
+  {
+   "@type": "HowToSupply",
+   "name": "Widerstand ca. 330 Ω"
+  },
+  {
+   "@type": "HowToSupply",
+   "name": "Elko ca. 1000 µF"
+  },
+  {
+   "@type": "HowToSupply",
+   "name": "USB-Datenkabel"
+  }
+ ],
+ "tool": [
+  {
+   "@type": "HowToTool",
+   "name": "Mac mit macOS 26"
+  },
+  {
+   "@type": "HowToTool",
+   "name": "Lötkolben"
+  },
+  {
+   "@type": "HowToTool",
+   "name": "PlatformIO Core"
+  }
+ ],
+ "step": [
+  {
+   "@type": "HowToStep",
+   "position": 1,
+   "name": "Voraussetzungen prüfen",
+   "text": "Mac mit macOS 26, WS2812B-Strip, ESP32 oder ESP8266, 5-V-Netzteil und PlatformIO Core bereitlegen.",
+   "url": "https://backglow.jandeboer.de/docs/#voraussetzungen"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 2,
+   "name": "Hardware verkabeln",
+   "text": "Strip als Ring auf die Monitorrückseite kleben, DIN an GPIO 18 (ESP32) bzw. D1 (ESP8266), Strip direkt ans Netzteil, gemeinsame Masse verbinden.",
+   "url": "https://backglow.jandeboer.de/docs/#hardware"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 3,
+   "name": "Firmware flashen",
+   "text": "Firmware/BackglowController mit PlatformIO auf den ESP32 (esp32dev) oder ESP8266 (nodemcuv2) flashen.",
+   "url": "https://backglow.jandeboer.de/docs/#firmware"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 4,
+   "name": "App installieren",
+   "text": "Backglow-DMG laden, in den Programme-Ordner ziehen und die Bildschirmaufnahme erlauben.",
+   "url": "https://backglow.jandeboer.de/docs/#app"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 5,
+   "name": "Bildquelle wählen",
+   "text": "Bildschirm hinter dem Strip, Ziel-Bildrate und interne Auflösung einstellen.",
+   "url": "https://backglow.jandeboer.de/docs/#bildquelle"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 6,
+   "name": "LED-Anordnung einstellen",
+   "text": "Spalten, Zeilen, aktive LEDs, Startversatz und Richtung an den verlegten Strip anpassen.",
+   "url": "https://backglow.jandeboer.de/docs/#anordnung"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 7,
+   "name": "Controller verbinden",
+   "text": "USB-Anschluss des ESP wählen, Zahl der LEDs setzen, Baudrate 230 400 lassen und verbinden.",
+   "url": "https://backglow.jandeboer.de/docs/#geraet"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 8,
+   "name": "Farben abstimmen",
+   "text": "Sättigung, Gamma, Helligkeit, Glättung, Farbkanäle und LED-Kalibrierung an Strip und Wand anpassen.",
+   "url": "https://backglow.jandeboer.de/docs/#farben"
+  },
+  {
+   "@type": "HowToStep",
+   "position": 9,
+   "name": "Profil speichern",
+   "text": "LED-Anordnung und Farbwerte auf dem ESP speichern, damit sie beim nächsten Verbinden geladen werden.",
+   "url": "https://backglow.jandeboer.de/docs/#profil"
+  }
+ ]
+}
+  </script>
 </head>
 <body>
 <a class="skip" href="#main">Zum Inhalt</a>
