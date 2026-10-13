@@ -14,7 +14,7 @@ Open an issue first for new features or anything that changes the serial protoco
 
 ## Building and testing
 
-You need macOS 26 and Xcode 26.
+You need Xcode 26. The app runs on macOS 14 or later, so check changes to newer APIs with `#available` and a fallback.
 
 ```sh
 ./scripts/build-app.sh          # builds dist/Backglow.app, signed ad hoc without a certificate

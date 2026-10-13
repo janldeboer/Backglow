@@ -10,7 +10,8 @@ Website and docs: [backglow.jandeboer.de](https://backglow.jandeboer.de)
 
 ## Requirements
 
-- macOS 26 or later, Xcode 26 or later, and an Apple Metal-capable Mac.
+- macOS 14 or later on a Metal-capable Mac. Liquid Glass surfaces need macOS 26; macOS 14 and 15 show standard materials instead.
+- Xcode 26 or later to build from source.
 - Screen Recording permission for live capture.
 - Optional serial LED controller running the included legacy sketch or ESP32/ESP8266 v3 firmware.
 

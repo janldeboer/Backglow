@@ -25,7 +25,7 @@ for catalog in "$project_dir"/AppBundle/Localization/*.xcstrings; do
 done
 # Compiles the Icon Composer document into Assets.car (Liquid Glass) plus a fallback .icns.
 xcrun actool "$project_dir/AppBundle/Backglow.icon" --compile "$app_dir/Contents/Resources" \
-    --platform macosx --minimum-deployment-target 26.0 --app-icon Backglow --target-device mac \
+    --platform macosx --minimum-deployment-target 14.0 --app-icon Backglow --target-device mac \
     --output-partial-info-plist "$scratch_dir/icon-info.plist" >/dev/null
 # A stable identity keeps macOS privacy grants such as Screen Recording across rebuilds;
 # ad hoc signatures change with every build. Developer ID is preferred so local builds and
