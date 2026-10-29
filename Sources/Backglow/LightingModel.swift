@@ -37,6 +37,7 @@ final class LightingModel: ObservableObject {
     private var antiFlicker = AntiFlickerFilter()
     private var outputTask: Task<Void, Never>?
     private var lastOutputTime: TimeInterval?
+    private var lastLiveColorsTime: TimeInterval = 0
     private var hasPendingOutput = false
     private var lastFrameTime: TimeInterval?
     private var smoothedFPS = 0.0
@@ -369,7 +370,12 @@ final class LightingModel: ObservableObject {
         let output = antiFlicker.apply(
             ColorProcessing.limitingPower(frame, to: configuration.ledCalibration.powerLimit)
         )
-        if output != live.colors { live.colors = output }
+        // The window needs far fewer redraws than the LEDs; the settled frame always gets through.
+        let settled = testCorner != nil || !hasPendingOutput
+        if output != live.colors, settled || now - lastLiveColorsTime >= 1.0 / 15 {
+            lastLiveColorsTime = now
+            live.colors = output
+        }
         if serial.isConnected, pendingControllerCheck == nil {
             serial.send(output, maximumLEDs: configuration.deviceLEDCount)
         }

@@ -678,39 +678,95 @@ private struct ScreenPreview: View {
     let imageWidth: Int
     let imageHeight: Int
 
+    // Three layers, so a color update repaints only the tints and not the image or the labels.
     var body: some View {
-        Canvas { context, size in
-            let whole = CGRect(origin: .zero, size: size)
-            context.fill(Path(whole), with: .color(Color(nsColor: .black)))
-            guard let image, imageWidth > 0, imageHeight > 0 else { return }
-            let sourceRatio = CGFloat(imageWidth) / CGFloat(imageHeight)
-            let targetRatio = size.width / max(size.height, 1)
-            let width = targetRatio > sourceRatio ? size.height * sourceRatio : size.width
-            let height = targetRatio > sourceRatio ? size.height : size.width / sourceRatio
-            let rect = CGRect(x: (size.width - width) / 2, y: (size.height - height) / 2,
-                              width: width, height: height)
-            context.draw(Image(decorative: image, scale: 1), in: rect)
-            for zone in zones {
-                let x = rect.minX + CGFloat(zone.rect.x) / CGFloat(imageWidth) * rect.width
-                let y = rect.minY + CGFloat(zone.rect.y) / CGFloat(imageHeight) * rect.height
-                let w = CGFloat(zone.rect.width) / CGFloat(imageWidth) * rect.width
-                let h = CGFloat(zone.rect.height) / CGFloat(imageHeight) * rect.height
-                let tile = CGRect(x: x, y: y, width: w, height: h)
-                let rgb = zone.id < colors.count ? colors[zone.id] : .black
-                let tint = Color(red: rgb.red, green: rgb.green, blue: rgb.blue)
-                context.fill(Path(tile), with: .color(tint.opacity(0.24)))
-                context.stroke(Path(tile), with: .color(.white.opacity(0.75)), lineWidth: 1)
-                if w > 26 && h > 18 {
-                    context.draw(Text(verbatim: "\(zone.id + 1)").font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white), at: CGPoint(x: tile.midX, y: tile.midY))
-                }
-            }
+        let geometry = PreviewGeometry(imageWidth: image == nil ? 0 : imageWidth, imageHeight: imageHeight)
+        ZStack {
+            PreviewImageLayer(image: image, geometry: geometry).equatable()
+            ZoneTintLayer(zones: zones, colors: colors, geometry: geometry)
+            ZoneGridLayer(zones: zones, geometry: geometry).equatable()
         }
         .overlay {
             if image == nil {
                 ContentUnavailableView("Noch keine Live-Vorschau", systemImage: "display",
                                        description: Text("Starte die Bildschirmaufnahme, um Kacheln und Farben zu sehen."))
                     .foregroundStyle(.white)
+            }
+        }
+    }
+}
+
+/// Where the captured image and its zones sit inside the preview, keeping the aspect ratio.
+private struct PreviewGeometry: Equatable {
+    let imageWidth: Int
+    let imageHeight: Int
+
+    func imageRect(in size: CGSize) -> CGRect? {
+        guard imageWidth > 0, imageHeight > 0 else { return nil }
+        let sourceRatio = CGFloat(imageWidth) / CGFloat(imageHeight)
+        let targetRatio = size.width / max(size.height, 1)
+        let width = targetRatio > sourceRatio ? size.height * sourceRatio : size.width
+        let height = targetRatio > sourceRatio ? size.height : size.width / sourceRatio
+        return CGRect(x: (size.width - width) / 2, y: (size.height - height) / 2,
+                      width: width, height: height)
+    }
+
+    func tile(for zone: LightingZone, in rect: CGRect) -> CGRect {
+        CGRect(x: rect.minX + CGFloat(zone.rect.x) / CGFloat(imageWidth) * rect.width,
+               y: rect.minY + CGFloat(zone.rect.y) / CGFloat(imageHeight) * rect.height,
+               width: CGFloat(zone.rect.width) / CGFloat(imageWidth) * rect.width,
+               height: CGFloat(zone.rect.height) / CGFloat(imageHeight) * rect.height)
+    }
+}
+
+private struct PreviewImageLayer: View, Equatable {
+    let image: CGImage?
+    let geometry: PreviewGeometry
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.image === rhs.image && lhs.geometry == rhs.geometry
+    }
+
+    var body: some View {
+        Canvas { context, size in
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(Color(nsColor: .black)))
+            guard let image, let rect = geometry.imageRect(in: size) else { return }
+            context.draw(Image(decorative: image, scale: 1), in: rect)
+        }
+    }
+}
+
+private struct ZoneTintLayer: View {
+    let zones: [LightingZone]
+    let colors: [LightingRGB]
+    let geometry: PreviewGeometry
+
+    var body: some View {
+        Canvas { context, size in
+            guard let rect = geometry.imageRect(in: size) else { return }
+            for zone in zones {
+                let rgb = zone.id < colors.count ? colors[zone.id] : .black
+                let tint = Color(red: rgb.red, green: rgb.green, blue: rgb.blue)
+                context.fill(Path(geometry.tile(for: zone, in: rect)), with: .color(tint.opacity(0.24)))
+            }
+        }
+    }
+}
+
+private struct ZoneGridLayer: View, Equatable {
+    let zones: [LightingZone]
+    let geometry: PreviewGeometry
+
+    var body: some View {
+        Canvas { context, size in
+            guard let rect = geometry.imageRect(in: size) else { return }
+            for zone in zones {
+                let tile = geometry.tile(for: zone, in: rect)
+                context.stroke(Path(tile), with: .color(.white.opacity(0.75)), lineWidth: 1)
+                if tile.width > 26 && tile.height > 18 {
+                    context.draw(Text(verbatim: "\(zone.id + 1)").font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white), at: CGPoint(x: tile.midX, y: tile.midY))
+                }
             }
         }
     }
