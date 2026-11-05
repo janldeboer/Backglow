@@ -216,10 +216,10 @@ pio run -e nodemcuv2 -t upload</code></pre>
 
     <h2 id="app">Installing the app</h2>
     <ol>
-      <li>Download <a href="https://github.com/Janldeboer/Backglow/releases/download/v3.2.0/Backglow-3.2.0.dmg">Backglow-3.2.0.dmg</a>, open it and drag Backglow into Applications.</li>
+      <li>Download <a href="https://github.com/Janldeboer/Backglow/releases/download/v3.2.1/Backglow-3.2.1.dmg">Backglow-3.2.1.dmg</a>, open it and drag Backglow into Applications.</li>
       <li>Open Backglow. The app is notarized by Apple and starts without a warning.</li>
     </ol>
-    <p>See the <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.2.0">release notes</a> for what's new.</p>
+    <p>See the <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.2.1">release notes</a> for what's new.</p>
     <h3>Building it yourself</h3>
 <pre><code>cd Backglow
 ./scripts/build-app.sh
@@ -286,6 +286,7 @@ open dist/Backglow.app</code></pre>
     <p>Many USB cables only charge and don't carry data. Try another cable and click <strong>Refresh Ports</strong>.</p>
     <h3>The LEDs flicker or show wrong colors</h3>
     <p>Usually the shared ground is missing or the data line is too long. Also check that your strip really is a WS2812B with GRB order. If red and green are swapped, the firmware doesn't match the strip.</p>
+    <p>When the Mac is very busy, Backglow lowers its frame rate on its own and briefly holds the colors after a hang instead of flickering. On the <strong>Diagnostics</strong> page, <strong>Output rate</strong> shows whether this is happening. If it often says “Throttled”, a lower target frame rate or internal resolution helps.</p>
     <h3>The light is shifted by a few LEDs</h3>
     <p>Adjust <strong>Start offset</strong> and, if needed, <strong>Reverse order</strong> until the colors at the corners match.</p>
     <p>For more questions or bugs, open an <a href="https://github.com/Janldeboer/Backglow/issues">issue on GitHub</a>.</p>

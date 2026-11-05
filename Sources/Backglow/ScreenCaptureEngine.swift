@@ -32,6 +32,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
     private let imageContext = CIContext(options: [.cacheIntermediates: false])
     private let gpu = GPUZoneReducer()
     private var stream: SCStream?
+    private var streamSettings: SCStreamConfiguration?
     private var configuration = LightingConfiguration()
     private var inFlight = false
     private var isActive = false
@@ -101,6 +102,7 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         do {
             try await stream.startCapture()
             self.stream = stream
+            self.streamSettings = streamSettings
             return display.displayID
         } catch {
             sampleQueue.sync { isActive = false }
@@ -112,8 +114,18 @@ final class ScreenCaptureEngine: NSObject, SCStreamOutput, SCStreamDelegate {
         sampleQueue.sync { isActive = false }
         if let stream {
             self.stream = nil
+            streamSettings = nil
             try await stream.stopCapture()
         }
+    }
+
+    /// Changes the capture rate of the running stream without restarting it.
+    func setFramesPerSecond(_ framesPerSecond: Int) async {
+        guard let stream, let streamSettings else { return }
+        let interval = CMTime(value: 1, timescale: CMTimeScale(max(framesPerSecond, 1)))
+        guard streamSettings.minimumFrameInterval != interval else { return }
+        streamSettings.minimumFrameInterval = interval
+        try? await stream.updateConfiguration(streamSettings)
     }
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer,

@@ -657,7 +657,16 @@ private struct LiveDiagnostics: View {
         LabeledContent("Bildrate", value: live.actualFPS > 0 ? String(format: "%.1f fps", live.actualFPS) : "–")
         LabeledContent("Analyse pro Bild", value: String(format: "%.2f ms", live.processingMilliseconds))
         LabeledContent("Berechnung", value: live.usesGPU ? "Metal" : String(localized: "CPU-Fallback"))
+        LabeledContent("Ausgaberate", value: performanceText)
         LabeledContent("Zonen") { Text(live.zones.count, format: .number) }
+    }
+
+    private var performanceText: String {
+        switch live.performance {
+        case .normal: String(localized: "Volle Rate")
+        case .throttled: String(localized: "Gedrosselt auf \(Int(live.rateFactor * 100)) %")
+        case .frozen: String(localized: "Farben eingefroren – Mac ausgelastet")
+        }
     }
 }
 

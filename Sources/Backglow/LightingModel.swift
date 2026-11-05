@@ -15,6 +15,9 @@ final class LiveState: ObservableObject {
     @Published fileprivate(set) var processingMilliseconds = 0.0
     @Published fileprivate(set) var actualFPS = 0.0
     @Published fileprivate(set) var usesGPU = false
+    /// Whether Backglow runs at full rate, throttled, or holds the colors after a lag.
+    @Published fileprivate(set) var performance = PerformanceGovernor.State.normal
+    @Published fileprivate(set) var rateFactor = 1.0
 }
 
 @MainActor
@@ -35,6 +38,14 @@ final class LightingModel: ObservableObject {
     private let capture = ScreenCaptureEngine()
     private var smoother = SpringColorSmoother()
     private var antiFlicker = AntiFlickerFilter()
+    private var governor = PerformanceGovernor()
+    /// The capture rate the stream was last set to, after throttling.
+    private var appliedFramesPerSecond: Int?
+    /// The last frame sent while live, repeated now and then while the colors are frozen.
+    private var lastSentFrame: [LightingRGB] = []
+    private var lastFrozenResend: TimeInterval = 0
+    /// Keeps App Nap from slowing the output clock while the lights are on.
+    private var activity: NSObjectProtocol?
     private var outputTask: Task<Void, Never>?
     private var lastOutputTime: TimeInterval?
     private var lastLiveColorsTime: TimeInterval = 0
@@ -149,6 +160,13 @@ final class LightingModel: ObservableObject {
 
     func start() {
         isRunning = true
+        governor.reset()
+        if activity == nil {
+            activity = ProcessInfo.processInfo.beginActivity(
+                options: [.userInitiatedAllowingIdleSystemSleep, .latencyCritical],
+                reason: "LED output follows the screen"
+            )
+        }
         applyMode()
     }
 
@@ -218,6 +236,8 @@ final class LightingModel: ObservableObject {
 
     private func switchOff() {
         isRunning = false
+        if let activity { ProcessInfo.processInfo.endActivity(activity) }
+        activity = nil
         testCorner = nil
         restartTask?.cancel()
         captureTask?.cancel()
@@ -273,7 +293,10 @@ final class LightingModel: ObservableObject {
     private func startCapture() async {
         captureStatus = String(localized: "Bildschirmaufnahme startet…")
         do {
-            let displayID = try await capture.start(configuration)
+            var settings = configuration
+            settings.framesPerSecond = throttledFramesPerSecond
+            let displayID = try await capture.start(settings)
+            appliedFramesPerSecond = settings.framesPerSecond
             guard isRunning, configuration.outputMode == .screen else {
                 try? await capture.stop()
                 return
@@ -300,6 +323,8 @@ final class LightingModel: ObservableObject {
 
     private func receive(_ frame: ProcessedFrame) {
         guard isRunning, configuration.outputMode == .screen else { return }
+        governor.recordAnalysis(seconds: frame.processingMilliseconds / 1000,
+                                frameInterval: 1 / Double(throttledFramesPerSecond))
         let corrected = frame.colors.map(processed)
         smoother.configure(smoothing: configuration.calibration.smoothing)
         smoother.setTarget(corrected)
@@ -329,12 +354,13 @@ final class LightingModel: ObservableObject {
     /// and its speed does not depend on the capture rate.
     private func startOutputClock() {
         guard outputTask == nil else { return }
+        governor.clockRestarted()
         outputTask = Task { [weak self] in
             while !Task.isCancelled {
                 guard let self else { return }
-                let interval = 1 / SerialPacket.outputFrequency(
-                    ledCount: self.configuration.ledCount, baudRate: self.configuration.baudRate
-                )
+                let interval = self.outputInterval
+                self.governor.recordTick(at: ProcessInfo.processInfo.systemUptime, expectedInterval: interval)
+                self.applyGovernor()
                 self.outputTick()
                 try? await Task.sleep(for: .seconds(interval))
             }
@@ -345,6 +371,25 @@ final class LightingModel: ObservableObject {
         outputTask?.cancel()
         outputTask = nil
         lastOutputTime = nil
+    }
+
+    private var outputInterval: TimeInterval {
+        let full = SerialPacket.outputFrequency(ledCount: configuration.ledCount, baudRate: configuration.baudRate)
+        return 1 / max(full * governor.rateFactor, 10)
+    }
+
+    private var throttledFramesPerSecond: Int {
+        max(5, Int((Double(configuration.framesPerSecond) * governor.rateFactor).rounded()))
+    }
+
+    /// Shows the governor's state and moves the capture to its rate.
+    private func applyGovernor() {
+        if live.performance != governor.state { live.performance = governor.state }
+        if live.rateFactor != governor.rateFactor { live.rateFactor = governor.rateFactor }
+        let framesPerSecond = throttledFramesPerSecond
+        guard isCapturing, let applied = appliedFramesPerSecond, applied != framesPerSecond else { return }
+        appliedFramesPerSecond = framesPerSecond
+        Task { await capture.setFramesPerSecond(framesPerSecond) }
     }
 
     /// HyperHDR's order: linear calibration, sRGB encoding, user correction, minimum backlight.
@@ -362,6 +407,14 @@ final class LightingModel: ObservableObject {
         let frame: [LightingRGB]
         if let testCorner {
             frame = Array(repeating: processed(testCorner.ideal), count: configuration.ledCount)
+        } else if governor.state == .frozen, configuration.outputMode == .screen {
+            // Hold the colors instead of chasing late frames; repeat them now and then so a
+            // garbled packet does not stay on the strip.
+            if !lastSentFrame.isEmpty, now - lastFrozenResend >= 0.5 {
+                lastFrozenResend = now
+                sendToController(lastSentFrame)
+            }
+            return
         } else {
             guard hasPendingOutput || !smoother.isSettled else { return }
             frame = smoother.advance(by: elapsed)
@@ -376,9 +429,13 @@ final class LightingModel: ObservableObject {
             lastLiveColorsTime = now
             live.colors = output
         }
-        if serial.isConnected, pendingControllerCheck == nil {
-            serial.send(output, maximumLEDs: configuration.deviceLEDCount)
-        }
+        lastSentFrame = output
+        sendToController(output)
+    }
+
+    private func sendToController(_ colors: [LightingRGB]) {
+        guard serial.isConnected, pendingControllerCheck == nil else { return }
+        serial.send(colors, maximumLEDs: configuration.deviceLEDCount)
     }
 
     private func sendBlack() {
@@ -391,6 +448,7 @@ final class LightingModel: ObservableObject {
     private func resetOutput() {
         smoother.reset()
         antiFlicker.reset()
+        lastSentFrame = []
     }
 
     // MARK: Sleep and wake

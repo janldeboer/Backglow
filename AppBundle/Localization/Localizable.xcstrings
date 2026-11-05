@@ -271,6 +271,16 @@
         }
       }
     },
+    "Ausgaberate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Output rate"
+          }
+        }
+      }
+    },
     "Automatik": {
       "localizations": {
         "en": {
@@ -751,6 +761,16 @@
         }
       }
     },
+    "Farben eingefroren – Mac ausgelastet": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colors frozen – Mac is busy"
+          }
+        }
+      }
+    },
     "Farbkanäle": {
       "localizations": {
         "en": {
@@ -797,6 +817,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gamma"
+          }
+        }
+      }
+    },
+    "Gedrosselt auf %lld %%": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Throttled to %lld %%"
           }
         }
       }
@@ -1699,6 +1729,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Violet"
+          }
+        }
+      }
+    },
+    "Volle Rate": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full rate"
           }
         }
       }

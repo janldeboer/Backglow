@@ -216,10 +216,10 @@ pio run -e nodemcuv2 -t upload</code></pre>
 
     <h2 id="app">App installieren</h2>
     <ol>
-      <li><a href="https://github.com/Janldeboer/Backglow/releases/download/v3.2.0/Backglow-3.2.0.dmg">Backglow-3.2.0.dmg</a> laden, öffnen und Backglow in den Programme-Ordner ziehen.</li>
+      <li><a href="https://github.com/Janldeboer/Backglow/releases/download/v3.2.1/Backglow-3.2.1.dmg">Backglow-3.2.1.dmg</a> laden, öffnen und Backglow in den Programme-Ordner ziehen.</li>
       <li>Backglow öffnen. Die App ist von Apple notarisiert und startet ohne Warnung.</li>
     </ol>
-    <p>Was neu ist, steht in den <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.2.0">Release Notes</a>.</p>
+    <p>Was neu ist, steht in den <a href="https://github.com/Janldeboer/Backglow/releases/tag/v3.2.1">Release Notes</a>.</p>
     <h3>Selbst bauen</h3>
 <pre><code>cd Backglow
 ./scripts/build-app.sh
@@ -286,6 +286,7 @@ open dist/Backglow.app</code></pre>
     <p>Viele USB-Kabel laden nur und übertragen keine Daten. Probiere ein anderes Kabel und tippe auf <strong>Anschlüsse aktualisieren</strong>.</p>
     <h3>Die LEDs flackern oder zeigen falsche Farben</h3>
     <p>Meist fehlt die gemeinsame Masse oder die Datenleitung ist zu lang. Prüfe auch, ob dein Strip wirklich ein WS2812B mit GRB-Reihenfolge ist. Bei Rot und Grün vertauscht passt die Firmware nicht zum Strip.</p>
+    <p>Ist der Mac stark ausgelastet, drosselt Backglow selbst die Bildrate und hält nach einem Hänger kurz die Farben, statt zu flackern. Unter <strong>Diagnose</strong> zeigt <strong>Ausgaberate</strong>, ob das gerade passiert. Steht dort oft „Gedrosselt“, hilft eine niedrigere Ziel-Bildrate oder interne Auflösung.</p>
     <h3>Das Licht ist um einige LEDs verschoben</h3>
     <p>Passe <strong>Startversatz</strong> und gegebenenfalls <strong>Reihenfolge umkehren</strong> an, bis die Farben an den Ecken stimmen.</p>
     <p>Weitere Fragen oder Fehler gerne als <a href="https://github.com/Janldeboer/Backglow/issues">Issue auf GitHub</a>.</p>

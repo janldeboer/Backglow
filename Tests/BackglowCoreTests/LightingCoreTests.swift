@@ -104,6 +104,87 @@ final class LightingCoreTests: XCTestCase {
         XCTAssertEqual(off.advance(by: 0.016)[0].red, 1)
     }
 
+    func testSpringStaysStableWhenTicksComeLate() {
+        // Late ticks (main thread busy) once made the spring oscillate: damping × dt > 2.
+        for smoothing in [0.05, 0.25, 0.6] {
+            var smoother = SpringColorSmoother()
+            smoother.configure(smoothing: smoothing)
+            smoother.setTarget([.black])
+            smoother.setTarget([LightingRGB(red: 0.2, green: 0.8, blue: 0.4)])
+            var previous = 0.0
+            for step in 0..<60 {
+                let color = smoother.advance(by: step.isMultiple(of: 3) ? 0.1 : 0.016)[0]
+                XCTAssertLessThanOrEqual(color.green, 0.8 + 0.001, "overshoot at smoothing \(smoothing)")
+                XCTAssertGreaterThanOrEqual(color.green, previous - 0.001, "reversal at smoothing \(smoothing)")
+                previous = color.green
+            }
+            XCTAssertEqual(previous, 0.8, accuracy: 0.01)
+        }
+    }
+
+    func testGovernorThrottlesWhenTicksComeLateAndRecovers() {
+        var governor = PerformanceGovernor()
+        var now = 0.0
+        let interval = 1.0 / 60
+        for _ in 0..<120 {
+            now += interval
+            governor.recordTick(at: now, expectedInterval: interval)
+        }
+        XCTAssertEqual(governor.state, .normal)
+        // Every third tick arrives two intervals late.
+        for tick in 0..<240 {
+            now += tick % 3 == 0 ? interval * 3 : interval
+            governor.recordTick(at: now, expectedInterval: interval)
+        }
+        XCTAssertEqual(governor.state, .throttled)
+        XCTAssertLessThan(governor.rateFactor, 1)
+        XCTAssertGreaterThanOrEqual(governor.rateFactor, PerformanceGovernor.minimumRateFactor)
+        // Steady again: back to full rate after the recovery holds.
+        for _ in 0..<(60 * 40) {
+            now += interval
+            governor.recordTick(at: now, expectedInterval: interval)
+        }
+        XCTAssertEqual(governor.state, .normal)
+        XCTAssertEqual(governor.rateFactor, 1)
+    }
+
+    func testGovernorFreezesAfterHangUntilSteady() {
+        var governor = PerformanceGovernor()
+        var now = 0.0
+        let interval = 1.0 / 60
+        for _ in 0..<30 {
+            now += interval
+            governor.recordTick(at: now, expectedInterval: interval)
+        }
+        now += 0.4 // The main thread hung.
+        governor.recordTick(at: now, expectedInterval: interval)
+        XCTAssertEqual(governor.state, .frozen)
+        XCTAssertEqual(governor.rateFactor, 0.5)
+        for _ in 0..<30 {
+            now += interval
+            governor.recordTick(at: now, expectedInterval: interval)
+        }
+        XCTAssertEqual(governor.state, .frozen, "half a second of steady ticks is not enough")
+        for _ in 0..<40 {
+            now += interval
+            governor.recordTick(at: now, expectedInterval: interval)
+        }
+        XCTAssertEqual(governor.state, .throttled)
+    }
+
+    func testGovernorThrottlesWhenAnalysisCannotKeepUp() {
+        var governor = PerformanceGovernor()
+        var now = 0.0
+        let interval = 1.0 / 60
+        for _ in 0..<60 {
+            governor.recordAnalysis(seconds: 0.04, frameInterval: 1.0 / 30)
+            now += interval
+            governor.recordTick(at: now, expectedInterval: interval)
+        }
+        XCTAssertEqual(governor.state, .throttled)
+        XCTAssertEqual(governor.rateFactor, 0.5)
+    }
+
     func testAntiFlickerHoldsSubStepNoise() {
         var filter = AntiFlickerFilter()
         let base = LightingRGB(red: 0.1, green: 0.1, blue: 0.1)

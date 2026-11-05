@@ -67,7 +67,10 @@ public struct SpringColorSmoother {
                 continue
             }
             settled = false
-            velocity[index] += (stiffness * difference - damping * velocity[index]) * dt
+            // Implicit (backward) Euler: stable for any time step. The explicit form diverged
+            // once a late tick made damping × dt exceed 2, and the LEDs flickered after lags.
+            velocity[index] = (velocity[index] + stiffness * difference * dt)
+                / (1 + damping * dt + stiffness * dt * dt)
             var step = velocity[index] * dt
             let lumaLimit = maximumLumaRate * dt
             if maximumLumaRate > 0, abs(step.x) > lumaLimit {
