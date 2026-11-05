@@ -40,6 +40,7 @@ Live capture, serial transfer and storage on the controller can only be checked 
 - The app is localized in German (source language) and English. After changing user-facing text, run `./scripts/update-strings.sh` and translate the new keys in `AppBundle/Localization`.
 - The website in `Website/public` exists in German and English; keep both versions in step (see [Website/README.md](Website/README.md)).
 - Update the README or the setup guide when behavior changes.
+- Note user-visible changes in [CHANGES.md](CHANGES.md) under the next version.
 - Commit messages are short imperative sentences, such as "Load the Metal shader from the app bundle".
 
 By contributing, you agree that your contribution is licensed under the [GPL-3.0](LICENSE), like the rest of the project, and that you follow the [code of conduct](CODE_OF_CONDUCT.md).
