@@ -2,15 +2,21 @@
 
 What changed in each Backglow version, newest first. The release notes for each version on GitHub are in [`docs/releases`](docs/releases).
 
-## Unreleased
+## 3.3.0 – 2026-11-20
+
+Released with everything from 3.2.0 and 3.2.1, which were never published.
 
 ### New
 
 - Single-color mode: a color field for hue and saturation and a white slider from cool (9000 K) to warm (2000 K), in the window and in the menu bar. The presets and the system color picker stay.
 
-## 3.2.1 – 2026-11-05
+### Fixed
 
-Released with everything from 3.2.0, which was tagged but never published.
+- The menu bar panel shrinks again when its content gets shorter, instead of floating in a taller, transparent window.
+
+## 3.2.1 – 2026-11-05 (not published)
+
+Carries everything from 3.2.0, which was tagged but never published.
 
 ### Fixed
 
