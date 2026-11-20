@@ -30,7 +30,7 @@ struct MenuBarPanel: View {
             .pickerStyle(.segmented)
             .labelsHidden()
             if model.configuration.outputMode == .solidColor {
-                SolidColorPicker(model: model, swatchSize: 20)
+                SolidColorPicker(model: model, swatchSize: 20, fieldHeight: 80)
             }
             HStack(spacing: 8) {
                 Image(systemName: "sun.min").foregroundStyle(.secondary)

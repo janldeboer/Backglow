@@ -2,6 +2,12 @@
 
 What changed in each Backglow version, newest first. The release notes for each version on GitHub are in [`docs/releases`](docs/releases).
 
+## Unreleased
+
+### New
+
+- Single-color mode: a color field for hue and saturation and a white slider from cool (9000 K) to warm (2000 K), in the window and in the menu bar. The presets and the system color picker stay.
+
 ## 3.2.1 – 2026-11-05
 
 Released with everything from 3.2.0, which was tagged but never published.

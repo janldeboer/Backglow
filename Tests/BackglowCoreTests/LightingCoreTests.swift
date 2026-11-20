@@ -316,6 +316,36 @@ final class LightingCoreTests: XCTestCase {
         XCTAssertEqual(roundTrip, current)
     }
 
+    func testHueAndSaturationRoundTrip() {
+        XCTAssertEqual(LightingRGB(hue: 0, saturation: 1), LightingRGB(red: 1, green: 0, blue: 0))
+        XCTAssertEqual(LightingRGB(hue: 1.0 / 3, saturation: 1), LightingRGB(red: 0, green: 1, blue: 0))
+        XCTAssertEqual(LightingRGB(hue: 0.7, saturation: 0), LightingRGB(red: 1, green: 1, blue: 1))
+        for (hue, saturation) in [(0.05, 1.0), (0.3, 0.5), (0.62, 0.8), (0.97, 0.2)] {
+            let result = LightingRGB(hue: hue, saturation: saturation).hueSaturation
+            XCTAssertEqual(result.hue, hue, accuracy: 1e-9)
+            XCTAssertEqual(result.saturation, saturation, accuracy: 1e-9)
+        }
+    }
+
+    func testWhiteSliderRunsFromColdToWarm() {
+        let cold = LightingRGB.white(warmth: 0)
+        let warm = LightingRGB.white(warmth: 1)
+        XCTAssertEqual(LightingRGB.whiteKelvin(warmth: 0), 9000, accuracy: 1e-6)
+        XCTAssertEqual(LightingRGB.whiteKelvin(warmth: 1), 2000, accuracy: 1e-6)
+        XCTAssertEqual(cold.blue, 1)
+        XCTAssertLessThan(cold.red, 0.9)
+        XCTAssertEqual(warm.red, 1)
+        XCTAssertLessThan(warm.blue, 0.1)
+        XCTAssertGreaterThan(warm.green, 0.4)
+        for warmth in [0.0, 0.1, 0.5, 0.8, 1.0] {
+            XCTAssertEqual(LightingRGB.white(warmth: warmth).whiteWarmth, warmth, accuracy: 0.01)
+        }
+        // A dimmed white sits at the same position as the full one.
+        let white = LightingRGB.white(warmth: 0.7)
+        let dimmed = LightingRGB(red: white.red / 2, green: white.green / 2, blue: white.blue / 2)
+        XCTAssertEqual(dimmed.whiteWarmth, 0.7, accuracy: 0.01)
+    }
+
     func testControllerProfileRoundTripKeepsComputerSettingsLocal() {
         var local = LightingConfiguration()
         local.displayID = 1234

@@ -791,6 +791,16 @@
         }
       }
     },
+    "Farbton und Sättigung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hue and saturation"
+          }
+        }
+      }
+    },
     "Farbwerte zurücksetzen": {
       "localizations": {
         "en": {
@@ -1769,6 +1779,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "White"
+          }
+        }
+      }
+    },
+    "Weiß von kalt bis warm": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "White from cool to warm"
+          }
+        }
+      }
+    },
+    "Weißton": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "White tone"
           }
         }
       }

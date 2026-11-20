@@ -179,6 +179,12 @@ private struct MainWindow: View {
                     let image = try await ScreenshotMode.capture(window)
                     try ScreenshotMode.save(image, to: folder.appendingPathComponent("\(page.fileName)-\(suffix).png"))
                 }
+                selection = .dashboard
+                model.change { $0.outputMode = .solidColor }
+                try await Task.sleep(for: .milliseconds(900))
+                try ScreenshotMode.save(try await ScreenshotMode.capture(window),
+                                        to: folder.appendingPathComponent("single-color-\(suffix).png"))
+                model.change { $0.outputMode = .screen }
             }
         } catch {
             // `open` drops stderr, so leave the reason next to the images.

@@ -65,7 +65,7 @@ A menu bar item switches the lights on and off, picks the mode (screen or a sing
 
 Under **Automatik** you remember the selected display together with the connected controller. As soon as both are present, Backglow connects and switches the lights on in the chosen mode; when either disappears, the lights go off and the port is closed. The display is recognized by its EDID vendor, model and serial number. The controller must match its USB vendor and product ID plus its USB serial number, or, for adapters without one, the same port path, which follows the USB socket. With v3 firmware the chip ID is remembered as well, and no LED data, not even black, is sent before the controller has reported it. Switching off by hand keeps the pair off until it is unplugged once. The LEDs also go dark while the displays sleep and when Backglow quits.
 
-In **single-color mode** every LED shows one color, without screen capture or Screen Recording permission. The color runs through the same spring smoother, color correction and power limit as the screen colors.
+In **single-color mode** every LED shows one color, without screen capture or Screen Recording permission. Pick it from the presets, a hue and saturation field, a white slider from cool to warm, or the system color picker. The color runs through the same spring smoother, color correction and power limit as the screen colors.
 
 Settings are saved in `~/Library/Application Support/Backglow/settings.json`.
 With v3 firmware, the app loads the controller's LED layout and color calibration
