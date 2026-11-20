@@ -1,3 +1,4 @@
+import AppKit
 import BackglowCore
 import SwiftUI
 
@@ -68,11 +69,40 @@ struct MenuBarPanel: View {
         }
         .padding(14)
         .frame(width: 300)
+        .fixedSize(horizontal: false, vertical: true)
+        .background {
+            GeometryReader { proxy in
+                WindowHeightFitter(height: proxy.size.height)
+            }
+        }
     }
 
     private func configBinding<T>(_ keyPath: WritableKeyPath<LightingConfiguration, T>) -> Binding<T> {
         Binding(get: { model.configuration[keyPath: keyPath] },
                 set: { value in model.change { $0[keyPath: keyPath] = value } })
+    }
+}
+
+/// A `MenuBarExtra` window grows with its content but does not shrink again, which leaves
+/// the panel floating in a taller, transparent window after the color controls disappear.
+/// This sets the window to the content's height and keeps its top edge under the menu bar.
+private struct WindowHeightFitter: NSViewRepresentable {
+    var height: CGFloat
+
+    func makeNSView(context: Context) -> NSView { NSView() }
+
+    func updateNSView(_ view: NSView, context: Context) {
+        let height = height
+        // After the current layout pass, and once the view is in its window.
+        DispatchQueue.main.async {
+            guard let window = view.window, height > 0 else { return }
+            var frame = window.frame
+            let fitted = window.frameRect(forContentRect: NSRect(x: 0, y: 0, width: frame.width, height: height)).height
+            guard abs(fitted - frame.height) > 0.5 else { return }
+            frame.origin.y += frame.height - fitted
+            frame.size.height = fitted
+            window.setFrame(frame, display: true)
+        }
     }
 }
 
