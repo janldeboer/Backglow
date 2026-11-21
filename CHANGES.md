@@ -2,7 +2,7 @@
 
 What changed in each Backglow version, newest first. The release notes for each version on GitHub are in [`docs/releases`](docs/releases).
 
-## 3.3.0 – 2026-11-20
+## 3.3.0 – 2026-11-21
 
 Released with everything from 3.2.0 and 3.2.1, which were never published.
 
