@@ -13,7 +13,7 @@ Website and docs: [backglow.jandeboer.de](https://backglow.jandeboer.de)
 - macOS 14 or later on a Metal-capable Mac. Liquid Glass surfaces need macOS 26; macOS 14 and 15 show standard materials instead.
 - Xcode 26 or later to build from source.
 - Screen Recording permission for live capture.
-- Optional serial LED controller running the included legacy sketch or ESP32/ESP8266 v3 firmware.
+- Optional serial LED controller running the included ESP32/ESP8266 firmware, the legacy sketch, or any firmware that speaks Adalight over USB, such as WLED.
 
 ## Build and run
 
@@ -79,11 +79,13 @@ settings remain local.
 
 `Firmware/SerialLEDcontroller/SerialLEDcontroller.ino` is the original FastLED sketch, preserved for compatibility. Its defaults are **70 WS2812B LEDs**, **pin 2**, **GRB**, and **230400 baud**. Configure the number of physical LEDs and the matching baud rate in the app. Each frame uses the existing `led` + one-byte index + RGB bytes per LED, ending with `les` to display the frame. Changing these firmware defaults requires matching changes in the app's device settings.
 
+The **Protokoll** setting chooses how colors are sent. **Automatisch** sends Adalight once Backglow's firmware reports it and `led`/`les` otherwise, so the legacy sketch keeps working. **Adalight** is for other firmware, such as WLED or HyperHDR's HyperSerial: set the baud rate to the firmware's and the physical LEDs to its LED count, because every Adalight frame covers the whole strip. Adalight needs 3 bytes per LED instead of 7, so the same link carries more than twice the frame rate. Profiles on the controller need Backglow's own firmware.
+
 The serial library is ORSSerialPort **2.1.0**, the latest upstream release checked for this rebuild. It is vendored at `Vendor/ORSSerialPort` so builds do not depend on GitHub access. Its MIT license is in that directory. The app's own license is GPL-3.0, as in the original repository.
 
 The new ESP32/ESP8266 firmware is in [Firmware/BackglowController](Firmware/BackglowController/README.md).
-It stores a versioned profile in ESP32 NVS or ESP8266 LittleFS and continues to
-accept the `led`/`les` color stream. The legacy sketch does not store profiles.
+It stores a versioned profile in ESP32 NVS or ESP8266 LittleFS, accepts Adalight
+frames and continues to accept the `led`/`les` color stream. The legacy sketch does not store profiles.
 Build and board setup are described in the firmware README. Guarded in-app
 flashing remains planned in
 [Controller-Onboarding.md](docs/Controller-Onboarding.md); the app does not flash devices.

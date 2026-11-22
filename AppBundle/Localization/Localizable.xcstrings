@@ -111,6 +111,16 @@
         }
       }
     },
+    "Adalight": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adalight"
+          }
+        }
+      }
+    },
     "Aktive LEDs": {
       "localizations": {
         "en": {
@@ -291,12 +301,32 @@
         }
       }
     },
+    "Automatisch": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic"
+          }
+        }
+      }
+    },
     "Automatisch eingeschaltet: %@": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Switched on automatically: %@"
+          }
+        }
+      }
+    },
+    "Automatisch nutzt Adalight, sobald die Backglow-Firmware es meldet, sonst das ältere led/les-Protokoll. Für WLED oder andere Adalight-Firmware „Adalight“ wählen und Baudrate und physische LEDs wie in der Firmware einstellen. Beim Stoppen werden die LEDs ausgeschaltet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Automatic uses Adalight as soon as Backglow’s firmware reports it, and the older led/les protocol otherwise. For WLED or other Adalight firmware, choose “Adalight” and set the baud rate and physical LEDs to match the firmware. The LEDs switch off when you stop."
           }
         }
       }
@@ -317,6 +347,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Backglow"
+          }
+        }
+      }
+    },
+    "Backglow led/les (älter)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backglow led/les (older)"
           }
         }
       }
@@ -1103,16 +1143,6 @@
         }
       }
     },
-    "Kompatibel mit dem vorhandenen led/les-Protokoll. Beim Stoppen werden die LEDs ausgeschaltet.": {
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Compatible with the existing led/les protocol. The LEDs turn off when you stop."
-          }
-        }
-      }
-    },
     "LED-Anordnung": {
       "localizations": {
         "en": {
@@ -1379,6 +1409,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unknown profile version – cannot overwrite"
+          }
+        }
+      }
+    },
+    "Protokoll": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protocol"
           }
         }
       }
@@ -1879,6 +1919,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Older firmware: color output available, no device profile"
+          }
+        }
+      }
+    },
+    "Übertragung": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Transfer"
           }
         }
       }

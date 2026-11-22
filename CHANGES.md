@@ -2,6 +2,13 @@
 
 What changed in each Backglow version, newest first. The release notes for each version on GitHub are in [`docs/releases`](docs/releases).
 
+## Unreleased
+
+### New
+
+- Adalight: Backglow can send colors in the Adalight format, which WLED, HyperHDR's HyperSerial and many Arduino sketches understand. Choose it under **Gerät → Protokoll**. The default, **Automatisch**, uses Adalight with Backglow's firmware from this version and the older `led`/`les` stream otherwise. Adalight needs less than half the bytes per LED, so the output rate can roughly double at the same baud rate.
+- The firmware accepts Adalight frames next to `led`/`les` and reports this to the app.
+
 ## 3.3.0 – 2026-11-21
 
 Released with everything from 3.2.0 and 3.2.1, which were never published.

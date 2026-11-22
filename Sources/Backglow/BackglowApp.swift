@@ -468,7 +468,16 @@ private struct MainWindow: View {
                         Text(verbatim: "\(rate)").tag(rate)
                     }
                 }
-                Text("Kompatibel mit dem vorhandenen led/les-Protokoll. Beim Stoppen werden die LEDs ausgeschaltet.")
+                Picker("Protokoll", selection: configBinding(\.serialProtocol)) {
+                    ForEach(SerialProtocol.allCases, id: \.self) { option in
+                        Text(Self.protocolName(option)).tag(option)
+                    }
+                }
+                if serial.isConnected {
+                    LabeledContent("Übertragung",
+                                   value: Self.protocolName(serial.streamProtocol(for: model.configuration.serialProtocol)))
+                }
+                Text("Automatisch nutzt Adalight, sobald die Backglow-Firmware es meldet, sonst das ältere led/les-Protokoll. Für WLED oder andere Adalight-Firmware „Adalight“ wählen und Baudrate und physische LEDs wie in der Firmware einstellen. Beim Stoppen werden die LEDs ausgeschaltet.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             SurfaceCard {
@@ -591,6 +600,10 @@ private struct MainWindow: View {
                 LabeledContent("Bildschirmaufnahme", value: model.captureStatus)
                 LiveDiagnostics(live: model.live)
                 LabeledContent("Serielle Verbindung", value: serial.status)
+                if serial.isConnected {
+                    LabeledContent("Übertragung",
+                                   value: Self.protocolName(serial.streamProtocol(for: model.configuration.serialProtocol)))
+                }
             }
             SurfaceCard {
                 Text("Berechtigung für Bildschirmaufnahme")
@@ -598,6 +611,14 @@ private struct MainWindow: View {
                 Text("macOS fordert die Freigabe beim ersten Start der Live-Aufnahme an. Falls kein Bild erscheint, erlaube Backglow unter Datenschutz & Sicherheit → Bildschirmaufnahme und starte die App neu.")
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    private static func protocolName(_ serialProtocol: SerialProtocol) -> String {
+        switch serialProtocol {
+        case .automatic: String(localized: "Automatisch")
+        case .adalight: String(localized: "Adalight")
+        case .legacy: String(localized: "Backglow led/les (älter)")
         }
     }
 

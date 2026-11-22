@@ -18,6 +18,7 @@ public struct LightingConfiguration: Codable, Equatable, Sendable {
     public var captureScale: Double = 0.5
     public var portPath: String?
     public var baudRate: Int = 230_400
+    public var serialProtocol = SerialProtocol.automatic
     public var calibration = ColorCalibration()
     public var ledCalibration = LEDCalibration()
     public var outputMode = OutputMode.screen
@@ -67,6 +68,8 @@ extension LightingConfiguration {
         captureScale = try values.decodeIfPresent(Double.self, forKey: .captureScale) ?? defaults.captureScale
         portPath = try values.decodeIfPresent(String.self, forKey: .portPath)
         baudRate = try values.decodeIfPresent(Int.self, forKey: .baudRate) ?? defaults.baudRate
+        serialProtocol = (try? values.decodeIfPresent(SerialProtocol.self, forKey: .serialProtocol))
+            .flatMap { $0 } ?? defaults.serialProtocol
         calibration = try values.decodeIfPresent(ColorCalibration.self, forKey: .calibration) ?? defaults.calibration
         ledCalibration = try values.decodeIfPresent(LEDCalibration.self, forKey: .ledCalibration)
             ?? defaults.ledCalibration

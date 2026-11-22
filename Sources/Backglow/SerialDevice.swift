@@ -28,6 +28,8 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
     @Published private(set) var canInitializeStorage = false
     @Published private(set) var storedProfile: ControllerProfile?
     @Published private(set) var controllerID: String?
+    /// What Backglow's firmware reported after its hello; empty for other firmware.
+    @Published private(set) var controllerFeatures: ControllerFeatures = []
     @Published private(set) var isSavingProfile = false
     /// The listed port that is open right now.
     @Published private(set) var connectedPort: SerialPortChoice?
@@ -171,6 +173,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         controllerCapacity = 0
         storedProfile = nil
         controllerID = nil
+        controllerFeatures = []
         currentRevision = 0
         expectedSave = nil
         expectedRevision = nil
@@ -275,13 +278,21 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
             isSavingProfile = false
             profileReady = false
             profileStatus = String(localized: "Controller hat den Befehl abgelehnt (Code \(Int(code)))")
+        case .features:
+            guard recognizedProtocol, let flags = frame.payload.first else { return }
+            controllerFeatures = ControllerFeatures(rawValue: flags)
         case .getProfile, .setProfile, .initializeStorage:
             break
         }
     }
 
-    func send(_ colors: [LightingRGB], maximumLEDs: Int) {
-        let frame = SerialPacket.frame(colors: colors, maximumLEDs: maximumLEDs)
+    /// The protocol the color stream uses for this setting with the connected controller.
+    func streamProtocol(for setting: SerialProtocol) -> SerialProtocol {
+        setting.resolved(controllerSupportsAdalight: controllerFeatures.contains(.adalight))
+    }
+
+    func send(_ colors: [LightingRGB], maximumLEDs: Int, protocol serialProtocol: SerialProtocol) {
+        let frame = SerialPacket.frame(colors: colors, maximumLEDs: maximumLEDs, protocol: serialProtocol)
         pendingLock.lock()
         pendingFrame = frame // The newest frame replaces any unsent frame.
         let shouldSchedule = !drainScheduled

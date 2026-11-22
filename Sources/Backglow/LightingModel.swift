@@ -374,7 +374,10 @@ final class LightingModel: ObservableObject {
     }
 
     private var outputInterval: TimeInterval {
-        let full = SerialPacket.outputFrequency(ledCount: configuration.ledCount, baudRate: configuration.baudRate)
+        let frameBytes = SerialPacket.frameByteCount(colorCount: configuration.ledCount,
+                                                     maximumLEDs: configuration.deviceLEDCount,
+                                                     protocol: streamProtocol)
+        let full = SerialPacket.outputFrequency(frameBytes: frameBytes, baudRate: configuration.baudRate)
         return 1 / max(full * governor.rateFactor, 10)
     }
 
@@ -433,16 +436,20 @@ final class LightingModel: ObservableObject {
         sendToController(output)
     }
 
+    private var streamProtocol: SerialProtocol {
+        serial.streamProtocol(for: configuration.serialProtocol)
+    }
+
     private func sendToController(_ colors: [LightingRGB]) {
         guard serial.isConnected, pendingControllerCheck == nil else { return }
-        serial.send(colors, maximumLEDs: configuration.deviceLEDCount)
+        serial.send(colors, maximumLEDs: configuration.deviceLEDCount, protocol: streamProtocol)
     }
 
     private func sendBlack() {
         // An unconfirmed controller gets no data at all, not even black.
         guard pendingControllerCheck == nil else { return }
         serial.send(Array(repeating: .black, count: configuration.ledCount),
-                    maximumLEDs: configuration.deviceLEDCount)
+                    maximumLEDs: configuration.deviceLEDCount, protocol: streamProtocol)
     }
 
     private func resetOutput() {

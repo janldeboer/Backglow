@@ -1,7 +1,7 @@
 # Backglow Controller v3
 
-This firmware adds a persistent controller profile to the historical `led`/`les`
-color stream. It targets generic **ESP32 Dev Module** (`esp32dev`, data pin GPIO18)
+This firmware adds a persistent controller profile and Adalight frames to the
+historical `led`/`les` color stream. It targets generic **ESP32 Dev Module** (`esp32dev`, data pin GPIO18)
 and **NodeMCU ESP8266** (`nodemcuv2`, data pin GPIO5). The pin and board must be
 checked against the actual wiring before flashing. Neither environment is an
 automatic board detector. Serial speed is 230400 baud; the strip type is WS2812B
@@ -59,7 +59,9 @@ type (1 byte), payload length (1 byte, maximum 64), payload and CRC16 CCITT
 FALSE (polynomial 0x1021, initial 0xFFFF) over message type, length and payload.
 The probe `AL3?` is the only unframed command. Message types are: hello 1,
 get profile 2, profile 3, set profile 4, saved 5, error 6, no profile 7,
-initialize storage 8. Initialization is only available after a valid hello from
+initialize storage 8, features 9. The firmware sends a features frame right after
+every hello. Its one-byte payload holds flags; bit 0 means the firmware accepts
+Adalight frames. Apps up to 3.3 ignore message types they do not know. Initialization is only available after a valid hello from
 the selected controller.
 
 The 24-byte profile is: schema version (1), physical LED count (u16), active LED
@@ -70,3 +72,17 @@ gamma, red, green, blue, brightness, smoothing. Color values are multiplied by
 messages have empty payloads. Successful saves return the u32 revision. Errors
 return a code: 1 malformed, 2 storage unavailable, 3 revision conflict,
 4 invalid profile, 5 write failed, 6 unsupported schema.
+
+## Color frames
+
+The firmware accepts two color streams and switches between them frame by frame:
+
+- **Adalight**: `Ada`, the high and low byte of (LED count − 1), the XOR of those
+  two bytes with `0x55`, then R, G, B for each LED. LEDs beyond the strip are read
+  and dropped, LEDs the frame does not cover are switched off. A frame with a wrong
+  checksum is ignored. The app sends Adalight once the features frame reports it.
+- **led/les**: `led`, a one-byte index and R, G, B per LED, then `les` to show the
+  frame. Kept for apps up to 3.3.
+
+Commands (`AL3?`, `AL3!`) and new color frames are only recognized between complete
+frames, so color bytes can never be read as a command.

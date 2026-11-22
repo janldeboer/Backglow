@@ -102,6 +102,15 @@ public enum ControllerMessage: UInt8, Sendable {
     case error = 6
     case noProfile = 7
     case initializeStorage = 8
+    /// Sent by the firmware right after each hello. Payload: one byte of flags,
+    /// bit 0 = the firmware accepts Adalight frames. Older apps ignore it.
+    case features = 9
+}
+
+public struct ControllerFeatures: OptionSet, Equatable, Sendable {
+    public let rawValue: UInt8
+    public init(rawValue: UInt8) { self.rawValue = rawValue }
+    public static let adalight = ControllerFeatures(rawValue: 1)
 }
 
 public struct ControllerFrame: Equatable, Sendable {

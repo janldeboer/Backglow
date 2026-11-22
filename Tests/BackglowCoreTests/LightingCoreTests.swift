@@ -201,6 +201,56 @@ final class LightingCoreTests: XCTestCase {
         XCTAssertEqual(SerialPacket.outputFrequency(ledCount: 255, baudRate: 9_600), 15)
     }
 
+    func testAdalightFrameHasHeaderChecksumAndCoversTheStrip() {
+        let red = LightingRGB(red: 1, green: 0, blue: 0)
+        let bytes = Array(SerialPacket.frame(colors: [red, .black, red], maximumLEDs: 4, protocol: .adalight))
+        // 4 LEDs: count - 1 = 3, checksum 0x00 ^ 0x03 ^ 0x55 = 0x56; the fourth LED is sent black.
+        XCTAssertEqual(bytes, [65, 100, 97, 0, 3, 0x56, 255, 0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 0])
+        let truncated = Array(SerialPacket.adalightFrame(colors: [red, red, red], ledCount: 1))
+        XCTAssertEqual(truncated, [65, 100, 97, 0, 0, 0x55, 255, 0, 0])
+        let long = Array(SerialPacket.adalightFrame(colors: [], ledCount: 300))
+        XCTAssertEqual(Array(long.prefix(6)), [65, 100, 97, 1, 43, 1 ^ 43 ^ 0x55])
+        XCTAssertEqual(long.count, 6 + 900)
+        XCTAssertTrue(SerialPacket.adalightFrame(colors: [red], ledCount: 0).isEmpty)
+    }
+
+    func testFrameSizeAndRateDependOnProtocol() {
+        XCTAssertEqual(SerialPacket.frameByteCount(colorCount: 120, maximumLEDs: 120, protocol: .legacy), 843)
+        XCTAssertEqual(SerialPacket.frameByteCount(colorCount: 120, maximumLEDs: 120, protocol: .adalight), 366)
+        // Adalight pads to the physical strip, led/les sends only the active LEDs.
+        XCTAssertEqual(SerialPacket.frameByteCount(colorCount: 59, maximumLEDs: 70, protocol: .adalight), 216)
+        XCTAssertEqual(SerialPacket.frameByteCount(colorCount: 59, maximumLEDs: 70, protocol: .legacy), 416)
+        XCTAssertEqual(SerialPacket.outputFrequency(frameBytes: 843, baudRate: 230_400), 24.6, accuracy: 0.01)
+        XCTAssertEqual(SerialPacket.outputFrequency(frameBytes: 366, baudRate: 230_400), 56.66, accuracy: 0.01)
+    }
+
+    func testAutomaticProtocolFollowsTheFirmware() {
+        XCTAssertEqual(SerialProtocol.automatic.resolved(controllerSupportsAdalight: false), .legacy)
+        XCTAssertEqual(SerialProtocol.automatic.resolved(controllerSupportsAdalight: true), .adalight)
+        XCTAssertEqual(SerialProtocol.legacy.resolved(controllerSupportsAdalight: true), .legacy)
+        XCTAssertEqual(SerialProtocol.adalight.resolved(controllerSupportsAdalight: false), .adalight)
+    }
+
+    func testProtocolSettingDefaultsToAutomaticForOlderAndUnknownSettings() throws {
+        let older = try JSONDecoder().decode(LightingConfiguration.self, from: Data(#"{"baudRate":115200}"#.utf8))
+        XCTAssertEqual(older.serialProtocol, .automatic)
+        XCTAssertEqual(older.baudRate, 115_200)
+        let future = try JSONDecoder().decode(LightingConfiguration.self, from: Data(#"{"serialProtocol":"awa"}"#.utf8))
+        XCTAssertEqual(future.serialProtocol, .automatic)
+        var config = LightingConfiguration()
+        config.serialProtocol = .adalight
+        let roundTrip = try JSONDecoder().decode(LightingConfiguration.self, from: JSONEncoder().encode(config))
+        XCTAssertEqual(roundTrip.serialProtocol, .adalight)
+    }
+
+    func testParserReadsFeaturesFrame() {
+        var parser = ControllerFrameParser()
+        let frame = ControllerFrame(.features, payload: [1]).encoded()!
+        let frames = parser.append(frame)
+        XCTAssertEqual(frames, [ControllerFrame(.features, payload: [1])])
+        XCTAssertTrue(ControllerFeatures(rawValue: frames[0].payload[0]).contains(.adalight))
+    }
+
     func testPacketMatchesExistingFirmware() {
         let bytes = Array(SerialPacket.frame(colors: [LightingRGB(red: 1, green: 0, blue: 0)]))
         XCTAssertEqual(bytes, [108, 101, 100, 0, 255, 0, 0, 108, 101, 115])

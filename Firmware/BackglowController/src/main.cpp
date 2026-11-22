@@ -11,7 +11,8 @@
 #endif
 
 // AL3 control protocol: magic, message, one-byte length, payload, CRC16-CCITT.
-// The historical led/index/RGB and les color stream remains unchanged.
+// Colors arrive as Adalight frames ("Ada", count - 1 as two bytes, their XOR with
+// 0x55, then RGB per LED) or in the historical led/index/RGB and les stream.
 static constexpr uint8_t kMaximumLEDs = 255;
 static constexpr uint8_t kDefaultLEDs = 70;
 static constexpr uint8_t kProfileBytes = 24;
@@ -21,8 +22,12 @@ static constexpr uint8_t kMagic[] = {'A', 'L', '3', '!'};
 
 enum Message : uint8_t {
   kHello = 1, kGetProfile = 2, kProfile = 3, kSetProfile = 4,
-  kSaved = 5, kError = 6, kNoProfile = 7, kInitializeStorage = 8
+  kSaved = 5, kError = 6, kNoProfile = 7, kInitializeStorage = 8,
+  kFeatures = 9
 };
+
+// Flags in the features frame that follows every hello.
+static constexpr uint8_t kFeatureAdalight = 1;
 
 enum ErrorCode : uint8_t {
   kMalformed = 1, kStorageUnavailable = 2, kRevisionConflict = 3,
@@ -198,6 +203,8 @@ void sendHello() {
   write32(payload + 4, ESP.getChipId());
 #endif
   sendFrame(kHello, payload, sizeof(payload));
+  const uint8_t features = kFeatureAdalight;
+  sendFrame(kFeatures, &features, 1);
 }
 
 void handleCommand(uint8_t message, const uint8_t *payload, uint8_t length) {
@@ -252,19 +259,55 @@ void handleCommand(uint8_t message, const uint8_t *payload, uint8_t length) {
   if (oldCount != read16(profile + 1)) restartAt = millis() + 1800;
 }
 
-// The two parsers only recognize a new command at a boundary between complete
-// historical LED records. Arbitrary RGB bytes cannot become control commands.
+// The parsers only recognize a new command at a boundary between complete
+// LED records or Adalight frames. Arbitrary RGB bytes cannot become control commands.
 uint8_t legacyState = 0;
+uint8_t adalightState = 0;
+uint8_t adalightHigh = 0, adalightLow = 0;
+uint32_t adalightBytes = 0, adalightReceived = 0;
 uint8_t ledIndex = 0, red = 0, green = 0;
 uint8_t frameLEDs = 0;
-uint8_t controlPrefix = 0;
+uint8_t prefixLength = 0; // Bytes of "AL3" or "Ada" seen at a boundary.
+uint8_t prefixKind = 0;   // 'L' for AL3, 'd' for Ada.
 uint8_t controlState = 0;
 uint8_t controlMessage = 0, controlLength = 0, controlUsed = 0;
 uint8_t controlPayload[kMaximumPayload];
 uint8_t controlBody[2 + kMaximumPayload];
 uint8_t checksumLow = 0;
 
+void finishAdalightFrame() {
+  const uint32_t received = adalightBytes / 3;
+  for (uint32_t index = received; index < outputLEDs; ++index) leds[index] = CRGB::Black;
+  FastLED.show();
+  adalightState = 0;
+}
+
+void consumeAdalight(uint8_t byte) {
+  switch (adalightState) {
+    case 1: adalightHigh = byte; adalightState = 2; return;
+    case 2: adalightLow = byte; adalightState = 3; return;
+    case 3:
+      if (byte != uint8_t(adalightHigh ^ adalightLow ^ 0x55)) { adalightState = 0; return; }
+      adalightBytes = (((uint32_t(adalightHigh) << 8) | adalightLow) + 1) * 3;
+      adalightReceived = 0;
+      adalightState = 4;
+      return;
+    default: {
+      // LEDs beyond the strip are read and dropped so the stream stays in step.
+      const uint32_t index = adalightReceived / 3;
+      if (index < outputLEDs) {
+        const uint8_t channel = adalightReceived % 3;
+        if (channel == 0) red = byte;
+        else if (channel == 1) green = byte;
+        else leds[index] = CRGB(red, green, byte);
+      }
+      if (++adalightReceived == adalightBytes) finishAdalightFrame();
+    }
+  }
+}
+
 void consume(uint8_t byte) {
+  if (adalightState != 0) { consumeAdalight(byte); return; }
   if (controlState != 0) {
     if (controlState == 1) { controlMessage = byte; controlBody[0] = byte; controlState = 2; return; }
     if (controlState == 2) {
@@ -311,17 +354,21 @@ void consume(uint8_t byte) {
     }
     return;
   }
-  if (controlPrefix != 0 || byte == 'A') {
-    const uint8_t prefix[] = {'A', 'L', '3'};
-    if (controlPrefix < 3 && byte == prefix[controlPrefix]) {
-      ++controlPrefix;
-      return;
-    }
-    if (controlPrefix == 3 && byte == '?') { controlPrefix = 0; sendHello(); return; }
-    if (controlPrefix == 3 && byte == '!') { controlPrefix = 0; controlState = 1; return; }
-    controlPrefix = byte == 'A' ? 1 : 0;
-    if (controlPrefix) return;
+  if (prefixLength == 1 && (byte == 'L' || byte == 'd')) {
+    prefixKind = byte;
+    prefixLength = 2;
+    return;
   }
+  if (prefixLength == 2 && prefixKind == 'L' && byte == '3') { prefixLength = 3; return; }
+  if (prefixLength == 2 && prefixKind == 'd' && byte == 'a') {
+    prefixLength = 0;
+    adalightState = 1;
+    return;
+  }
+  if (prefixLength == 3 && byte == '?') { prefixLength = 0; sendHello(); return; }
+  if (prefixLength == 3 && byte == '!') { prefixLength = 0; controlState = 1; return; }
+  prefixLength = byte == 'A' ? 1 : 0;
+  if (prefixLength) return;
   if (byte == 'l') legacyState = 1;
 }
 
