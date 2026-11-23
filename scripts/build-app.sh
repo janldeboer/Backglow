@@ -18,6 +18,9 @@ mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$product_dir/Backglow" "$app_dir/Contents/MacOS/"
 cp "$project_dir/Sources/Backglow/Shaders/ZoneAverage.metal" "$app_dir/Contents/Resources/"
 cp "$project_dir/AppBundle/Info.plist" "$app_dir/Contents/Info.plist"
+# Firmware images the app can install, built by scripts/build-firmware.sh.
+[[ -f "$project_dir/AppBundle/Firmware/manifest.json" ]] && \
+    cp -R "$project_dir/AppBundle/Firmware" "$app_dir/Contents/Resources/"
 # String Catalogs (German source, English translation) become de.lproj and en.lproj.
 for catalog in "$project_dir"/AppBundle/Localization/*.xcstrings; do
     xcrun xcstringstool compile "$catalog" --output-directory "$app_dir/Contents/Resources" \

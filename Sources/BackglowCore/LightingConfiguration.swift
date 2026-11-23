@@ -19,6 +19,8 @@ public struct LightingConfiguration: Codable, Equatable, Sendable {
     public var portPath: String?
     public var baudRate: Int = 230_400
     public var serialProtocol = SerialProtocol.automatic
+    /// The firmware image last chosen for installing, which fixes board and LED data pin.
+    public var firmwareImageID: String?
     public var calibration = ColorCalibration()
     public var ledCalibration = LEDCalibration()
     public var outputMode = OutputMode.screen
@@ -70,6 +72,7 @@ extension LightingConfiguration {
         baudRate = try values.decodeIfPresent(Int.self, forKey: .baudRate) ?? defaults.baudRate
         serialProtocol = (try? values.decodeIfPresent(SerialProtocol.self, forKey: .serialProtocol))
             .flatMap { $0 } ?? defaults.serialProtocol
+        firmwareImageID = try values.decodeIfPresent(String.self, forKey: .firmwareImageID)
         calibration = try values.decodeIfPresent(ColorCalibration.self, forKey: .calibration) ?? defaults.calibration
         ledCalibration = try values.decodeIfPresent(LEDCalibration.self, forKey: .ledCalibration)
             ?? defaults.ledCalibration

@@ -35,6 +35,7 @@ final class LightingModel: ObservableObject {
 
     let live = LiveState()
     let serial = SerialDevice()
+    let firmware = FirmwareInstaller()
     private let capture = ScreenCaptureEngine()
     private var smoother = SpringColorSmoother()
     private var antiFlicker = AntiFlickerFilter()
@@ -225,6 +226,27 @@ final class LightingModel: ObservableObject {
         suppressCurrentPairing()
         serial.disconnect()
         pendingControllerCheck = nil
+    }
+
+    /// Switches the lights off and frees the port for the firmware installer. Returns
+    /// whether the lights were on, so they can come back afterwards.
+    func prepareForFirmwareInstall() -> Bool {
+        let wasRunning = isRunning
+        stop()
+        disconnectController()
+        return wasRunning
+    }
+
+    /// Reconnects after an installation. With `resume`, a remembered pairing connects and
+    /// switches on as usual, otherwise the port is only opened.
+    func finishFirmwareInstall(path: String, resume: Bool) {
+        if resume, configuration.autoConnect, currentMatch()?.portPath == path {
+            suppressedPairing = nil
+            evaluateAutoConnect()
+            return
+        }
+        serial.connect(path: path, baudRate: configuration.baudRate)
+        if resume { start() }
     }
 
     /// Dark LEDs before the app quits, so they do not keep the last color.

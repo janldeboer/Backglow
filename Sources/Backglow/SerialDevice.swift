@@ -30,6 +30,8 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
     @Published private(set) var controllerID: String?
     /// What Backglow's firmware reported after its hello; empty for other firmware.
     @Published private(set) var controllerFeatures: ControllerFeatures = []
+    /// Reported by Backglow's firmware from 3.4 on; nil for older or other firmware.
+    @Published private(set) var controllerFirmwareVersion: FirmwareVersion?
     @Published private(set) var isSavingProfile = false
     /// The listed port that is open right now.
     @Published private(set) var connectedPort: SerialPortChoice?
@@ -174,6 +176,7 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         storedProfile = nil
         controllerID = nil
         controllerFeatures = []
+        controllerFirmwareVersion = nil
         currentRevision = 0
         expectedSave = nil
         expectedRevision = nil
@@ -281,6 +284,10 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         case .features:
             guard recognizedProtocol, let flags = frame.payload.first else { return }
             controllerFeatures = ControllerFeatures(rawValue: flags)
+            if frame.payload.count >= 4 {
+                controllerFirmwareVersion = FirmwareVersion(major: Int(frame.payload[1]), minor: Int(frame.payload[2]),
+                                                            patch: Int(frame.payload[3]))
+            }
         case .getProfile, .setProfile, .initializeStorage:
             break
         }
@@ -300,6 +307,9 @@ final class SerialDevice: NSObject, ObservableObject, ORSSerialPortDelegate {
         pendingLock.unlock()
         if shouldSchedule { queue.async { self.drain() } }
     }
+
+    /// Whether Backglow's AL3 protocol answered on the open port.
+    var speaksBackglowProtocol: Bool { recognizedProtocol }
 
     /// Waits until frames queued so far have been handed to the port, for example before quitting.
     func flush() {

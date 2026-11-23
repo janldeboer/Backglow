@@ -8,6 +8,8 @@ What changed in each Backglow version, newest first. The release notes for each 
 
 - Adalight: Backglow can send colors in the Adalight format, which WLED, HyperHDR's HyperSerial and many Arduino sketches understand. Choose it under **Gerät → Protokoll**. The default, **Automatisch**, uses Adalight with Backglow's firmware from this version and the older `led`/`les` stream otherwise. Adalight needs less than half the bytes per LED, so the output rate can roughly double at the same baud rate.
 - The firmware accepts Adalight frames next to `led`/`les` and reports this to the app.
+- Firmware installation in the app: **Gerät → Firmware** writes the firmware that ships with Backglow to an ESP32 or ESP8266 over USB, with a choice of the LED data pin (the board's default or GPIO2 as in the original sketch). The chip is checked before anything is written, ESP32 images are verified afterwards, and a profile on the controller is kept. No Python, PlatformIO or esptool needed.
+- The firmware reports its version, shown next to the version in the app.
 
 ## 3.3.0 – 2026-11-21
 

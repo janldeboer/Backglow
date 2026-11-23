@@ -86,9 +86,11 @@ The serial library is ORSSerialPort **2.1.0**, the latest upstream release check
 The new ESP32/ESP8266 firmware is in [Firmware/BackglowController](Firmware/BackglowController/README.md).
 It stores a versioned profile in ESP32 NVS or ESP8266 LittleFS, accepts Adalight
 frames and continues to accept the `led`/`les` color stream. The legacy sketch does not store profiles.
-Build and board setup are described in the firmware README. Guarded in-app
-flashing remains planned in
-[Controller-Onboarding.md](docs/Controller-Onboarding.md); the app does not flash devices.
+Build and board setup are described in the firmware README. The app installs the
+bundled firmware under **Gerät → Firmware**: choose the board and the LED data pin,
+confirm, and it resets the controller into the ESP ROM loader, checks the chip before
+writing, writes and verifies the images and reconnects. Details are in
+[Controller-Onboarding.md](docs/Controller-Onboarding.md).
 
 ## Code map
 

@@ -1,6 +1,6 @@
 # Controller-Erkennung, Firmware und portable LED-Profile
 
-Stand: 13.10.2026 · Profilfunktion und gemerkte Monitor-Controller-Paare implementiert, Flasher weiterhin Entwurf
+Stand: 23.11.2026 · Profilfunktion, gemerkte Monitor-Controller-Paare und Firmware-Installation in der App implementiert; Installation an echter Hardware noch nicht geprüft
 
 ## Ausgangspunkt
 
@@ -40,7 +40,17 @@ Das Profil gilt für **einen LED-Aufbau pro Controller**. Seit 3.2 kann die App 
 
 **PlatformIO ist für den Build geeignet.** Beide Plattformen unterstützen das Arduino-Framework; FastLED unterstützt ESP32 und ESP8266. Der vorhandene Sketch kann als Ausgangspunkt für gemeinsames C++ dienen. `FastLED.addLeds`, `Serial` und das alte Farbprotokoll bleiben erhalten. Board-spezifisch werden LED-Pin, Boot-Verhalten, Speicheradapter und gegebenenfalls FastLED-Ausgabetreiber. Als erste getestete Umgebungen genügen ein konkretes ESP32-DevKit und ein konkretes ESP8266-Board; weitere ESP32-S2/S3/C3-Varianten erhalten eigene Images, sobald reale Boards geprüft sind.
 
-PlatformIO soll **Firmware beim Entwickeln bauen**, aber ein Anwender braucht es nicht parallel zur App zu installieren. Ein Release enthält vorgebaute Images samt Manifest, Hash, unterstützten Chipfamilien, Flash-Layout und Firmware-Protokollversion. Die App nutzt zum Flashen einen mitgelieferten, signierten `esptool`-Helper und ruft ihn mit festem Port und passenden Image-Adressen auf. Die genaue Packaging-Lösung für Python/esptool muss beim Release-Build und bei der macOS-Signierung geprüft werden. Ein beliebiges `.bin` aus dem Dateidialog erhält keinen Ein-Klick-Flash-Pfad.
+PlatformIO soll **Firmware beim Entwickeln bauen**, aber ein Anwender braucht es nicht parallel zur App zu installieren. Ein Release enthält vorgebaute Images samt Manifest, Hash, unterstützten Chipfamilien, Flash-Layout und Firmware-Protokollversion. Ein beliebiges `.bin` aus dem Dateidialog erhält keinen Ein-Klick-Flash-Pfad.
+
+**Umgesetzt (23.11.2026):** Statt eines mitgelieferten `esptool` mit Python spricht die App das Protokoll des ROM-Loaders selbst (`Sources/BackglowCore/ESPLoader.swift`, nach dem Vorbild von esptool ohne Stub). `scripts/build-firmware.sh` baut die Images mit PlatformIO und legt sie mit `manifest.json` (Version, Chip, Board, Daten-Pin, Offset und SHA-256 je Datei) unter `AppBundle/Firmware`; `build-app.sh` kopiert sie in die App. Ablauf unter **Gerät → Firmware**:
+
+1. Board und Daten-Pin wählen. Es gibt je Board ein Image mit dem Standard-Pin und eines mit GPIO2 wie im ursprünglichen Sketch; der Pin ist zur Build-Zeit fest.
+2. Nach der Bestätigung (Port, Board, Pin, Version) schaltet die App das Licht aus, schließt den Port, prüft die USB-Kennung erneut und prüft die Hashes aller Dateien.
+3. Reset in den ROM-Loader über DTR/RTS (beide Leitungen gleichzeitig, wie esptools „tight reset“), Synchronisation, Chip-Erkennung über das Register 0x40001000. Passt der Chip nicht zum Image, bricht sie ab, bevor etwas gelöscht oder geschrieben wird.
+4. ESP32: Bootloader (0x1000), Partitionstabelle (0x8000), `boot_app0` (0xE000) und App (0x10000) in 1-KiB-Blöcken; danach MD5-Vergleich je Bereich. ESP8266: `firmware.bin` ab 0x0 mit esptools Korrektur der Löschgröße; der ROM-Loader kann kein MD5, nur die Prüfsumme je Block.
+5. Kein `flash end` (der ROM-Loader würde sofort den alten Code starten), sondern Reset über RTS. Die App verbindet sich wieder, wartet auf Version 3.4 im `features`-Frame und schreibt ein vorher vorhandenes Profil zurück, falls es fehlt. NVS und LittleFS liegen außerhalb der beschriebenen Bereiche und bleiben erhalten.
+
+Der Download-Modus im ROM lässt sich nicht überschreiben; eine abgebrochene Installation kann jederzeit wiederholt werden. Antwortet der Loader nicht, hilft die BOOT-Taste beim Start. Der ESP8266-Build braucht auf Apple-Silicon-Macs Rosetta, weil die Xtensa-Toolchain nur für Intel vorliegt.
 
 Ein Firmware-Update darf die Profil-Partition nicht absichtlich löschen. Vor dem Flash wird ein vorhandenes Profil in der App gesichert; nach dem Update wird es per Handshake geprüft und bei Bedarf wiederhergestellt. Auf ESP8266 muss das gewählte Flash-/Dateisystem-Layout stabil bleiben, da ein Layoutwechsel gespeicherte Daten gefährden kann.
 

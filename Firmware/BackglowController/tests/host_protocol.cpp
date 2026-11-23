@@ -17,14 +17,17 @@ void command(uint8_t type, const uint8_t *payload = nullptr, uint8_t length = 0)
 int main() {
   setup();
   assert(!hasProfile && storageReady && outputLEDs == 70);
-  // Hello (16 bytes) is followed by the features frame (9 bytes) announcing Adalight.
-  assert(Serial.output.size() == 25);
+  // Hello (16 bytes) is followed by the features frame (12 bytes): Adalight and version.
+  assert(Serial.output.size() == 28);
   assert(std::equal(kMagic, kMagic + 4, Serial.output.begin()));
   assert(Serial.output[4] == kHello && Serial.output[5] == 8);
   assert(std::equal(kMagic, kMagic + 4, Serial.output.begin() + 16));
-  assert(Serial.output[20] == kFeatures && Serial.output[21] == 1);
+  assert(Serial.output[20] == kFeatures && Serial.output[21] == 4);
   assert(Serial.output[22] == kFeatureAdalight);
-  assert(read16(Serial.output.data() + 23) == crc16(Serial.output.data() + 20, 3));
+  assert(Serial.output[23] == BACKGLOW_FIRMWARE_VERSION_MAJOR &&
+         Serial.output[24] == BACKGLOW_FIRMWARE_VERSION_MINOR &&
+         Serial.output[25] == BACKGLOW_FIRMWARE_VERSION_PATCH);
+  assert(read16(Serial.output.data() + 26) == crc16(Serial.output.data() + 20, 6));
   Serial.output.clear();
 
   command(kGetProfile);
@@ -73,7 +76,7 @@ int main() {
   assert(leds[1].r == 0 && leds[1].g == 0 && leds[1].b == 0);
   Serial.output.clear();
   for (uint8_t byte : {'A', 'L', '3', '?'}) consume(byte);
-  assert(Serial.output.size() == 25 && Serial.output[4] == kHello);
+  assert(Serial.output.size() == 28 && Serial.output[4] == kHello);
   Serial.output.clear();
 
   // Adalight: two LEDs set, the rest of the strip switched off, one show per frame.
@@ -95,7 +98,7 @@ int main() {
 
   // A probe right after a frame is answered; a bad checksum drops the header.
   for (uint8_t byte : {'A', 'L', '3', '?'}) consume(byte);
-  assert(Serial.output.size() == 25);
+  assert(Serial.output.size() == 28);
   Serial.output.clear();
   const uint8_t broken[] = {'A', 'd', 'a', 0, 1, 0x00, 1, 2, 3};
   shown = FastLED.shown;

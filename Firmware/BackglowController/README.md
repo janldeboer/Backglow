@@ -21,8 +21,11 @@ clang++ -std=c++17 -DESP32 -DLED_DATA_PIN=18 -I tests/stubs \
   tests/host_protocol.cpp -o /tmp/backglow-protocol && /tmp/backglow-protocol
 ```
 
-No upload command is configured here. The host app does not flash a controller
-in this step.
+The app installs these images itself under **Gerät → Firmware**. To build the images
+it ships, run `./scripts/build-firmware.sh` from the repository root; it writes them
+with `manifest.json` to `AppBundle/Firmware`. `esp32dev_gpio2` and `nodemcuv2_gpio2`
+are the same firmware with the LED data line on GPIO2, as in the original sketch.
+The version in `src/version.h` is reported to the app in the features frame.
 
 ## Profile behavior
 
@@ -60,8 +63,8 @@ FALSE (polynomial 0x1021, initial 0xFFFF) over message type, length and payload.
 The probe `AL3?` is the only unframed command. Message types are: hello 1,
 get profile 2, profile 3, set profile 4, saved 5, error 6, no profile 7,
 initialize storage 8, features 9. The firmware sends a features frame right after
-every hello. Its one-byte payload holds flags; bit 0 means the firmware accepts
-Adalight frames. Apps up to 3.3 ignore message types they do not know. Initialization is only available after a valid hello from
+every hello. Its payload holds one byte of flags (bit 0: the firmware accepts
+Adalight frames) and the firmware version as major, minor and patch bytes. Apps up to 3.3 ignore message types they do not know. Initialization is only available after a valid hello from
 the selected controller.
 
 The 24-byte profile is: schema version (1), physical LED count (u16), active LED

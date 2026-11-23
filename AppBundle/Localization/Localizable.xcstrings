@@ -1,6 +1,26 @@
 {
   "sourceLanguage": "de",
   "strings": {
+    "%@ beschrieben und neu gestartet. Warte auf die neue Firmware…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ written and restarted. Waiting for the new firmware…"
+          }
+        }
+      }
+    },
+    "%@ erkannt": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ detected"
+          }
+        }
+      }
+    },
     "%lld": {
       "localizations": {
         "en": {
@@ -161,6 +181,22 @@
         }
       }
     },
+    "Am Anschluss hängt ein %@, die gewählte Firmware ist für %@. Nichts wurde geschrieben.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Am Anschluss hängt ein %1$@, die gewählte Firmware ist für %2$@. Nichts wurde geschrieben."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The port has an %1$@ attached, but the chosen firmware is for %2$@. Nothing was written."
+          }
+        }
+      }
+    },
     "Analyse": {
       "localizations": {
         "en": {
@@ -257,6 +293,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Saved to controller and verified · revision %lld"
+          }
+        }
+      }
+    },
+    "Auf dem Controller": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the controller"
           }
         }
       }
@@ -367,6 +413,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Open Backglow…"
+          }
+        }
+      }
+    },
+    "Backglow-Firmware vor 3.4": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Backglow firmware before 3.4"
           }
         }
       }
@@ -541,12 +597,32 @@
         }
       }
     },
+    "Bitte wählen": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Please choose"
+          }
+        }
+      }
+    },
     "Blau": {
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
             "value": "Blue"
+          }
+        }
+      }
+    },
+    "Board und Daten-Pin": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Board and data pin"
           }
         }
       }
@@ -701,6 +777,36 @@
         }
       }
     },
+    "Der Anschluss hat sich verändert. Wähle ihn erneut aus.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The port has changed. Select it again."
+          }
+        }
+      }
+    },
+    "Der Bootloader antwortet nicht. Halte die BOOT-Taste am Board gedrückt, starte die Installation erneut und lass die Taste los, sobald „Bereich 1“ erscheint.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The bootloader does not answer. Hold the BOOT button on the board, start the installation again and release the button once “area 1” appears."
+          }
+        }
+      }
+    },
+    "Der Bootloader hat das Schreiben abgebrochen. Installiere die Firmware erneut; der Download-Modus im ROM des Chips ist davon nicht betroffen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The bootloader stopped the write. Install the firmware again; the download mode in the chip’s ROM is not affected."
+          }
+        }
+      }
+    },
     "Der Dateisystembereich des verbundenen ESP8266 wird formatiert. Vorhandene Dateien gehen verloren.": {
       "localizations": {
         "en": {
@@ -721,6 +827,26 @@
         }
       }
     },
+    "Die Firmware-Datei %@ in der App ist beschädigt. Nichts wurde geschrieben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The firmware file %@ in the app is damaged. Nothing was written."
+          }
+        }
+      }
+    },
+    "Die Prüfung nach dem Schreiben ist fehlgeschlagen. Installiere die Firmware erneut; der Download-Modus im ROM des Chips ist davon nicht betroffen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The check after writing failed. Install the firmware again; the download mode in the chip’s ROM is not affected."
+          }
+        }
+      }
+    },
     "Die Vorschau zeigt die erkannten Kacheln und die berechneten Ausgabefarben.": {
       "localizations": {
         "en": {
@@ -737,6 +863,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "The numbers follow the output order sent to the controller. Changes apply live."
+          }
+        }
+      }
+    },
+    "Dieser Build enthält keine Firmware. Sie wird mit scripts/build-firmware.sh erzeugt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build contains no firmware. It is created with scripts/build-firmware.sh."
           }
         }
       }
@@ -861,6 +997,82 @@
         }
       }
     },
+    "Firmware": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware"
+          }
+        }
+      }
+    },
+    "Firmware %@ für %@, LED-Daten an GPIO%lld, über %@ (%@). Das Licht geht aus, der Controller startet in den Bootloader. Ist dort ein anderer Chip, bricht die Installation ab, bevor etwas geschrieben wird. Ein Profil auf dem Controller bleibt erhalten.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Firmware %1$@ für %2$@, LED-Daten an GPIO%3$lld, über %4$@ (%5$@). Das Licht geht aus, der Controller startet in den Bootloader. Ist dort ein anderer Chip, bricht die Installation ab, bevor etwas geschrieben wird. Ein Profil auf dem Controller bleibt erhalten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %1$@ for %2$@, LED data on GPIO%3$lld, via %4$@ (%5$@). The lights go off and the controller starts its bootloader. If a different chip answers, the installation stops before anything is written. A profile on the controller is kept."
+          }
+        }
+      }
+    },
+    "Firmware %@ installiert und vom Controller gemeldet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %@ installed and reported by the controller."
+          }
+        }
+      }
+    },
+    "Firmware %@ installiert. Das vorherige Profil ist wiederhergestellt.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %@ installed. The previous profile has been restored."
+          }
+        }
+      }
+    },
+    "Firmware %@ läuft. Stelle das vorherige Profil wieder her…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %@ is running. Restoring the previous profile…"
+          }
+        }
+      }
+    },
+    "Firmware installieren?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install firmware?"
+          }
+        }
+      }
+    },
+    "Firmware installieren…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install Firmware…"
+          }
+        }
+      }
+    },
     "Gamma": {
       "localizations": {
         "en": {
@@ -927,6 +1139,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Device ID"
+          }
+        }
+      }
+    },
+    "Geschrieben, aber der Controller meldet keine Firmware %@. Stimmen Board und Anschluss? Verbinde ihn erneut oder setze ihn zurück.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Written, but the controller does not report firmware %@. Are the board and port right? Connect it again or reset it."
           }
         }
       }
@@ -1027,6 +1249,36 @@
         }
       }
     },
+    "In der App": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the app"
+          }
+        }
+      }
+    },
+    "Installation fehlgeschlagen: %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installation failed: %@"
+          }
+        }
+      }
+    },
+    "Installieren": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install"
+          }
+        }
+      }
+    },
     "Interne Auflösung": {
       "localizations": {
         "en": {
@@ -1103,6 +1355,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "No response from controller storage"
+          }
+        }
+      }
+    },
+    "Keine Backglow-Firmware erkannt (alter Sketch oder andere Firmware)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Backglow firmware detected (original sketch or other firmware)"
           }
         }
       }
@@ -1253,6 +1515,22 @@
         }
       }
     },
+    "Lösche Bereich %lld von %lld…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Lösche Bereich %1$lld von %2$lld…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erasing area %1$lld of %2$lld…"
+          }
+        }
+      }
+    },
     "Magenta": {
       "localizations": {
         "en": {
@@ -1289,6 +1567,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Neutral"
+          }
+        }
+      }
+    },
+    "Nicht verbunden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not connected"
           }
         }
       }
@@ -1423,6 +1711,22 @@
         }
       }
     },
+    "Prüfe Bereich %lld von %lld…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Prüfe Bereich %1$lld von %2$lld…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking area %1$lld of %2$lld…"
+          }
+        }
+      }
+    },
     "Prüfe Controller-Protokoll…": {
       "localizations": {
         "en": {
@@ -1513,6 +1817,22 @@
         }
       }
     },
+    "Schreibe Bereich %lld von %lld…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "new",
+            "value": "Schreibe Bereich %1$lld von %2$lld…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing area %1$lld of %2$lld…"
+          }
+        }
+      }
+    },
     "Schreibe Profil auf den Controller…": {
       "localizations": {
         "en": {
@@ -1589,6 +1909,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Startup"
+          }
+        }
+      }
+    },
+    "Starte den Bootloader…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting the bootloader…"
+          }
+        }
+      }
+    },
+    "Starte den Controller neu…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restarting the controller…"
           }
         }
       }
@@ -1683,6 +2023,16 @@
         }
       }
     },
+    "Trenne die Verbindung zum Controller…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disconnecting from the controller…"
+          }
+        }
+      }
+    },
     "Trennen": {
       "localizations": {
         "en": {
@@ -1709,6 +2059,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Select a USB controller or refresh ports"
+          }
+        }
+      }
+    },
+    "Unbekannter Chip (Kennung %@). Nur ESP32 und ESP8266 werden unterstützt. Nichts wurde geschrieben.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown chip (ID %@). Only ESP32 and ESP8266 are supported. Nothing was written."
           }
         }
       }
@@ -1849,6 +2209,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose the display and frame rate."
+          }
+        }
+      }
+    },
+    "Wähle den Pin, an dem die Datenleitung des LED-Streifens hängt; der ursprüngliche Sketch nutzt Pin 2. Installiert wird über den oben gewählten Anschluss. Beim ESP32 prüft die App jeden Bereich nach dem Schreiben. Der Download-Modus im ROM des Chips lässt sich nicht überschreiben, eine abgebrochene Installation lässt sich daher jederzeit wiederholen.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose the pin the LED strip’s data line is connected to; the original sketch uses pin 2. The firmware is installed through the port selected above. On an ESP32 the app checks every area after writing. The download mode in the chip’s ROM cannot be overwritten, so an interrupted installation can always be repeated."
           }
         }
       }

@@ -1,0 +1,61 @@
+{
+  "version": "3.4.0",
+  "images": [
+    {
+      "id": "esp32dev",
+      "chip": "esp32",
+      "board": "ESP32 Dev Module",
+      "dataPin": 18,
+      "parts": [
+        {
+          "offset": 4096,
+          "file": "esp32dev/bootloader.bin",
+          "sha256": "3d234a7471f67b013686dabd4dee7c1fa915c9928463616a94bc9297acf1abf8"
+        },
+        {
+          "offset": 32768,
+          "file": "esp32dev/partitions.bin",
+          "sha256": "148b959cbff1c38aa8e1d5c0ba9d612c54997b945e56a63f41223eef650653a1"
+        },
+        {
+          "offset": 57344,
+          "file": "esp32dev/boot_app0.bin",
+          "sha256": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0"
+        },
+        {
+          "offset": 65536,
+          "file": "esp32dev/firmware.bin",
+          "sha256": "55a7c8dcfb16e032eb560fb0a7cfe6196ff1447d6e1031a9846c27d69d4ca38c"
+        }
+      ]
+    },
+    {
+      "id": "esp32dev_gpio2",
+      "chip": "esp32",
+      "board": "ESP32 Dev Module",
+      "dataPin": 2,
+      "parts": [
+        {
+          "offset": 4096,
+          "file": "esp32dev_gpio2/bootloader.bin",
+          "sha256": "3d234a7471f67b013686dabd4dee7c1fa915c9928463616a94bc9297acf1abf8"
+        },
+        {
+          "offset": 32768,
+          "file": "esp32dev_gpio2/partitions.bin",
+          "sha256": "148b959cbff1c38aa8e1d5c0ba9d612c54997b945e56a63f41223eef650653a1"
+        },
+        {
+          "offset": 57344,
+          "file": "esp32dev_gpio2/boot_app0.bin",
+          "sha256": "f94c5d786a7a8fab06ac5d10e33bf37711a6697636dc037559ea19cc410a17f0"
+        },
+        {
+          "offset": 65536,
+          "file": "esp32dev_gpio2/firmware.bin",
+          "sha256": "743c3bb13da250924644c6347fbf77ac16375a2e94195b2669bb5b782afd0fc5"
+        }
+      ]
+    }
+  ]
+}

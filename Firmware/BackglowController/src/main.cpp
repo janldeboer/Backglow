@@ -2,6 +2,8 @@
 #include <FastLED.h>
 #include <string.h>
 
+#include "version.h"
+
 #if defined(ESP32)
 #include <Preferences.h>
 #elif defined(ESP8266)
@@ -203,8 +205,9 @@ void sendHello() {
   write32(payload + 4, ESP.getChipId());
 #endif
   sendFrame(kHello, payload, sizeof(payload));
-  const uint8_t features = kFeatureAdalight;
-  sendFrame(kFeatures, &features, 1);
+  const uint8_t features[] = {kFeatureAdalight, BACKGLOW_FIRMWARE_VERSION_MAJOR,
+                              BACKGLOW_FIRMWARE_VERSION_MINOR, BACKGLOW_FIRMWARE_VERSION_PATCH};
+  sendFrame(kFeatures, features, sizeof(features));
 }
 
 void handleCommand(uint8_t message, const uint8_t *payload, uint8_t length) {

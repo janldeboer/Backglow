@@ -102,8 +102,9 @@ public enum ControllerMessage: UInt8, Sendable {
     case error = 6
     case noProfile = 7
     case initializeStorage = 8
-    /// Sent by the firmware right after each hello. Payload: one byte of flags,
-    /// bit 0 = the firmware accepts Adalight frames. Older apps ignore it.
+    /// Sent by the firmware right after each hello. Payload: one byte of flags
+    /// (bit 0 = the firmware accepts Adalight frames), then the firmware version as
+    /// major, minor and patch bytes. Older apps ignore it.
     case features = 9
 }
 

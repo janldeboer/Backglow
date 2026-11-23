@@ -10,7 +10,7 @@ struct BackglowApp: App {
 
     var body: some Scene {
         Window(Text(verbatim: "Backglow"), id: Self.mainWindowID) {
-            MainWindow(model: model, serial: model.serial)
+            MainWindow(model: model, serial: model.serial, firmware: model.firmware)
                 .frame(minWidth: 980, minHeight: 650)
         }
         .defaultSize(width: 1160, height: 760)
@@ -87,10 +87,12 @@ private enum Page: CaseIterable, Identifiable {
 private struct MainWindow: View {
     @ObservedObject var model: LightingModel
     @ObservedObject var serial: SerialDevice
+    @ObservedObject var firmware: FirmwareInstaller
     @StateObject private var loginItem = LoginItem()
     @Environment(\.openWindow) private var openWindow
     @State private var selection: Page? = .dashboard
     @State private var showsStorageInitializationConfirmation = false
+    @State private var showsFirmwareConfirmation = false
 
     var body: some View {
         NavigationSplitView {
@@ -517,6 +519,7 @@ private struct MainWindow: View {
                 Text("Beim Verbinden werden gespeicherte LED-Anordnung und Farbwerte automatisch geladen. Änderungen bleiben zunächst lokal. Speichern schreibt sie ausdrücklich auf den Controller und prüft sie durch erneutes Lesen. Bildschirmwahl, Bildrate und serieller Anschluss bleiben auf diesem Mac.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            firmwareCard
         }
     }
 
@@ -609,6 +612,73 @@ private struct MainWindow: View {
                 Text("Berechtigung für Bildschirmaufnahme")
                     .font(.headline)
                 Text("macOS fordert die Freigabe beim ersten Start der Live-Aufnahme an. Falls kein Bild erscheint, erlaube Backglow unter Datenschutz & Sicherheit → Bildschirmaufnahme und starte die App neu.")
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var firmwarePort: SerialPortChoice? {
+        serial.ports.first { $0.id == model.configuration.portPath }
+    }
+
+    private var controllerFirmwareText: String {
+        if let version = serial.controllerFirmwareVersion { return version.description }
+        guard serial.isConnected else { return String(localized: "Nicht verbunden") }
+        if serial.speaksBackglowProtocol { return String(localized: "Backglow-Firmware vor 3.4") }
+        return String(localized: "Keine Backglow-Firmware erkannt (alter Sketch oder andere Firmware)")
+    }
+
+    private var firmwareCard: some View {
+        SurfaceCard {
+            Label("Firmware", systemImage: "arrow.down.circle")
+                .font(.headline)
+            if let manifest = firmware.manifest {
+                LabeledContent("In der App", value: manifest.version.description)
+                LabeledContent("Auf dem Controller", value: controllerFirmwareText)
+                Picker("Board und Daten-Pin", selection: configBinding(\.firmwareImageID)) {
+                    Text("Bitte wählen").tag(Optional<String>.none)
+                    ForEach(manifest.images) { image in
+                        Text(verbatim: "\(image.board) · GPIO\(image.dataPin)").tag(Optional(image.id))
+                    }
+                }
+                .disabled(firmware.isWorking)
+                HStack {
+                    Button("Firmware installieren…") { showsFirmwareConfirmation = true }
+                        .buttonStyle(.borderedProminent)
+                        .disabled(firmware.isWorking || firmwarePort == nil ||
+                                  firmware.image(id: model.configuration.firmwareImageID) == nil)
+                    if firmware.isWorking {
+                        if let progress = firmware.progress {
+                            ProgressView(value: progress).frame(maxWidth: 200)
+                        } else {
+                            ProgressView().controlSize(.small)
+                        }
+                    }
+                    Spacer()
+                }
+                .confirmationDialog("Firmware installieren?", isPresented: $showsFirmwareConfirmation,
+                                    titleVisibility: .visible) {
+                    if let image = firmware.image(id: model.configuration.firmwareImageID),
+                       let port = firmwarePort {
+                        Button("Installieren") { firmware.install(image, on: port, model: model) }
+                    }
+                    Button("Abbrechen", role: .cancel) {}
+                } message: {
+                    if let image = firmware.image(id: model.configuration.firmwareImageID),
+                       let port = firmwarePort {
+                        Text("Firmware \(manifest.version.description) für \(image.board), LED-Daten an GPIO\(image.dataPin), über \(port.name) (\(port.id)). Das Licht geht aus, der Controller startet in den Bootloader. Ist dort ein anderer Chip, bricht die Installation ab, bevor etwas geschrieben wird. Ein Profil auf dem Controller bleibt erhalten.")
+                    }
+                }
+                if let message = firmware.message {
+                    Label(message, systemImage: firmware.phase == .failed ? "exclamationmark.triangle.fill"
+                          : firmware.phase == .succeeded ? "checkmark.circle.fill" : "hourglass")
+                        .foregroundStyle(firmware.phase == .failed ? .orange
+                                         : firmware.phase == .succeeded ? .green : .secondary)
+                }
+                Text("Wähle den Pin, an dem die Datenleitung des LED-Streifens hängt; der ursprüngliche Sketch nutzt Pin 2. Installiert wird über den oben gewählten Anschluss. Beim ESP32 prüft die App jeden Bereich nach dem Schreiben. Der Download-Modus im ROM des Chips lässt sich nicht überschreiben, eine abgebrochene Installation lässt sich daher jederzeit wiederholen.")
+                    .font(.caption).foregroundStyle(.secondary)
+            } else {
+                Text("Dieser Build enthält keine Firmware. Sie wird mit scripts/build-firmware.sh erzeugt.")
                     .foregroundStyle(.secondary)
             }
         }
