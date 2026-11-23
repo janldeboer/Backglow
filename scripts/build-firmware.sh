@@ -8,18 +8,35 @@ set -euo pipefail
 #   ./scripts/build-firmware.sh esp32dev esp32dev_gpio2
 #
 # Uses `pio` when installed, otherwise `uvx platformio`. The ESP8266 toolchain is built
-# for Intel Macs and needs Rosetta on Apple silicon.
+# for Intel Macs and needs Rosetta on Apple silicon. Without Rosetta, build on a Linux
+# host over SSH instead; PlatformIO is set up there on first use under /opt/backglow-firmware:
+#
+#   BACKGLOW_BUILD_HOST=lab ./scripts/build-firmware.sh
 project_dir="${0:A:h:h}"
 firmware_dir="$project_dir/Firmware/BackglowController"
 output_dir="$project_dir/AppBundle/Firmware"
 envs=("$@")
 (( ${#envs} )) || envs=(esp32dev esp32dev_gpio2 nodemcuv2 nodemcuv2_gpio2)
 
-if command -v pio >/dev/null; then pio=(pio); else pio=(uvx platformio); fi
 cd "$firmware_dir"
-for env in $envs; do "${pio[@]}" run -e "$env"; done
+build_host="${BACKGLOW_BUILD_HOST:-}"
+if [[ -n $build_host ]]; then
+    remote=/opt/backglow-firmware
+    ssh "$build_host" "test -x $remote/venv/bin/pio || { mkdir -p $remote && python3 -m venv $remote/venv && $remote/venv/bin/pip install -q platformio; }"
+    rsync -a --delete --exclude .pio "$firmware_dir/" "$build_host:$remote/project/"
+    ssh "$build_host" "cd $remote/project && export PLATFORMIO_CORE_DIR=$remote/core && for env in ${envs[*]}; do $remote/venv/bin/pio run -e \$env || exit 1; done"
+    build_root="$(mktemp -d)"
+    trap 'rm -rf "$build_root"' EXIT
+    rsync -a --include '*/' --include '*.bin' --exclude '*' "$build_host:$remote/project/.pio/build/" "$build_root/"
+    rsync -a "$build_host:$remote/core/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin" "$build_root/" 2>/dev/null || true
+    boot_app0="$build_root/boot_app0.bin"
+else
+    if command -v pio >/dev/null; then pio=(pio); else pio=(uvx platformio); fi
+    for env in $envs; do "${pio[@]}" run -e "$env"; done
+    build_root=".pio/build"
+    boot_app0="${PLATFORMIO_CORE_DIR:-$HOME/.platformio}/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin"
+fi
 
-core_dir="${PLATFORMIO_CORE_DIR:-$HOME/.platformio}"
 version="$(for part in MAJOR MINOR PATCH; do
     sed -n "s/^#define BACKGLOW_FIRMWARE_VERSION_$part //p" src/version.h
 done | paste -sd. -)"
@@ -27,12 +44,12 @@ done | paste -sd. -)"
 rm -rf "$output_dir"
 mkdir -p "$output_dir"
 for env in $envs; do
-    build=".pio/build/$env"
+    build="$build_root/$env"
     mkdir -p "$output_dir/$env"
     case "$env" in
         esp32dev*)
             cp "$build/bootloader.bin" "$build/partitions.bin" "$build/firmware.bin" "$output_dir/$env/"
-            cp "$core_dir/packages/framework-arduinoespressif32/tools/partitions/boot_app0.bin" "$output_dir/$env/"
+            cp "$boot_app0" "$output_dir/$env/"
             ;;
         nodemcuv2*)
             cp "$build/firmware.bin" "$output_dir/$env/"

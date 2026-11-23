@@ -27,6 +27,14 @@ with `manifest.json` to `AppBundle/Firmware`. `esp32dev_gpio2` and `nodemcuv2_gp
 are the same firmware with the LED data line on GPIO2, as in the original sketch.
 The version in `src/version.h` is reported to the app in the features frame.
 
+PlatformIO's ESP8266 toolchain is built for Intel Macs only and needs Rosetta on
+Apple silicon. Without Rosetta, build on a Linux host over SSH: PlatformIO is set up
+there under `/opt/backglow-firmware` on first use and the images are copied back.
+
+```sh
+BACKGLOW_BUILD_HOST=lab ./scripts/build-firmware.sh
+```
+
 ## Profile behavior
 
 - When the app connects, it sends `AL3?`. The new firmware replies with protocol

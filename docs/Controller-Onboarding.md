@@ -50,7 +50,7 @@ PlatformIO soll **Firmware beim Entwickeln bauen**, aber ein Anwender braucht es
 4. ESP32: Bootloader (0x1000), Partitionstabelle (0x8000), `boot_app0` (0xE000) und App (0x10000) in 1-KiB-Blöcken; danach MD5-Vergleich je Bereich. ESP8266: `firmware.bin` ab 0x0 mit esptools Korrektur der Löschgröße; der ROM-Loader kann kein MD5, nur die Prüfsumme je Block.
 5. Kein `flash end` (der ROM-Loader würde sofort den alten Code starten), sondern Reset über RTS. Die App verbindet sich wieder, wartet auf Version 3.4 im `features`-Frame und schreibt ein vorher vorhandenes Profil zurück, falls es fehlt. NVS und LittleFS liegen außerhalb der beschriebenen Bereiche und bleiben erhalten.
 
-Der Download-Modus im ROM lässt sich nicht überschreiben; eine abgebrochene Installation kann jederzeit wiederholt werden. Antwortet der Loader nicht, hilft die BOOT-Taste beim Start. Der ESP8266-Build braucht auf Apple-Silicon-Macs Rosetta, weil die Xtensa-Toolchain nur für Intel vorliegt.
+Der Download-Modus im ROM lässt sich nicht überschreiben; eine abgebrochene Installation kann jederzeit wiederholt werden. Antwortet der Loader nicht, hilft die BOOT-Taste beim Start. Die ESP8266-Toolchain von PlatformIO gibt es für macOS nur für Intel. Ohne Rosetta baut `BACKGLOW_BUILD_HOST=lab ./scripts/build-firmware.sh` alle Images auf dem Linux-Server `lab` und holt sie zurück (seit 23.11.2026 so gebaut).
 
 Ein Firmware-Update darf die Profil-Partition nicht absichtlich löschen. Vor dem Flash wird ein vorhandenes Profil in der App gesichert; nach dem Update wird es per Handshake geprüft und bei Bedarf wiederhergestellt. Auf ESP8266 muss das gewählte Flash-/Dateisystem-Layout stabil bleiben, da ein Layoutwechsel gespeicherte Daten gefährden kann.
 

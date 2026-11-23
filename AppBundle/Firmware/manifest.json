@@ -25,7 +25,7 @@
         {
           "offset": 65536,
           "file": "esp32dev/firmware.bin",
-          "sha256": "55a7c8dcfb16e032eb560fb0a7cfe6196ff1447d6e1031a9846c27d69d4ca38c"
+          "sha256": "d6c2f79cc8722d5d13f82efabe512c1b0f8e849c5619ebf16f5814bb1c681609"
         }
       ]
     },
@@ -53,7 +53,33 @@
         {
           "offset": 65536,
           "file": "esp32dev_gpio2/firmware.bin",
-          "sha256": "743c3bb13da250924644c6347fbf77ac16375a2e94195b2669bb5b782afd0fc5"
+          "sha256": "b1c1da557e2ef0fcc17878d3c077112a96ddf7bc013725880cdafb52784be806"
+        }
+      ]
+    },
+    {
+      "id": "nodemcuv2",
+      "chip": "esp8266",
+      "board": "NodeMCU ESP8266",
+      "dataPin": 5,
+      "parts": [
+        {
+          "offset": 0,
+          "file": "nodemcuv2/firmware.bin",
+          "sha256": "0cfadbede2dda3e2832ef2821740e871daf5cceee9e1d8836b5b036f6a1cf0dc"
+        }
+      ]
+    },
+    {
+      "id": "nodemcuv2_gpio2",
+      "chip": "esp8266",
+      "board": "NodeMCU ESP8266",
+      "dataPin": 2,
+      "parts": [
+        {
+          "offset": 0,
+          "file": "nodemcuv2_gpio2/firmware.bin",
+          "sha256": "f842036bc6918cda4309bbea8cd86df08bfb8e8e4f5f6a143a3b92a6fc060287"
         }
       ]
     }
