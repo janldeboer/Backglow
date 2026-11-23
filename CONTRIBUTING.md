@@ -18,9 +18,12 @@ You need Xcode 26. The app runs on macOS 14 or later, so check changes to newer 
 
 ```sh
 ./scripts/build-app.sh          # builds dist/Backglow.app, signed ad hoc without a certificate
-swift test --disable-sandbox    # core tests, also run in CI
-swift scripts/check-metal.swift Sources/Backglow/Shaders/ZoneAverage.metal
+./scripts/check.sh              # every check, also run in CI (under a minute)
+./scripts/check.sh --fast       # rules, core tests and firmware protocol test
+git config core.hooksPath scripts/git-hooks   # once per clone: run --fast before each commit
 ```
+
+`scripts/check.sh` runs the project rules (`python3 scripts/check-rules.py --list` shows them with their reason), the core tests, the firmware's host protocol test, the Metal shader against a known zone average, a check that the String Catalog matches the sources, and a release build. A new check belongs in `check.sh`.
 
 Firmware changes in `Firmware/BackglowController` should build for both boards and pass the host protocol test:
 

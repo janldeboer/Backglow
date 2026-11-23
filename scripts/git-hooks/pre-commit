@@ -1,0 +1,4 @@
+#!/bin/zsh
+# Activate once per clone: git config core.hooksPath scripts/git-hooks
+# Skip only in an emergency: git commit --no-verify
+exec "$(git rev-parse --show-toplevel)/scripts/check.sh" --fast

@@ -20,8 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Core tests
-        run: swift test --disable-sandbox
+      - name: Checks
+        run: ./scripts/check.sh
 
       # Release builds are signed with Developer ID and notarized; everything else is signed
       # ad hoc. The secrets only reach tag builds, never pull requests.
